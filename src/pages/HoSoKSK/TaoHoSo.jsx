@@ -357,57 +357,41 @@ function Tab1Content({ form, setForm }) {
               <option value="05 — Khmer">05 — Khmer</option>
             </select>
           </FieldGroup>
-
-          <FieldGroup label="Đối tượng khám" required>
+                    <FieldGroup label="Điện thoại">
+            <input
+              style={inputStyle}
+              type="text"
+              value={form.dienThoai}
+              onChange={set("dienThoai")}
+              placeholder="Nhập đúng 10 số điện thoại (0...)"
+            />
+          </FieldGroup>
+          <div/>
+          <FieldGroup label="Nghề nghiệp" required>
             <select
               style={inputStyle}
-              value={form.doiTuongKham}
-              onChange={set("doiTuongKham")}
+              value={form.ngheNghiep}
+              onChange={set("ngheNghiep")}
             >
-              <option value="">Chọn hoặc tìm kiếm đối tượng...</option>
-              <option value="Người lớn">Người lớn</option>
-              <option value="Trẻ em">Trẻ em</option>
-              <option value="Người cao tuổi">Người cao tuổi</option>
-              <option value="Học sinh">Học sinh</option>
+              <option value="">Chọn hoặc tìm kiếm nghề nghiệp...</option>
+              <option value="Công nhân">Công nhân</option>
+              <option value="Nông dân">Nông dân</option>
+              <option value="Học sinh/Sinh viên">Học sinh/Sinh viên</option>
+              <option value="Hưu trí">Hưu trí</option>
+              <option value="Tự do">Tự do</option>
             </select>
           </FieldGroup>
-
-          <div />
-
-          <FieldGroup label="Nhóm máu">
-            <select
+          <FieldGroup label="Nơi công tác hiện tại">
+            <input
               style={inputStyle}
-              value={form.nhomMau}
-              onChange={set("nhomMau")}
-            >
-              <option value="">—Chọn—</option>
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="AB+">AB+</option>
-              <option value="AB-">AB-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
-            </select>
+              type="text"
+              value={form.noiCongTac}
+              onChange={set("noiCongTac")}
+            />
           </FieldGroup>
 
-          <FieldGroup label="Nguồn chi trả" required>
-            <select
-              style={inputStyle}
-              value={form.nguonChiTra}
-              onChange={set("nguonChiTra")}
-            >
-              <option value="">Chọn hoặc tìm kiếm nguồn chi trả...</option>
-              <option value="BHYT">BHYT</option>
-              <option value="Ngân sách NN">Ngân sách NN</option>
-              <option value="Tự chi trả">Tự chi trả</option>
-              <option value="Khác">Khác</option>
-            </select>
-          </FieldGroup>
 
-          <div />
-
+          <div/>
           <FieldGroup label="Tỉnh/Thành phố" required>
             <select
               style={inputStyle}
@@ -442,39 +426,51 @@ function Tab1Content({ form, setForm }) {
             />
           </FieldGroup>
 
-          <FieldGroup label="Nghề nghiệp" required>
+          <FieldGroup label="Nhóm máu">
             <select
               style={inputStyle}
-              value={form.ngheNghiep}
-              onChange={set("ngheNghiep")}
+              value={form.nhomMau}
+              onChange={set("nhomMau")}
             >
-              <option value="">Chọn hoặc tìm kiếm nghề nghiệp...</option>
-              <option value="Công nhân">Công nhân</option>
-              <option value="Nông dân">Nông dân</option>
-              <option value="Học sinh/Sinh viên">Học sinh/Sinh viên</option>
-              <option value="Hưu trí">Hưu trí</option>
-              <option value="Tự do">Tự do</option>
+              <option value="">—Chọn—</option>
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+            </select>
+          </FieldGroup>
+          <FieldGroup label="Đối tượng khám" required>
+            <select
+              style={inputStyle}
+              value={form.doiTuongKham}
+              onChange={set("doiTuongKham")}
+            >
+              <option value="">Chọn hoặc tìm kiếm đối tượng...</option>
+              <option value="Người lớn">Người lớn</option>
+              <option value="Trẻ em">Trẻ em</option>
+              <option value="Người cao tuổi">Người cao tuổi</option>
+              <option value="Học sinh">Học sinh</option>
+            </select>
+          </FieldGroup>
+          <FieldGroup label="Nguồn chi trả" required>
+            <select
+              style={inputStyle}
+              value={form.nguonChiTra}
+              onChange={set("nguonChiTra")}
+            >
+              <option value="">Chọn hoặc tìm kiếm nguồn chi trả...</option>
+              <option value="BHYT">BHYT</option>
+              <option value="Ngân sách NN">Ngân sách NN</option>
+              <option value="Tự chi trả">Tự chi trả</option>
+              <option value="Khác">Khác</option>
             </select>
           </FieldGroup>
 
-          <FieldGroup label="Nơi công tác hiện tại">
-            <input
-              style={inputStyle}
-              type="text"
-              value={form.noiCongTac}
-              onChange={set("noiCongTac")}
-            />
-          </FieldGroup>
 
-          <FieldGroup label="Điện thoại">
-            <input
-              style={inputStyle}
-              type="text"
-              value={form.dienThoai}
-              onChange={set("dienThoai")}
-              placeholder="Nhập đúng 10 số điện thoại (0...)"
-            />
-          </FieldGroup>
 
           <FieldGroup label="Lý do khám sức khỏe" required>
             <input
