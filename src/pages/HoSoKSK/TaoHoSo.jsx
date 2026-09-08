@@ -2590,6 +2590,21 @@ function Tab6Content({ form, setForm }) {
               </label>
             ))}
           </div>
+
+          {(form.cls_coKhac || "Không") === "Có" && (
+            <div style={{ marginTop: ".75rem" }}>
+              <div style={{ fontSize: ".84rem", color: "var(--gray-700)", marginBottom: ".35rem" }}>
+                104. Kết quả chi tiết
+              </div>
+              <input
+                style={inputStyle}
+                type="text"
+                placeholder="Nhập kết quả chi tiết..."
+                value={form.cls_ketQuaChiTiet || ""}
+                onChange={set("cls_ketQuaChiTiet")}
+              />
+            </div>
+          )}
         </div>
         <div>
           <div
