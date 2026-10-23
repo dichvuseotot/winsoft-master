@@ -1,3 +1,8 @@
+[data-theme="dark"] .tao-ho-so input[type="date"]::-webkit-calendar-picker-indicator,
+[data-theme="dark"] .tao-ho-so input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
 .tao-ho-so input:not([disabled]):hover,
 .tao-ho-so select:not([disabled]):hover,
 .tao-ho-so textarea:not([disabled]):hover {

@@ -88,6 +88,8 @@ const inputStyle = {
   background: "var(--gray-100)",
 };
 
+const { background: _bg, ...inputStyleNoBackground } = inputStyle;
+
 const textareaStyle = {
   width: "100%",
   border: "1.5px solid var(--gray-200)",
@@ -674,7 +676,8 @@ function Tab2Content({ form, setForm, subtitle = "Mã cơ sở khám bệnh, ng�
       <Grid3>
         <FieldGroup label="Mã CSKCB" required>
           <input
-            style={{ ...inputStyle, background: "var(--gray-200)", color: "var(--gray-700)" }}
+            style={inputStyleNoBackground}
+            className="field-readonly-dark"
             type="text"
             value={form.maCskcb}
             disabled
@@ -682,7 +685,8 @@ function Tab2Content({ form, setForm, subtitle = "Mã cơ sở khám bệnh, ng�
         </FieldGroup>
         <FieldGroup label="Mã CSKCB theo chuẩn GLN" required>
           <input
-            style={{ ...inputStyle, background: "var(--gray-200)", color: "var(--gray-700)" }}
+            style={inputStyleNoBackground}
+            className="field-readonly-dark"
             type="text"
             value={form.maCskcbGln}
             disabled
@@ -690,7 +694,8 @@ function Tab2Content({ form, setForm, subtitle = "Mã cơ sở khám bệnh, ng�
         </FieldGroup>
         <FieldGroup label="Mã lần khám" helper="Giá trị được hệ thống quản lý theo CSYT.">
           <input
-            style={{ ...inputStyle, background: "var(--gray-150, #eaecf0)", color: "var(--gray-600)" }}
+            style={inputStyleNoBackground}
+            className="field-readonly-light"
             type="text"
             value={form.maLanKham}
             disabled
@@ -1712,7 +1717,8 @@ function Tab4Content({ form, setForm }) {
 
         <FieldGroup label="Chỉ số BMI">
           <input
-            style={{ ...inputStyle, background: "var(--gray-150, #eaecf0)", color: "var(--gray-600)" }}
+            style={inputStyleNoBackground}
+            className="field-readonly-light"
             type="text"
             readOnly
             value={bmi}

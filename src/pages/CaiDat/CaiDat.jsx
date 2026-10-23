@@ -41,6 +41,8 @@ const inputStyle = {
   transition: 'border-color .18s',
   boxSizing: 'border-box',
 }
+const { background: _bg, color: _c, ...inputStyleNoBackground } = inputStyle
+
 const labelStyle = {
   display: 'block',
   fontSize: '.8rem',
@@ -271,7 +273,8 @@ export default function CaiDat() {
             <div style={{ flex: 1 }}>
               <label style={labelStyle}>Tên đăng nhập</label>
               <input
-                style={{ ...inputStyle, background: 'var(--gray-50)', color: 'var(--gray-500)', cursor: 'not-allowed' }}
+                style={{ ...inputStyleNoBackground, cursor: 'not-allowed' }}
+                className="field-readonly-dark"
                 value={user?.username || '75407'}
                 readOnly
               />
@@ -299,7 +302,8 @@ export default function CaiDat() {
               note="Mã CSKB do Quản trị viên hệ thống quản lý và khóa sửa."
             >
               <input
-                style={{ ...inputStyle, background: 'var(--gray-50)', color: 'var(--gray-500)', cursor: 'not-allowed' }}
+                style={{ ...inputStyleNoBackground, cursor: 'not-allowed' }}
+                className="field-readonly-dark"
                 value={form.maCSKB} readOnly
               />
             </Field>
@@ -310,7 +314,8 @@ export default function CaiDat() {
               label="Loại tổ chức"
               note="Loại tổ chức do Quản trị viên hệ thống quản lý."
             >
-              <select style={{ ...inputStyle, cursor: 'not-allowed', background: 'var(--gray-50)', color: 'var(--gray-500)' }}
+              <select style={{ ...inputStyleNoBackground, cursor: 'not-allowed' }}
+                className="field-readonly-dark"
                 value={form.loaiToChuc} disabled>
                 {LOAI_TO_CHUC.map(o => <option key={o}>{o}</option>)}
               </select>
@@ -319,7 +324,8 @@ export default function CaiDat() {
               label="Đơn vị cấp trên"
               note="Đơn vị cấp trên do Quản trị viên hệ thống quản lý."
             >
-              <select style={{ ...inputStyle, cursor: 'not-allowed', background: 'var(--gray-50)', color: 'var(--gray-500)' }}
+              <select style={{ ...inputStyleNoBackground, cursor: 'not-allowed' }}
+                className="field-readonly-dark"
                 value={form.donViCapTren} disabled>
                 {DON_VI_CAP_TREN.map(o => <option key={o}>{o}</option>)}
               </select>
