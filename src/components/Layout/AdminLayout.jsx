@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Navigate, Outlet, useNavigate } from 'react-router'
 import Swal from 'sweetalert2'
 import { useAuth } from '../../context/AuthContext.jsx'
 import Sidebar from './Sidebar/Sidebar.jsx'
@@ -7,7 +7,8 @@ import Header from './Header/Header.jsx'
 import './AdminLayout.css'
 
 export default function AdminLayout() {
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
+  if (!user) return <Navigate to="/login" replace />
   const navigate = useNavigate()
   const [collapsed, setCollapsed]   = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
