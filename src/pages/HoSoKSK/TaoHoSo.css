@@ -1,0 +1,12 @@
+.tao-ho-so input:not([disabled]):hover,
+.tao-ho-so select:not([disabled]):hover,
+.tao-ho-so textarea:not([disabled]):hover {
+  border-color: var(--primary, #0067ac);
+}
+
+.tao-ho-so input:not([disabled]):focus,
+.tao-ho-so select:not([disabled]):focus,
+.tao-ho-so textarea:not([disabled]):focus {
+  border-color: var(--primary, #0067ac);
+  box-shadow: 0 0 0 2px rgba(0, 103, 172, 0.1);
+}
