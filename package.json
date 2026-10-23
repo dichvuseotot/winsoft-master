@@ -4,27 +4,30 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3001",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview --port 9989"
+    "dev": "react-router dev --port 3000",
+    "build": "react-router build",
+    "typegen": "react-router typegen",
+    "start": "serve build/client -p 9989 -s"
   },
   "dependencies": {
+    "@react-router/node": "^7.18.4",
+    "@react-router/serve": "^7.18.4",
     "bootstrap": "^5.3.3",
     "bootstrap-icons": "^1.11.3",
+    "isbot": "^5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-router-dom": "^7.18.2",
+    "react-is": "^19.3.1",
+    "react-router": "^7.18.4",
     "recharts": "^3.10.1",
     "sweetalert2": "^11.14.5"
   },
   "devDependencies": {
-    "@types/react": "^18.3.12",
-    "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.3",
+    "@react-router/dev": "^7.18.4",
     "eslint": "^9.13.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",
+    "serve": "^14.2.6",
     "vite": "^7.0.0"
   }
 }

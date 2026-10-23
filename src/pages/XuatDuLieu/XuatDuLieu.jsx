@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 const TRANG_THAI_LIST = ['Tất cả trạng thái', 'Đang xử lý', 'Hoàn thành', 'Thất bại', 'Chờ xử lý']
 const BIEU_MAU_LIST   = ['Tất cả trạng thái', 'Biểu mẫu KSK toàn dân', 'Biểu mẫu KSK trẻ em', 'Biểu mẫu KSK học sinh', 'Biểu mẫu KSK người cao tuổi']

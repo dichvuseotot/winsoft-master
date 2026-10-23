@@ -1,9 +1,11 @@
 import { useState } from 'react'
+import { Navigate } from 'react-router'
 import { useAuth } from '../../context/AuthContext.jsx'
 import './Login.css'
 
 export default function Login() {
-  const { login, loading } = useAuth()
+  const { user, login, loading } = useAuth()
+  if (user) return <Navigate to="/" replace />
 
   const [step, setStep]         = useState('login')
   const [form, setForm]         = useState({ username: '', password: '', remember: false })
