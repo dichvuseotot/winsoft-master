@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
+import "./TaoHoSo.css";
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -62,7 +63,7 @@ const SAMPLE_PATIENTS = [
 
 const MAU_PHIEU_OPTIONS = [
   "Mẫu phiếu KSK và KSK định kỳ cho người đủ 18 tuổi trở lên (v1)",
-  "Mẫu phiếu KSK trẻ em dưới 18 tuổi (v1)",
+  // "Mẫu phiếu KSK trẻ em dưới 18 tuổi (v1)",
   "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi",
 ];
 
@@ -87,6 +88,8 @@ const inputStyle = {
   background: "var(--gray-100)",
 };
 
+const { background: _bg, ...inputStyleNoBackground } = inputStyle;
+
 const textareaStyle = {
   width: "100%",
   border: "1.5px solid var(--gray-200)",
@@ -97,6 +100,7 @@ const textareaStyle = {
   boxSizing: "border-box",
   fontFamily: "var(--font-body)",
   resize: "vertical",
+  background: "var(--gray-100)",
 };
 
 const helperStyle = {
@@ -373,7 +377,7 @@ function Tab1ChildContent({ form, setForm }) {
           </FieldGroup>
 
           <FieldGroup label="14. Điện thoại">
-            <input style={inputStyle} type="text" value={form.dienThoai} onChange={set("dienThoai")} placeholder="Nhập số điện thoại" />
+            <input style={inputStyle} type="text" value={form.dienThoai} onChange={set("dienThoai")} placeholder="Nhập số điện thoại" maxLength={10} />
           </FieldGroup>
 
           <FieldGroup label="15. Số định danh người giám hộ">
@@ -529,6 +533,7 @@ function Tab1Content({ form, setForm }) {
               value={form.dienThoai}
               onChange={set("dienThoai")}
               placeholder="Nhập đúng 10 số điện thoại (0...)"
+              maxLength={10}
             />
           </FieldGroup>
           <div/>
@@ -637,15 +642,6 @@ function Tab1Content({ form, setForm }) {
 
 
 
-          <FieldGroup label="Lý do khám sức khỏe" required>
-            <input
-              style={inputStyle}
-              type="text"
-              value={form.lyDoKham}
-              onChange={set("lyDoKham")}
-            />
-          </FieldGroup>
-
           <FieldGroup label="Loại hình khám bệnh, chữa bệnh" required>
             <select
               style={inputStyle}
@@ -678,15 +674,36 @@ function Tab2Content({ form, setForm, subtitle = "Mã cơ sở khám bệnh, ng�
         subtitle={subtitle}
       />
       <Grid3>
-        <FieldGroup label="1. Mã cơ sở khám bệnh, chữa bệnh">
+        <FieldGroup label="Mã CSKCB" required>
           <input
-            style={inputStyle}
+            style={inputStyleNoBackground}
+            className="field-readonly-dark"
             type="text"
             value={form.maCskcb}
-            onChange={set("maCskcb")}
+            disabled
           />
         </FieldGroup>
-        <FieldGroup label="2. Ngày khám sức khỏe" required>
+        <FieldGroup label="Mã CSKCB theo chuẩn GLN" required>
+          <input
+            style={inputStyleNoBackground}
+            className="field-readonly-dark"
+            type="text"
+            value={form.maCskcbGln}
+            disabled
+          />
+        </FieldGroup>
+        <FieldGroup label="Mã lần khám" helper="Giá trị được hệ thống quản lý theo CSYT.">
+          <input
+            style={inputStyleNoBackground}
+            className="field-readonly-light"
+            type="text"
+            value={form.maLanKham}
+            disabled
+          />
+        </FieldGroup>
+      </Grid3>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "1rem", marginTop: "1rem" }}>
+        <FieldGroup label="Ngày khám sức khỏe" required>
           <input
             style={inputStyle}
             type="date"
@@ -702,7 +719,17 @@ function Tab2Content({ form, setForm, subtitle = "Mã cơ sở khám bệnh, ng�
             onChange={set("gioKham")}
           />
         </FieldGroup>
-      </Grid3>
+      </div>
+      {/* <div style={{ marginTop: "1rem" }}>
+        <FieldGroup label="Lý do khám sức khỏe">
+          <input
+            style={inputStyle}
+            type="text"
+            value={form.lyDoKham}
+            onChange={set("lyDoKham")}
+          />
+        </FieldGroup>
+      </div> */}
     </Card>
   );
 }
@@ -1690,7 +1717,8 @@ function Tab4Content({ form, setForm }) {
 
         <FieldGroup label="Chỉ số BMI">
           <input
-            style={{ ...inputStyle, background: "var(--gray-50)" }}
+            style={inputStyleNoBackground}
+            className="field-readonly-light"
             type="text"
             readOnly
             value={bmi}
@@ -3046,8 +3074,9 @@ export default function TaoHoSo() {
     loaiHinhKham: "",
     maCskcb: "75407",
     maCskcbGln: "0752636875407",
+    maLanKham: "",
     ngayKham: TODAY,
-    gioKham: "",
+    gioKham: new Date().toTimeString().slice(0, 5),
     gdICD10: [],
     dieuTriICD10: [],
     thuocDangSD: "",
@@ -3095,6 +3124,7 @@ export default function TaoHoSo() {
 
   return (
     <div
+      className="tao-ho-so"
       style={{
         minHeight: "100vh",
         background: "var(--gray-50, #f9fafb)",
