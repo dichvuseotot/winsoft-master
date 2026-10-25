@@ -138,6 +138,12 @@
   color: #fff;
 }
 
+select:not(.field-readonly-dark):not(.field-readonly-light),
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="submit"]):not([type="button"]):not(.field-readonly-dark):not(.field-readonly-light),
+textarea:not(.field-readonly-dark):not(.field-readonly-light) {
+  background: #ffffff !important;
+}
+
 [data-theme="dark"] select:not(.field-readonly-dark):not(.field-readonly-light),
 [data-theme="dark"] input:not([type="checkbox"]):not([type="radio"]):not([type="file"]):not([type="range"]):not([type="submit"]):not([type="button"]):not(.field-readonly-dark):not(.field-readonly-light),
 [data-theme="dark"] textarea:not(.field-readonly-dark):not(.field-readonly-light) {

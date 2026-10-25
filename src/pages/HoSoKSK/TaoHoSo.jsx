@@ -63,8 +63,8 @@ const SAMPLE_PATIENTS = [
 
 const MAU_PHIEU_OPTIONS = [
   "Mẫu phiếu KSK và KSK định kỳ cho người đủ 18 tuổi trở lên (v1)",
-  // "Mẫu phiếu KSK trẻ em dưới 18 tuổi (v1)",
-  "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi",
+  "Mẫu phiếu KSK và KSK định kỳ cho người đủ 6 tuổi đến dưới 18 tuổi (v1)",
+  "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi (v1)",
 ];
 
 const labelStyle = {
@@ -3342,7 +3342,7 @@ export default function TaoHoSo() {
             scrollbarColor: "var(--gray-400) transparent",
           }}
         >
-          {(mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi" ? TABS_CHILD : TABS).map((tab) => {
+          {(mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi (v1)" ? TABS_CHILD : TABS).map((tab) => {
             const isActive = activeTab === tab.id;
             return (
               <button
@@ -3401,45 +3401,45 @@ export default function TaoHoSo() {
         }}
       >
         <div ref={(el) => (sectionRefs.current[0] = el)}>
-          {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi"
+          {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi (v1)"
             ? <Tab1ChildContent form={form} setForm={setForm} />
             : <Tab1Content form={form} setForm={setForm} />
           }
         </div>
         <div ref={(el) => (sectionRefs.current[1] = el)}>
-          <Tab2Content form={form} setForm={setForm} subtitle={mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi" ? "" : undefined} />
+          <Tab2Content form={form} setForm={setForm} subtitle={mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi (v1)" ? "" : undefined} />
         </div>
         <div ref={(el) => (sectionRefs.current[2] = el)}>
-          {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi"
+          {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi (v1)"
             ? <Tab3ChildContent form={form} setForm={setForm} />
             : <Tab3Content form={form} setForm={setForm} />
           }
         </div>
         <div ref={(el) => (sectionRefs.current[3] = el)}>
-          {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi"
+          {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi (v1)"
             ? <Tab4ChildContent form={form} setForm={setForm} />
             : <Tab4Content form={form} setForm={setForm} />
           }
         </div>
         <div ref={(el) => (sectionRefs.current[4] = el)}>
-          {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi"
+          {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi (v1)"
             ? <Tab5ChildContent form={form} setForm={setForm} />
             : <Tab5Content form={form} setForm={setForm} />
           }
         </div>
         <div ref={(el) => (sectionRefs.current[5] = el)}>
-          {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi"
+          {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi (v1)"
             ? <Tab6ChildContent form={form} setForm={setForm} />
             : <Tab6Content form={form} setForm={setForm} />
           }
         </div>
         <div ref={(el) => (sectionRefs.current[6] = el)}>
-          {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi"
+          {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi (v1)"
             ? <Tab7ChildContent form={form} setForm={setForm} />
             : <Tab7Content form={form} setForm={setForm} />
           }
         </div>
-        {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi" && (
+        {mauPhieu === "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi (v1)" && (
           <div ref={(el) => (sectionRefs.current[7] = el)}>
             <Tab8ChildContent form={form} setForm={setForm} />
           </div>
