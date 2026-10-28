@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, GD_ICD10_OPTIONS, SearchableSelect, subLabelStyle, SignatureBox, PHAN_LOAI_LS, PHAN_LOAI_SK } from "./formShared";
+import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, GD_ICD10_OPTIONS, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, PHAN_LOAI_LS, PHAN_LOAI_SK } from "./formShared";
 
-export function Tab1TeenContent({ form, setForm }) {
+export function Tab1TeenContent({ form, setForm, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [] }) {
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   return (
@@ -22,8 +22,9 @@ export function Tab1TeenContent({ form, setForm }) {
           <FieldGroup label="Giới tính" required>
             <select style={inputStyle} value={form.gioiTinh} onChange={set("gioiTinh")}>
               <option value="">—Chọn—</option>
-              <option value="Nam">Nam</option>
-              <option value="Nữ">Nữ</option>
+              {gioiTinhOptions.map((g) => (
+                <option key={g.Id} value={g.Id}>{g.TenGioiTinh}</option>
+              ))}
             </select>
           </FieldGroup>
 
@@ -38,30 +39,28 @@ export function Tab1TeenContent({ form, setForm }) {
           </FieldGroup>
 
           <FieldGroup label="Dân tộc" required>
-            <select style={inputStyle} value={form.danToc} onChange={set("danToc")}>
-              <option value="01 — Kinh">01 — Kinh</option>
-              <option value="02 — Tày">02 — Tày</option>
-              <option value="03 — Thái">03 — Thái</option>
-              <option value="04 — Mường">04 — Mường</option>
-              <option value="05 — Khmer">05 — Khmer</option>
-            </select>
+            <SearchableSingleSelect
+              value={form.danToc}
+              onChange={(val) => set("danToc")({ target: { value: val } })}
+              options={danTocOptions.map((d) => ({ value: d.MaDanToc, label: d.TenDanToc }))}
+              placeholder="—Chọn dân tộc—"
+            />
           </FieldGroup>
           <FieldGroup label="Đối tượng khám định kỳ" required>
-            <select style={inputStyle} value={form.doiTuongKham} onChange={set("doiTuongKham")}>
-              <option value="">Chọn hoặc tìm kiếm đối tượng...</option>
-              <option value="Học sinh">Học sinh</option>
-              <option value="Sinh viên">Sinh viên</option>
-              <option value="Khác">Khác</option>
-            </select>
+            <SearchableSingleSelect
+              value={form.doiTuongKham}
+              onChange={(val) => set("doiTuongKham")({ target: { value: val } })}
+              options={doiTuongOptions.map((d) => ({ value: d.Id, label: d.Name }))}
+              placeholder="—Chọn đối tượng—"
+            />
           </FieldGroup>
           <FieldGroup label="Nguồn chi trả" required>
-            <select style={inputStyle} value={form.nguonChiTra} onChange={set("nguonChiTra")}>
-              <option value="">Chọn hoặc tìm kiếm nguồn chi trả...</option>
-              <option value="BHYT">BHYT</option>
-              <option value="Ngân sách NN">Ngân sách NN</option>
-              <option value="Tự chi trả">Tự chi trả</option>
-              <option value="Khác">Khác</option>
-            </select>
+            <SearchableSingleSelect
+              value={form.nguonChiTra}
+              onChange={(val) => set("nguonChiTra")({ target: { value: val } })}
+              options={nguonChiTraOptions.map((n) => ({ value: n.Id, label: n.Name }))}
+              placeholder="—Chọn nguồn chi trả—"
+            />
           </FieldGroup>
 
           <FieldGroup label="Nhóm máu">
@@ -81,18 +80,21 @@ export function Tab1TeenContent({ form, setForm }) {
             <input style={inputStyle} type="text" value={form.dienThoai} onChange={set("dienThoai")} placeholder="Nhập đúng 10 số điện thoại (0...)" maxLength={10} />
           </FieldGroup>
           <FieldGroup label="Tỉnh/Thành phố" required>
-            <select style={inputStyle} value={form.tinhThanhPho} onChange={set("tinhThanhPho")}>
-              <option value="79 — Thành phố Hồ Chí Minh">79 — Thành phố Hồ Chí Minh</option>
-            </select>
+            <SearchableSingleSelect
+              value={form.tinhThanhPho}
+              onChange={(val) => set("tinhThanhPho")({ target: { value: val } })}
+              options={tinhThanhOptions.map((t) => ({ value: t.MaTinh, label: t.TenTinh }))}
+              placeholder="—Chọn tỉnh/thành phố—"
+            />
           </FieldGroup>
 
           <FieldGroup label="Phường/Xã" required>
-            <select style={inputStyle} value={form.phuongXa} onChange={set("phuongXa")}>
-              <option value="">Chọn hoặc tìm kiếm Phường/Xã...</option>
-              <option value="Phường Nhà Bè">Phường Nhà Bè</option>
-              <option value="Phường Phước Kiển">Phường Phước Kiển</option>
-              <option value="Phường Phú Xuân">Phường Phú Xuân</option>
-            </select>
+            <SearchableSingleSelect
+              value={form.phuongXa}
+              onChange={(val) => set("phuongXa")({ target: { value: val } })}
+              options={phuongXaOptions.map((p) => ({ value: p.MaPhuongXa, label: p.TenPhuongXa }))}
+              placeholder="—Chọn phường/xã—"
+            />
           </FieldGroup>
           <FieldGroup label="Số nhà/thôn/xóm" required>
             <input style={inputStyle} type="text" value={form.soNha} onChange={set("soNha")} />
@@ -366,14 +368,14 @@ export function Tab5TeenContent({ form, setForm }) {
         <div />
         <div style={{ fontSize: ".75rem", fontWeight: 600, color: "var(--gray-700)", textAlign: "center" }}>Họ tên và chữ ký của bác sĩ</div>
       </div>
-      <NhiRow label="a. Tuần hoàn" fk="teen_nk_a" />
-      <NhiRow label="b. Hô hấp" fk="teen_nk_b" />
-      <NhiRow label="c. Tiêu hóa" fk="teen_nk_c" />
-      <NhiRow label="d. Thận - Tiết niệu - Sinh dục" fk="teen_nk_d" />
-      <NhiRow label="e. Nội tiết" fk="teen_nk_e" />
-      <NhiRow label="f. Cơ - xương - khớp" fk="teen_nk_f" />
-      <NhiRow label="g. Thần kinh" fk="teen_nk_g" />
-      <NhiRow label="h. Tâm thần" fk="teen_nk_h" />
+      <NhiRow label="a, Tuần hoàn" fk="teen_nk_a" />
+      <NhiRow label="b, Hô hấp" fk="teen_nk_b" />
+      <NhiRow label="c, Tiêu hóa" fk="teen_nk_c" />
+      <NhiRow label="d, Thận - Tiết niệu - Sinh dục" fk="teen_nk_d" />
+      <NhiRow label="e, Nội tiết" fk="teen_nk_e" />
+      <NhiRow label="f, Cơ - xương - khớp" fk="teen_nk_f" />
+      <NhiRow label="g, Thần kinh" fk="teen_nk_g" />
+      <NhiRow label="h, Tâm thần" fk="teen_nk_h" />
 
       <ChuyenKhoaRow secLabel="2. Ngoại khoa" fk="teen_ngk" label="Kết quả khám ngoại khoa" />
       <ChuyenKhoaRow secLabel="3. Da liễu" fk="teen_dl" label="Kết quả khám da liễu" />

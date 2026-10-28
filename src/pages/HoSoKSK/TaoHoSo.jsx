@@ -4,6 +4,7 @@ import "./TaoHoSo.css";
 import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content } from "./MauAdult";
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
+import { saveThongTinHanhChinh, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList } from "../../services";
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -46,9 +47,9 @@ const SAMPLE_PATIENTS = [
     ngaySinh: "1985-03-15",
     ngheNghiep: "01 — Công nhân",
     dienThoai: "0901234567",
-    tinhThanhPho: "79 — Thành phố Hồ Chí Minh",
+    tinhThanhPho: "79",
     phuongXa: "Phường Nhà Bè",
-    danToc: "01 — Kinh",
+    danToc: "01",
   },
   {
     soDinhDanh: "079201005678",
@@ -57,9 +58,9 @@ const SAMPLE_PATIENTS = [
     ngaySinh: "1992-07-22",
     ngheNghiep: "05 — Viên chức",
     dienThoai: "0912345678",
-    tinhThanhPho: "79 — Thành phố Hồ Chí Minh",
+    tinhThanhPho: "79",
     phuongXa: "Phường Nhà Bè",
-    danToc: "01 — Kinh",
+    danToc: "01",
   },
   {
     soDinhDanh: "079201009012",
@@ -68,9 +69,9 @@ const SAMPLE_PATIENTS = [
     ngaySinh: "1978-11-05",
     ngheNghiep: "02 — Nông dân",
     dienThoai: "0923456789",
-    tinhThanhPho: "79 — Thành phố Hồ Chí Minh",
+    tinhThanhPho: "79",
     phuongXa: "Phường Nhà Bè",
-    danToc: "01 — Kinh",
+    danToc: "01",
   },
 ];
 
@@ -292,6 +293,14 @@ export default function TaoHoSo() {
   });
   const [showPatientPicker, setShowPatientPicker] = useState(false);
   const [patientSearch, setPatientSearch] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [gioiTinhOptions, setGioiTinhOptions] = useState([]);
+  const [moiQuanHeOptions, setMoiQuanHeOptions] = useState([]);
+  const [danTocOptions, setDanTocOptions] = useState([]);
+  const [doiTuongOptions, setDoiTuongOptions] = useState([]);
+  const [nguonChiTraOptions, setNguonChiTraOptions] = useState([]);
+  const [tinhThanhOptions, setTinhThanhOptions] = useState([]);
+  const [phuongXaOptions, setPhuongXaOptions] = useState([]);
   const sectionRefs = useRef([]);
   const tabBarRef = useRef(null);
   const isScrollingTo = useRef(false);
@@ -303,11 +312,11 @@ export default function TaoHoSo() {
     ngaySinh: "",
     ngayCap: "",
     noiCap: "Cục Cảnh sát quản lý hành chính về trật tự xã hội",
-    danToc: "01 — Kinh",
+    danToc: "01",
     doiTuongKham: "",
     nhomMau: "",
     nguonChiTra: "",
-    tinhThanhPho: "79 — Thành phố Hồ Chí Minh",
+    tinhThanhPho: "79",
     phuongXa: "",
     soNha: "",
     ngheNghiep: "",
@@ -324,6 +333,15 @@ export default function TaoHoSo() {
     dieuTriICD10: [],
     thuocDangSD: "",
   });
+
+  useEffect(() => {
+    getGioiTinhList().then((data) => setGioiTinhOptions(data)).catch(() => {});
+    getMoiQuanHeList().then((data) => setMoiQuanHeOptions(data)).catch(() => {});
+    getDanTocList().then((data) => setDanTocOptions(data)).catch(() => {});
+    getDoiTuongList().then((data) => setDoiTuongOptions(data)).catch(() => {});
+    getNguonChiTraList().then((data) => setNguonChiTraOptions(data)).catch(() => {});
+    getTinhThanhList().then((data) => setTinhThanhOptions(data)).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const observers = sectionRefs.current.map((el, i) => {
@@ -352,6 +370,12 @@ export default function TaoHoSo() {
         behavior: "smooth",
       });
   }, [activeTab]);
+
+  useEffect(() => {
+    setForm((prev) => ({ ...prev, phuongXa: "" }));
+    if (!form.tinhThanhPho) { setPhuongXaOptions([]); return; }
+    getPhuongXaList(form.tinhThanhPho).then((data) => setPhuongXaOptions(data)).catch(() => {});
+  }, [form.tinhThanhPho]);
 
   const isChild = mauPhieu === 3;
   const isTeen = mauPhieu === 2;
@@ -517,21 +541,32 @@ export default function TaoHoSo() {
             </select>
 
             <button
+              disabled={saving}
+              onClick={async () => {
+                setSaving(true);
+                try {
+                  await saveThongTinHanhChinh(form, mauPhieu);
+                } catch {
+                  // handled inside service
+                } finally {
+                  setSaving(false);
+                }
+              }}
               style={{
                 height: "36px",
                 padding: "0 1.1rem",
-                background: "#16a34a",
+                background: saving ? "#86efac" : "#16a34a",
                 color: "#fff",
                 border: "none",
                 borderRadius: "var(--radius-md, 8px)",
                 fontWeight: 600,
                 fontSize: ".85rem",
-                cursor: "pointer",
+                cursor: saving ? "not-allowed" : "pointer",
                 fontFamily: "var(--font-body)",
                 whiteSpace: "nowrap",
               }}
             >
-              Lưu
+              {saving ? "Đang lưu..." : "Lưu"}
             </button>
 
             <button
@@ -652,10 +687,10 @@ export default function TaoHoSo() {
       >
         <div ref={(el) => (sectionRefs.current[0] = el)}>
           {isChild
-            ? <Tab1ChildContent form={form} setForm={setForm} />
+            ? <Tab1ChildContent form={form} setForm={setForm} gioiTinhOptions={gioiTinhOptions} moiQuanHeOptions={moiQuanHeOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} />
             : isTeen
-            ? <Tab1TeenContent form={form} setForm={setForm} />
-            : <Tab1Content form={form} setForm={setForm} />
+            ? <Tab1TeenContent form={form} setForm={setForm} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} />
+            : <Tab1Content form={form} setForm={setForm} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} />
           }
         </div>
         <div ref={(el) => (sectionRefs.current[1] = el)}>

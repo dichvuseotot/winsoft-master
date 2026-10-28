@@ -462,6 +462,115 @@ export function SearchableSelect({
   );
 }
 
+export function SearchableSingleSelect({ value = "", onChange, options = [], placeholder = "—Chọn—" }) {
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+  const ref = useRef(null);
+
+  const filtered = options.filter((o) =>
+    o.label.toLowerCase().includes(q.toLowerCase()),
+  );
+
+  const selected = options.find((o) => String(o.value) === String(value));
+
+  useEffect(() => {
+    if (!open) { setQ(""); return; }
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, [open]);
+
+  return (
+    <div ref={ref} style={{ position: "relative", flex: 1 }}>
+      <div
+        onClick={() => setOpen((o) => !o)}
+        style={{
+          height: 38,
+          border: "1.5px solid var(--gray-200)",
+          borderRadius: 6,
+          padding: "0 .625rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          cursor: "pointer",
+          background: "#fff",
+          fontSize: ".875rem",
+          color: selected ? "var(--gray-800)" : "var(--gray-400)",
+        }}
+      >
+        <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+          {selected ? selected.label : placeholder}
+        </span>
+        <i className={`bi bi-chevron-${open ? "up" : "down"}`} style={{ fontSize: ".75rem", color: "var(--gray-400)", flexShrink: 0, marginLeft: ".4rem" }} />
+      </div>
+      {open && (
+        <div style={{
+          position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
+          background: "#fff", border: "1px solid var(--gray-200)",
+          borderRadius: 10, zIndex: 200,
+          boxShadow: "0 8px 24px rgba(0,103,172,.13), 0 2px 6px rgba(0,0,0,.06)",
+          overflow: "hidden",
+        }}>
+          <div style={{ padding: ".5rem .625rem", background: "#f0f7ff", borderBottom: "1px solid #dbeafe" }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: ".5rem",
+              background: "#fff", borderRadius: 6, padding: ".3rem .625rem",
+              border: "1.5px solid #bfdbfe",
+            }}>
+              <i className="bi bi-search" style={{ color: "#2563eb", fontSize: ".8rem", flexShrink: 0 }} />
+              <input
+                autoFocus
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="Tìm kiếm..."
+                style={{ border: "none", outline: "none", boxShadow: "none", background: "transparent", fontSize: ".84rem", width: "100%", color: "var(--gray-800)" }}
+              />
+              {q && (
+                <i
+                  className="bi bi-x"
+                  onClick={() => setQ("")}
+                  style={{ color: "var(--gray-400)", fontSize: ".9rem", cursor: "pointer", flexShrink: 0 }}
+                />
+              )}
+            </div>
+          </div>
+          <div style={{ maxHeight: 224, overflowY: "auto" }}>
+            {filtered.length === 0 ? (
+              <div style={{ padding: "1rem", textAlign: "center", fontSize: ".84rem", color: "var(--gray-400)" }}>
+                <i className="bi bi-inbox" style={{ fontSize: "1.2rem", display: "block", marginBottom: ".25rem" }} />
+                Không tìm thấy
+              </div>
+            ) : (
+              filtered.map((o) => {
+                const isActive = String(o.value) === String(value);
+                return (
+                <div
+                  key={o.value}
+                  onClick={() => { onChange(o.value); setOpen(false); }}
+                  style={{
+                    padding: ".5rem .875rem", fontSize: ".84rem", cursor: "pointer",
+                    display: "flex", alignItems: "center", gap: ".5rem",
+                    background: isActive ? "#eff6ff" : "transparent",
+                    color: isActive ? "#2563eb" : "var(--gray-800)",
+                    fontWeight: isActive ? 600 : 400,
+                    borderLeft: isActive ? "3px solid #2563eb" : "3px solid transparent",
+                  }}
+                  onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "var(--gray-50)"; }}
+                  onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+                >
+                  {isActive && <i className="bi bi-check2" style={{ fontSize: ".85rem", flexShrink: 0 }} />}
+                  {o.label}
+                </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export const subLabelStyle = {
   color: "#2563eb",
   fontWeight: 700,

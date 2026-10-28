@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, GD_ICD10_OPTIONS, SearchableSelect, subLabelStyle, SignatureBox, PHAN_LOAI_LS, PHAN_LOAI_SK } from "./formShared";
+import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, GD_ICD10_OPTIONS, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, PHAN_LOAI_LS, PHAN_LOAI_SK } from "./formShared";
 
-export function Tab1ChildContent({ form, setForm }) {
+export function Tab1ChildContent({ form, setForm, gioiTinhOptions = [], moiQuanHeOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [] }) {
   const set = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const radioSet = (key, val) =>
@@ -31,25 +31,27 @@ export function Tab1ChildContent({ form, setForm }) {
           </FieldGroup>
           <FieldGroup label="3. Giới tính" required>
             <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", height: "38px" }}>
-              <label style={radioStyle}><input type="radio" name="child_gt" checked={form.gioiTinh === "Nam"} onChange={() => radioSet("gioiTinh", "Nam")} /> Nam</label>
-              <label style={radioStyle}><input type="radio" name="child_gt" checked={form.gioiTinh === "Nữ"} onChange={() => radioSet("gioiTinh", "Nữ")} /> Nữ</label>
+              {gioiTinhOptions.map((g) => (
+                <label key={g.Id} style={radioStyle}>
+                  <input type="radio" name="child_gt" checked={form.gioiTinh === g.Id} onChange={() => radioSet("gioiTinh", g.Id)} /> {g.TenGioiTinh}
+                </label>
+              ))}
             </div>
           </FieldGroup>
           <FieldGroup label="4. Dân tộc">
-            <select style={inputStyle} value={form.danToc} onChange={set("danToc")}>
-              <option value="01 — Kinh">Kinh</option>
-              <option value="02 — Tày">Tày</option>
-              <option value="03 — Thái">Thái</option>
-              <option value="04 — Mường">Mường</option>
-              <option value="05 — Khmer">Khmer</option>
-            </select>
+            <SearchableSingleSelect
+              value={form.danToc}
+              onChange={(val) => set("danToc")({ target: { value: val } })}
+              options={danTocOptions.map((d) => ({ value: d.MaDanToc, label: d.TenDanToc }))}
+              placeholder="—Chọn dân tộc—"
+            />
           </FieldGroup>
 
           <FieldGroup label="5. Sinh non">
-            <select style={inputStyle} value={form.sinhNon || ""} onChange={set("sinhNon")}>
-              <option value="">Không biết</option>
-              <option value="Có">Có</option>
-              <option value="Không">Không</option>
+            <select style={inputStyle} value={form.sinhNon ?? ""} onChange={(e) => setForm((prev) => ({ ...prev, sinhNon: e.target.value === "" ? "" : Number(e.target.value) }))}>
+              <option value="">—Chọn—</option>
+              <option value={0}>Không</option>
+              <option value={1}>Có</option>
             </select>
           </FieldGroup>
           <FieldGroup label="6. Tuần thai khi sinh">
@@ -71,16 +73,20 @@ export function Tab1ChildContent({ form, setForm }) {
           </FieldGroup>
 
           <FieldGroup label="8. Đối tượng">
-            <input style={inputStyle} type="text" value={form.doiTuongKham} onChange={set("doiTuongKham")} placeholder="Nhập đối tượng ưu tiên" />
+            <SearchableSingleSelect
+              value={form.doiTuongKham}
+              onChange={(val) => set("doiTuongKham")({ target: { value: val } })}
+              options={doiTuongOptions.map((d) => ({ value: d.Id, label: d.Name }))}
+              placeholder="—Chọn đối tượng—"
+            />
           </FieldGroup>
           <FieldGroup label="9. Nguồn chi trả" required>
-            <select style={inputStyle} value={form.nguonChiTra} onChange={set("nguonChiTra")}>
-              <option value="">Chọn nguồn chi trả</option>
-              <option value="BHYT">BHYT</option>
-              <option value="Ngân sách NN">Ngân sách NN</option>
-              <option value="Tự chi trả">Tự chi trả</option>
-              <option value="Khác">Khác</option>
-            </select>
+            <SearchableSingleSelect
+              value={form.nguonChiTra}
+              onChange={(val) => set("nguonChiTra")({ target: { value: val } })}
+              options={nguonChiTraOptions.map((n) => ({ value: n.Id, label: n.Name }))}
+              placeholder="—Chọn nguồn chi trả—"
+            />
           </FieldGroup>
           <div />
         </Grid3>
@@ -91,17 +97,21 @@ export function Tab1ChildContent({ form, setForm }) {
 
         <Grid3>
           <FieldGroup label="Tỉnh/Thành phố">
-            <select style={inputStyle} value={form.tinhThanhPho} onChange={set("tinhThanhPho")}>
-              <option value="79 — Thành phố Hồ Chí Minh">79 — Thành phố Hồ Chí Minh</option>
-            </select>
+            <SearchableSingleSelect
+              value={form.tinhThanhPho}
+              onChange={(val) => set("tinhThanhPho")({ target: { value: val } })}
+              options={tinhThanhOptions.map((t) => ({ value: t.MaTinh, label: t.TenTinh }))}
+              placeholder="—Chọn tỉnh/thành phố—"
+            />
           </FieldGroup>
 
           <FieldGroup label="Phường/Xã">
-            <select style={inputStyle} value={form.phuongXa} onChange={set("phuongXa")}>
-              <option value="">Chọn Phường/Xã...</option>
-              <option value="Phường Nhà Bè">Phường Nhà Bè</option>
-              <option value="Phường Phước Kiển">Phường Phước Kiển</option>
-            </select>
+            <SearchableSingleSelect
+              value={form.phuongXa}
+              onChange={(val) => set("phuongXa")({ target: { value: val } })}
+              options={phuongXaOptions.map((p) => ({ value: p.MaPhuongXa, label: p.TenPhuongXa }))}
+              placeholder="—Chọn phường/xã—"
+            />
           </FieldGroup>
 
           <FieldGroup label="Số nhà/thôn/xóm">
@@ -115,15 +125,14 @@ export function Tab1ChildContent({ form, setForm }) {
           <FieldGroup label="13. Mối quan hệ với trẻ">
             <select style={inputStyle} value={form.moiQuanHe || ""} onChange={set("moiQuanHe")}>
               <option value="">Chọn mối quan hệ</option>
-              <option value="Cha/Mẹ">Cha/Mẹ</option>
-              <option value="Ông/Bà">Ông/Bà</option>
-              <option value="Anh/Chị">Anh/Chị</option>
-              <option value="Người giám hộ">Người giám hộ</option>
+              {moiQuanHeOptions.map((m) => (
+                <option key={m.Id} value={m.Id}>{m.TenMoiQuanHe}</option>
+              ))}
             </select>
           </FieldGroup>
 
           <FieldGroup label="14. Điện thoại">
-            <input style={inputStyle} type="text" value={form.dienThoai} onChange={set("dienThoai")} placeholder="Nhập số điện thoại" maxLength={10} />
+            <input style={inputStyle} type="text" value={form.dienThoaiNguoiDiCung || ""} onChange={set("dienThoaiNguoiDiCung")} placeholder="Nhập số điện thoại" maxLength={10} />
           </FieldGroup>
 
           <FieldGroup label="15. Số định danh người giám hộ">

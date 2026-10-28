@@ -1,30 +1,24 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
+import { getThongTinHanhChinhList } from '../../services'
 
-const BIEU_MAU_LIST = ['-- Tất cả --', 'Biểu mẫu KSK toàn dân', 'Biểu mẫu KSK trẻ em', 'Biểu mẫu KSK học sinh', 'Biểu mẫu KSK người cao tuổi']
+const TODAY = new Date().toISOString().slice(0, 10)
+
+const MAU_PHIEU_OPTIONS = [
+  { value: '',  label: '-- Tất cả --' },
+  { value: 1,   label: 'KSK ≥ 18 tuổi' },
+  { value: 2,   label: 'KSK 6 đến dưới 18 tuổi' },
+  { value: 3,   label: 'KSK dưới 6 tuổi' },
+]
+
+const MAU_PHIEU_LABEL = { 1: 'KSK ≥ 18 tuổi', 2: 'KSK 6-18 tuổi', 3: 'KSK < 6 tuổi' }
 
 const TRANG_THAI_LIEN_THONG = [
-  { key: 'da-dong-bo',   label: 'Đã đồng bộ',           sub: 'Đã tiếp nhận', count: 0, bg: '#f0fdf4', border: '#86efac', iconBg: '#16a34a', icon: 'bi-check-circle-fill',   textColor: '#15803d' },
-  { key: 'chua-dong-bo', label: 'Chưa đồng bộ dữ liệu', sub: 'Chờ liên thông', count: 0, bg: '#eff6ff', border: '#93c5fd', iconBg: '#2563eb', icon: 'bi-arrow-repeat',        textColor: '#1d4ed8' },
-  { key: 'dong-bo-loi',  label: 'Đồng bộ lỗi',          sub: 'Cần xử lý',    count: 0, bg: '#fff1f2', border: '#fca5a5', iconBg: '#dc2626', icon: 'bi-exclamation-triangle-fill', textColor: '#dc2626' },
-  { key: 'dang-dong-bo', label: 'Đang đồng bộ',          sub: 'Đang gửi',     count: 0, bg: '#fffbeb', border: '#fcd34d', iconBg: '#d97706', icon: 'bi-arrow-clockwise',     textColor: '#b45309' },
+  { key: 'da-dong-bo',   label: 'Đã đồng bộ',           sub: 'Đã tiếp nhận',  bg: '#f0fdf4', border: '#86efac', iconBg: '#16a34a', icon: 'bi-check-circle-fill',        textColor: '#15803d' },
+  { key: 'chua-dong-bo', label: 'Chưa đồng bộ dữ liệu', sub: 'Chờ liên thông',bg: '#eff6ff', border: '#93c5fd', iconBg: '#2563eb', icon: 'bi-arrow-repeat',              textColor: '#1d4ed8' },
+  { key: 'dong-bo-loi',  label: 'Đồng bộ lỗi',          sub: 'Cần xử lý',     bg: '#fff1f2', border: '#fca5a5', iconBg: '#dc2626', icon: 'bi-exclamation-triangle-fill', textColor: '#dc2626' },
+  { key: 'dang-dong-bo', label: 'Đang đồng bộ',          sub: 'Đang gửi',      bg: '#fffbeb', border: '#fcd34d', iconBg: '#d97706', icon: 'bi-arrow-clockwise',           textColor: '#b45309' },
 ]
-
-const MOCK_DATA = [
-  { id: 1, hoTen: 'Nguyễn Văn An',    cccd: '001085012345', bieuMau: 'Biểu mẫu KSK toàn dân',       ngayKham: '24/08/2026', trangThai: 'da-dong-bo',   dongBoBoi: 'admin' },
-  { id: 2, hoTen: 'Trần Thị Bình',    cccd: '001090054321', bieuMau: 'Biểu mẫu KSK trẻ em',         ngayKham: '23/08/2026', trangThai: 'dong-bo-loi',  dongBoBoi: 'admin' },
-  { id: 3, hoTen: 'Lê Minh Công',     cccd: '001078098765', bieuMau: 'Biểu mẫu KSK toàn dân',       ngayKham: '23/08/2026', trangThai: 'da-dong-bo',   dongBoBoi: 'admin' },
-  { id: 4, hoTen: 'Phạm Thị Duyên',   cccd: '001095043210', bieuMau: 'Biểu mẫu KSK học sinh',       ngayKham: '22/08/2026', trangThai: 'chua-dong-bo', dongBoBoi: '' },
-  { id: 5, hoTen: 'Hoàng Văn Đức',    cccd: '001082067890', bieuMau: 'Biểu mẫu KSK người cao tuổi', ngayKham: '22/08/2026', trangThai: 'dang-dong-bo', dongBoBoi: 'system' },
-  { id: 6, hoTen: 'Vũ Thị Lan',       cccd: '001088034567', bieuMau: 'Biểu mẫu KSK toàn dân',       ngayKham: '21/08/2026', trangThai: 'da-dong-bo',   dongBoBoi: 'admin' },
-  { id: 7, hoTen: 'Đặng Minh Tuấn',   cccd: '001091023456', bieuMau: 'Biểu mẫu KSK trẻ em',         ngayKham: '20/08/2026', trangThai: 'da-dong-bo',   dongBoBoi: 'admin' },
-  { id: 8, hoTen: 'Ngô Thị Hà',       cccd: '001086078901', bieuMau: 'Biểu mẫu KSK học sinh',       ngayKham: '19/08/2026', trangThai: 'dong-bo-loi',  dongBoBoi: 'system' },
-]
-
-TRANG_THAI_LIEN_THONG[0].count = MOCK_DATA.filter(r => r.trangThai === 'da-dong-bo').length
-TRANG_THAI_LIEN_THONG[1].count = MOCK_DATA.filter(r => r.trangThai === 'chua-dong-bo').length
-TRANG_THAI_LIEN_THONG[2].count = MOCK_DATA.filter(r => r.trangThai === 'dong-bo-loi').length
-TRANG_THAI_LIEN_THONG[3].count = MOCK_DATA.filter(r => r.trangThai === 'dang-dong-bo').length
 
 const STATUS_LABEL = {
   'da-dong-bo':   { label: 'Đã đồng bộ',   bg: '#dcfce7', color: '#166534' },
@@ -35,30 +29,60 @@ const STATUS_LABEL = {
 
 export default function HoSoKSK() {
   const navigate = useNavigate()
-  const [fHoTen,      setFHoTen]     = useState('')
-  const [fCCCD,       setFCCCD]      = useState('')
-  const [fTu,         setFTu]        = useState('')
-  const [fDen,        setFDen]       = useState('')
-  const [fBieuMau,    setFBieuMau]   = useState('-- Tất cả --')
-  const [quickFilter, setQuickFilter]= useState('')   
-  const [applied,     setApplied]    = useState({})
-  const [perPage,     setPerPage]    = useState(10)
-  const [selected,    setSelected]   = useState([])
+  const [fHoTen,      setFHoTen]    = useState('')
+  const [fCCCD,       setFCCCD]     = useState('')
+  const [fTu,         setFTu]       = useState(TODAY)
+  const [fDen,        setFDen]      = useState(TODAY)
+  const [fMauPhieu,   setFMauPhieu] = useState('')
+  const [quickFilter, setQuickFilter] = useState('')
+  const [perPage,     setPerPage]   = useState(10)
+  const [selected,    setSelected]  = useState([])
+  const [data,        setData]      = useState([])
+  const [loading,     setLoading]   = useState(false)
 
-  const filtered = MOCK_DATA.filter(r => {
+  const fetchData = async (params) => {
+    setLoading(true)
+    try {
+      const result = await getThongTinHanhChinhList(params)
+      setData(result)
+    } catch {
+      setData([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchData({ fromDate: TODAY, toDate: TODAY })
+  }, [])
+
+  const handleFilter = () => {
+    fetchData({ fromDate: fTu, toDate: fDen, mauPhieu: fMauPhieu || undefined })
+  }
+
+  const handleReset = () => {
+    setFHoTen(''); setFCCCD(''); setFTu(TODAY); setFDen(TODAY); setFMauPhieu(''); setQuickFilter('')
+    fetchData({ fromDate: TODAY, toDate: TODAY })
+  }
+
+  const filtered = data.filter(r => {
     if (quickFilter && r.trangThai !== quickFilter) return false
-    if (applied.hoTen   && !r.hoTen.toLowerCase().includes(applied.hoTen.toLowerCase())) return false
-    if (applied.cccd    && !r.cccd.includes(applied.cccd)) return false
-    if (applied.bieuMau && applied.bieuMau !== '-- Tất cả --' && r.bieuMau !== applied.bieuMau) return false
+    if (fHoTen && !(r.HO_TEN || '').toLowerCase().includes(fHoTen.toLowerCase())) return false
+    if (fCCCD  && !(r.SO_CCCD || '').includes(fCCCD)) return false
     return true
   })
+
   const displayed  = filtered.slice(0, perPage)
-  const allChecked = displayed.length > 0 && displayed.every(r => selected.includes(r.id))
-  const toggleAll  = () => setSelected(allChecked ? [] : displayed.map(r => r.id))
+  const allChecked = displayed.length > 0 && displayed.every(r => selected.includes(r.Id))
+  const toggleAll  = () => setSelected(allChecked ? [] : displayed.map(r => r.Id))
   const toggleOne  = (id) => setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])
 
-  const handleFilter = () => setApplied({ hoTen: fHoTen, cccd: fCCCD, bieuMau: fBieuMau })
-  const handleReset  = () => { setFHoTen(''); setFCCCD(''); setFTu(''); setFDen(''); setFBieuMau('-- Tất cả --'); setApplied({}); setQuickFilter('') }
+  const counts = {
+    'da-dong-bo':   data.filter(r => r.trangThai === 'da-dong-bo').length,
+    'chua-dong-bo': data.filter(r => r.trangThai === 'chua-dong-bo').length,
+    'dong-bo-loi':  data.filter(r => r.trangThai === 'dong-bo-loi').length,
+    'dang-dong-bo': data.filter(r => r.trangThai === 'dang-dong-bo').length,
+  }
 
   const selectStyle = { width: '100%', height: 38, borderRadius: 'var(--radius-md)', border: '1.5px solid var(--gray-200)', padding: '0 .75rem', fontSize: '.85rem', fontFamily: 'var(--font-body)', color: 'var(--gray-700)', background: 'var(--gray-100)', cursor: 'pointer', outline: 'none' }
   const inputStyle  = { ...selectStyle, cursor: 'text' }
@@ -66,17 +90,17 @@ export default function HoSoKSK() {
 
   return (
     <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.18rem', color: 'var(--gray-900)' }}>Hồ sơ KSK</div>
         <button onClick={() => navigate('/ho-so-ksk/tao-moi')} style={{ height: 38, padding: '0 1.1rem', borderRadius: 'var(--radius-md)', border: 'none', background: '#16a34a', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.88rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.4rem' }}>
           <i className="bi bi-plus-lg" /> Tạo
         </button>
       </div>
 
-            <div className="card-custom" style={{ padding: '1.25rem', marginBottom: '1rem' }}>
+      <div className="card-custom" style={{ padding: '1.25rem', marginBottom: '1rem' }}>
         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.85rem', color: 'var(--gray-700)', marginBottom: '.875rem' }}>Lọc</div>
 
-                <div style={{ marginBottom: '1rem' }}>
+        <div style={{ marginBottom: '1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '.5rem' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem', fontSize: '.72rem', fontWeight: 700, color: 'var(--gray-500)', letterSpacing: '.07em', textTransform: 'uppercase' }}>
               <i className="bi bi-cloud-arrow-up-fill" style={{ color: '#16a34a' }} /> Trạng thái liên thông
@@ -104,14 +128,14 @@ export default function HoSoKSK() {
                       <div style={{ fontSize: '.72rem', color: s.textColor, opacity: .75 }}>{s.sub}</div>
                     </div>
                   </div>
-                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.1rem', color: s.textColor }}>{s.count}</div>
+                  <div style={{ fontFamily: 'var(--font-display)', fontWeight: 800, fontSize: '1.1rem', color: s.textColor }}>{counts[s.key]}</div>
                 </div>
               )
             })}
           </div>
         </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem', marginBottom: '.875rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem', marginBottom: '.875rem' }}>
           <div>
             <label style={labelStyle}>Họ tên</label>
             <input style={inputStyle} placeholder="Nhập họ và tên..." value={fHoTen} onChange={e => setFHoTen(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleFilter()} />
@@ -130,11 +154,11 @@ export default function HoSoKSK() {
           </div>
         </div>
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
           <div>
-            <label style={labelStyle}>Biểu mẫu</label>
-            <select style={selectStyle} value={fBieuMau} onChange={e => setFBieuMau(e.target.value)}>
-              {BIEU_MAU_LIST.map(b => <option key={b} value={b}>{b}</option>)}
+            <label style={labelStyle}>Mẫu phiếu</label>
+            <select style={selectStyle} value={fMauPhieu} onChange={e => setFMauPhieu(e.target.value)}>
+              {MAU_PHIEU_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
             </select>
           </div>
         </div>
@@ -149,8 +173,8 @@ export default function HoSoKSK() {
         </div>
       </div>
 
-            <div className="card-custom" style={{ padding: '1rem 1.25rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+      <div className="card-custom" style={{ padding: '1rem 1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
             <span style={{ fontSize: '.83rem', color: 'var(--gray-600)' }}>Mỗi trang:</span>
             <select value={perPage} onChange={e => setPerPage(Number(e.target.value))}
@@ -170,7 +194,7 @@ export default function HoSoKSK() {
           </button>
         </div>
 
-                <div style={{ overflowX: 'auto' }}>
+        <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 860 }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--gray-100)' }}>
@@ -179,10 +203,9 @@ export default function HoSoKSK() {
                   { label: <input type="checkbox" checked={allChecked} onChange={toggleAll} style={{ cursor: 'pointer' }} />, w: 40, center: true },
                   { label: 'Họ tên', sort: true },
                   { label: 'CCCD/Mã định danh', sort: true },
-                  { label: 'Biểu mẫu', sort: true },
+                  { label: 'Mẫu phiếu', sort: true },
                   { label: 'Ngày khám', sort: true },
                   { label: 'Trạng thái liên thông', sort: true },
-                  { label: 'Đồng bộ bởi' },
                   { label: 'Ghi chú' },
                 ].map((h, i) => (
                   <th key={i} style={{ fontSize: '.72rem', fontWeight: 700, color: 'var(--gray-500)', letterSpacing: '.06em', textTransform: 'uppercase', padding: '.6rem .875rem', background: 'var(--gray-50)', whiteSpace: 'nowrap', width: h.w, textAlign: h.center ? 'center' : 'left' }}>
@@ -192,28 +215,29 @@ export default function HoSoKSK() {
               </tr>
             </thead>
             <tbody>
-              {displayed.length === 0 ? (
-                <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--gray-400)', fontSize: '.85rem' }}>Không tìm thấy kết quả</td></tr>
-              ) : displayed.map((r, i) => {
-                const st = STATUS_LABEL[r.trangThai] || {}
-                const checked = selected.includes(r.id)
+              {loading ? (
+                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--gray-400)', fontSize: '.85rem' }}>Đang tải...</td></tr>
+              ) : displayed.length === 0 ? (
+                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--gray-400)', fontSize: '.85rem' }}>Không tìm thấy kết quả</td></tr>
+              ) : displayed.map((r) => {
+                const st = STATUS_LABEL[r.trangThai] || STATUS_LABEL['chua-dong-bo']
+                const checked = selected.includes(r.Id)
                 return (
-                  <tr key={r.id} className={checked ? 'row-checked' : ''} style={{ background: checked ? 'var(--primary-bg)' : 'transparent', borderBottom: '1px solid var(--gray-100)' }}>
+                  <tr key={r.Id} className={checked ? 'row-checked' : ''} style={{ background: checked ? 'var(--primary-bg)' : 'transparent', borderBottom: '1px solid var(--gray-100)' }}>
                     <td style={{ padding: '.6rem .875rem', textAlign: 'center' }}>
                       <button title="Xem chi tiết" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontSize: '1rem', padding: '0 .2rem' }}><i className="bi bi-eye" /></button>
                       <button title="Chỉnh sửa" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-500)', fontSize: '1rem', padding: '0 .2rem' }}><i className="bi bi-pencil" /></button>
                     </td>
                     <td style={{ padding: '.6rem .875rem', textAlign: 'center' }}>
-                      <input type="checkbox" checked={checked} onChange={() => toggleOne(r.id)} style={{ cursor: 'pointer' }} />
+                      <input type="checkbox" checked={checked} onChange={() => toggleOne(r.Id)} style={{ cursor: 'pointer' }} />
                     </td>
-                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', fontWeight: 600, color: 'var(--gray-800)' }}>{r.hoTen}</td>
-                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-600)', fontFamily: 'monospace' }}>{r.cccd}</td>
-                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-700)' }}>{r.bieuMau}</td>
-                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-600)', whiteSpace: 'nowrap' }}>{r.ngayKham}</td>
+                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', fontWeight: 600, color: 'var(--gray-800)' }}>{r.HO_TEN}</td>
+                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-600)', fontFamily: 'monospace' }}>{r.SO_CCCD}</td>
+                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-700)' }}>{MAU_PHIEU_LABEL[r.KSKCD_DM_TypeId] ?? r.KSKCD_DM_TypeId}</td>
+                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-600)', whiteSpace: 'nowrap' }}>{r.NGAY_VAO}</td>
                     <td style={{ padding: '.6rem .875rem' }}>
                       <span style={{ background: st.bg, color: st.color, fontSize: '.75rem', fontWeight: 700, padding: '.2em .65em', borderRadius: 99, whiteSpace: 'nowrap' }}>{st.label}</span>
                     </td>
-                    <td style={{ padding: '.6rem .875rem', fontSize: '.82rem', color: 'var(--gray-500)' }}>{r.dongBoBoi || <span style={{ color: 'var(--gray-300)' }}>—</span>}</td>
                     <td style={{ padding: '.6rem .875rem', fontSize: '.82rem', color: 'var(--gray-400)' }}>—</td>
                   </tr>
                 )
