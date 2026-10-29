@@ -256,7 +256,7 @@ export default function HoSoKSK() {
                       <span style={{ background: st.bg, color: st.color, fontSize: '.75rem', fontWeight: 700, padding: '.2em .65em', borderRadius: 99, whiteSpace: 'nowrap' }}>{st.label}</span>
                     </td>
                     <td style={{ padding: '.6rem .875rem', fontSize: '.82rem', color: 'var(--gray-400)' }}>—</td>
-                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-600)', whiteSpace: 'nowrap' }}>{r.PostingDate ? new Date(r.PostingDate).toLocaleString('vi-VN') : '—'}</td>
+                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-600)', whiteSpace: 'nowrap' }}>{r.PostingDate ? new Date(r.PostingDate.replace('Z', '')).toLocaleString('vi-VN') : '—'}</td>
                   </tr>
                 )
               })}

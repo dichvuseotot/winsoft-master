@@ -5,9 +5,10 @@ import "./TaoHoSo.css";
 import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content } from "./MauAdult";
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
-import { saveThongTinHanhChinh, getThongTinHanhChinhById, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getThongTinHanhChinhList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
+import { saveAdultTiepNhan, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
+import { todayVN, daysAgoVN, timeNowVN } from "../../utils/date";
 
-const TODAY = new Date().toISOString().slice(0, 10);
+const TODAY = todayVN();
 
 const TABS = [
   { id: 1, label: "1. Thông tin Hành chính" },
@@ -51,8 +52,8 @@ function PatientPickerModal({ onClose, onSelect, mauPhieu, gioiTinhOptions = [] 
   const [totalPages, setTotalPages] = useState(1);
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 20;
-  const today = new Date().toISOString().slice(0, 10);
-  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const today = todayVN();
+  const sevenDaysAgo = daysAgoVN(7);
   const [fromDate, setFromDate] = useState(sevenDaysAgo);
   const [toDate, setToDate] = useState(today);
 
@@ -255,7 +256,7 @@ function PatientPickerModal({ onClose, onSelect, mauPhieu, gioiTinhOptions = [] 
                       </td>
                       <td style={tdStyle}>{p.NGAY_SINH}</td>
                       <td style={{ ...tdStyle, fontFamily: "monospace", letterSpacing: ".03em" }}>{p.SO_CCCD}</td>
-                      <td style={tdStyle}>{p.PostingDate ? new Date(p.PostingDate).toLocaleString("vi-VN") : p.NGAY_VAO}</td>
+                      <td style={tdStyle}>{p.PostingDate ? new Date(p.PostingDate.replace('Z', '')).toLocaleString('vi-VN') : p.NGAY_VAO ?? '—'}</td>
                       <td style={{ ...tdStyle, color: "var(--gray-400)", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis" }}>{p.LY_DO_VV || "—"}</td>
                     </tr>
                   ))}
@@ -347,7 +348,7 @@ export default function TaoHoSo() {
     maCskcbGln: "0752636875407",
     maLanKham: "",
     ngayKham: TODAY,
-    gioKham: new Date().toTimeString().slice(0, 5),
+    gioKham: timeNowVN(),
     gdICD10: [],
     dieuTriICD10: [],
     thuocDangSD: "",
@@ -372,7 +373,10 @@ export default function TaoHoSo() {
 
   useEffect(() => {
     if (!editId) return;
-    getThongTinHanhChinhById(editId).then((p) => {
+    Promise.all([
+      getThongTinHanhChinhById(editId).catch(() => null),
+      getKhamTheLuc(editId).catch(() => null),
+    ]).then(([p, tl]) => {
       if (!p) return;
       setForm((prev) => ({
         ...prev,
@@ -400,8 +404,14 @@ export default function TaoHoSo() {
         soDinhDanhGiamHo: p.SO_CCCD_NGUOI_DI_CUNG || prev.soDinhDanhGiamHo,
         moiQuanHe: p.MOI_QUAN_HE_VOI_TRE ?? prev.moiQuanHe,
         dienThoaiNguoiDiCung: p.DIEN_THOAI_NGUOI_DI_CUNG || prev.dienThoaiNguoiDiCung,
+        // Khám thể lực
+        chieuCao: tl?.CHIEU_CAO ?? prev.chieuCao,
+        canNang: tl?.CAN_NANG ?? prev.canNang,
+        mach: tl?.MACH ?? prev.mach,
+        huyetAp: tl?.HUYET_AP ?? prev.huyetAp,
+        phanLoaiTheLuc: tl?.KHAM_THE_LUC_PL ?? prev.phanLoaiTheLuc,
       }));
-    }).catch(() => {});
+    });
   }, [editId]);
 
   useEffect(() => {
@@ -608,7 +618,8 @@ export default function TaoHoSo() {
                 onClick={async () => {
                   setSaving(true);
                   try {
-                    await saveThongTinHanhChinh(form, mauPhieu, editId || null);
+                    const result = await saveAdultTiepNhan(form, mauPhieu, tiepNhanId || null);
+                    if (result?.TiepNhanId) setTiepNhanId(result.TiepNhanId);
                   } catch {
                     // handled inside service
                   } finally {
@@ -848,8 +859,21 @@ export default function TaoHoSo() {
               ngayKham: p.NGAY_VAO || prev.ngayKham,
               maLanKham: p.MA_LK || prev.maLanKham,
             }));
-            setTiepNhanId(p.Id ?? p.KSKCD_TiepNhanId ?? null);
-            setPatientSelected(true);
+            const pid = p.Id ?? p.KSKCD_TiepNhanId ?? null;
+            setTiepNhanId(pid);
+            if (pid) {
+              getKhamTheLuc(pid).then((tl) => {
+                if (!tl) return;
+                setForm((prev) => ({
+                  ...prev,
+                  chieuCao: tl.CHIEU_CAO ?? prev.chieuCao,
+                  canNang: tl.CAN_NANG ?? prev.canNang,
+                  mach: tl.MACH ?? prev.mach,
+                  huyetAp: tl.HUYET_AP ?? prev.huyetAp,
+                  phanLoaiTheLuc: tl.KHAM_THE_LUC_PL ?? prev.phanLoaiTheLuc,
+                }));
+              }).catch(() => {});
+            }
             setShowPatientPicker(false);
           }}
         />

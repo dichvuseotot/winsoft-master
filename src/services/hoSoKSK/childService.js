@@ -1,5 +1,6 @@
 import Swal from "sweetalert2";
 import { api } from "../api";
+import { nowVN } from "../../utils/date";
 
 function generateId() {
   const now = new Date();
@@ -28,7 +29,7 @@ export async function saveBungCoQuanSinhDuc(form, kskcdTiepNhanId) {
       CO_QUAN_SINH_DUC_NGOAI: Number(form.cl_coQuanSinhDuc),
       EmployeeCode: "1",
       EmployeeCodeDoctor: "Nghĩa",
-      PostingDate: new Date().toISOString(),
+      PostingDate: nowVN(),
     };
     console.log("[saveBungCoQuanSinhDuc] payload:", payload);
     const res = await api.post("/add-update-bung-co-quang-sinh-duc", payload);
@@ -71,7 +72,7 @@ export async function saveDanhGiaDinhDuong(form, kskcdTiepNhanId) {
       THUA_CAN_BEO_PHI: form.child_thuaCan ? 1 : 0,
       EmployeeCode: "1",
       EmployeeCodeDoctor: "Nghĩa",
-      PostingDate: new Date().toISOString(),
+      PostingDate: nowVN(),
     };
     const res = await api.post("/add-update-danh-gia-dinh-duong", payload);
     if (res?.Code !== "ok") throw new Error(res?.Content || "Lỗi không xác định");
@@ -107,7 +108,7 @@ export async function saveCoXuongThanKinh(form, kskcdTiepNhanId) {
       QUAN_SAT_DANG_DI: Number(form.cl_quanSatDangDi),
       EmployeeCode: "1",
       EmployeeCodeDoctor: "Nghĩa",
-      PostingDate: new Date().toISOString(),
+      PostingDate: nowVN(),
     };
     const res = await api.post("/add-update-co-xuong-than-kinh", payload);
     if (res?.Code !== "ok") throw new Error(res?.Content || "Lỗi không xác định");

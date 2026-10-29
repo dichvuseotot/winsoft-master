@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 import { useAuth } from '../../../context/AuthContext.jsx'
+import { dateObjVN } from '../../../utils/date'
 import './Header.css'
 
 function useDarkMode() {
@@ -23,7 +24,7 @@ const PAGE_META = {
 }
 
 function useTodayStr() {
-  const now = new Date()
+  const now = dateObjVN()
   const days = ['Chủ nhật','Thứ 2','Thứ 3','Thứ 4','Thứ 5','Thứ 6','Thứ 7']
   return `${days[now.getDay()]}, ${now.getDate()}/${now.getMonth()+1}/${now.getFullYear()}`
 }
