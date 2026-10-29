@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
 
-export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [] }) {
+export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], ngheNghiepOptions = [] }) {
   const set = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
@@ -90,18 +90,12 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
           </FieldGroup>
           <div/>
           <FieldGroup label="Nghề nghiệp" required>
-            <select
-              style={inputStyle}
+            <SearchableSingleSelect
               value={form.ngheNghiep}
-              onChange={set("ngheNghiep")}
-            >
-              <option value="">Chọn hoặc tìm kiếm nghề nghiệp...</option>
-              <option value="Công nhân">Công nhân</option>
-              <option value="Nông dân">Nông dân</option>
-              <option value="Học sinh/Sinh viên">Học sinh/Sinh viên</option>
-              <option value="Hưu trí">Hưu trí</option>
-              <option value="Tự do">Tự do</option>
-            </select>
+              onChange={(val) => setForm((prev) => ({ ...prev, ngheNghiep: val }))}
+              options={ngheNghiepOptions.map((o) => ({ value: String(o.CareerID), label: o.CareerName }))}
+              placeholder="—Chọn nghề nghiệp—"
+            />
           </FieldGroup>
           <FieldGroup label="Nơi công tác hiện tại">
             <input

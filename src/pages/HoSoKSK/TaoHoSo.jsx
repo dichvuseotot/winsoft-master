@@ -5,7 +5,7 @@ import "./TaoHoSo.css";
 import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content } from "./MauAdult";
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
-import { saveThongTinHanhChinh, getThongTinHanhChinhById, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getThongTinHanhChinhList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List } from "../../services";
+import { saveThongTinHanhChinh, getThongTinHanhChinhById, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getThongTinHanhChinhList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -41,11 +41,6 @@ const TABS_TEEN = [
 ];
 
 
-const MAU_PHIEU_OPTIONS = [
-  { id: 1, label: "Mẫu phiếu KSK và KSK định kỳ cho người đủ 18 tuổi trở lên (v1)" },
-  { id: 2, label: "Mẫu phiếu KSK và KSK định kỳ cho người đủ 6 tuổi đến dưới 18 tuổi (v1)" },
-  { id: 3, label: "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi (v1)" },
-];
 
 
 function PatientPickerModal({ onClose, onSelect, mauPhieu, gioiTinhOptions = [] }) {
@@ -308,11 +303,10 @@ export default function TaoHoSo() {
   const [mauPhieu, setMauPhieu] = useState(() => {
     if (editMauPhieu) return Number(editMauPhieu);
     const saved = localStorage.getItem("taoHoSo_mauPhieu");
-    return saved ? Number(saved) : MAU_PHIEU_OPTIONS[0].id;
+    return saved ? Number(saved) : 3;
   });
   const [showPatientPicker, setShowPatientPicker] = useState(false);
   const [patientSearch, setPatientSearch] = useState("");
-  const [patientSelected, setPatientSelected] = useState(!!(editId || viewOnly));
   const [tiepNhanId, setTiepNhanId] = useState(editId || null);
   const [saving, setSaving] = useState(false);
   const [gioiTinhOptions, setGioiTinhOptions] = useState([]);
@@ -324,6 +318,8 @@ export default function TaoHoSo() {
   const [phuongXaOptions, setPhuongXaOptions] = useState([]);
   const [phanLoaiSucKhoeOptions, setPhanLoaiSucKhoeOptions] = useState([]);
   const [loaiHinhKCBOptions, setLoaiHinhKCBOptions] = useState([]);
+  const [mauPhieuOptions, setMauPhieuOptions] = useState([]);
+  const [ngheNghiepOptions, setNgheNghiepOptions] = useState([]);
   const sectionRefs = useRef([]);
   const tabBarRef = useRef(null);
   const isScrollingTo = useRef(false);
@@ -366,6 +362,8 @@ export default function TaoHoSo() {
     getTinhThanhList().then((data) => setTinhThanhOptions(data)).catch(() => {});
     getPhanLoaiSucKhoeList().then((data) => setPhanLoaiSucKhoeOptions(data)).catch(() => {});
     getLoaiHinhKCBList().then((data) => setLoaiHinhKCBOptions(data)).catch(() => {});
+    getLoaiMauKSKList().then((data) => setMauPhieuOptions(data)).catch(() => {});
+    getCareerList().then((data) => setNgheNghiepOptions(data)).catch(() => {});
   }, []);
 
   const loadIcd10Options = async (search, page = 1) => {
@@ -440,7 +438,7 @@ export default function TaoHoSo() {
     getPhuongXaList(form.tinhThanhPho).then((data) => setPhuongXaOptions(data)).catch(() => {});
   }, [form.tinhThanhPho]);
 
-  const isChild = mauPhieu === 3;
+  const isChild = mauPhieu === 1;
   const isTeen = mauPhieu === 2;
 
   const scrollToSection = (tabId) => {
@@ -597,9 +595,9 @@ export default function TaoHoSo() {
                 color: "var(--gray-800, #1f2937)",
               }}
             >
-              {MAU_PHIEU_OPTIONS.map((opt) => (
-                <option key={opt.id} value={opt.id}>
-                  {opt.label}
+              {mauPhieuOptions.map((opt) => (
+                <option key={opt.Id} value={opt.Id}>
+                  {opt.Name}
                 </option>
               ))}
             </select>
@@ -706,24 +704,23 @@ export default function TaoHoSo() {
               <button
                 key={tab.id}
                 data-tab={tab.id}
-                onClick={() => patientSelected || tab.id === 1 ? scrollToSection(tab.id) : null}
+                onClick={() => scrollToSection(tab.id)}
                 style={{
                   flexShrink: 0,
                   height: "34px",
                   padding: "0 .875rem",
                   borderRadius: 99,
                   border: "none",
-                  cursor: tab.id === 1 || patientSelected ? "pointer" : "not-allowed",
+                  cursor: "pointer",
                   fontFamily: "var(--font-body)",
                   fontSize: ".8rem",
                   fontWeight: isActive ? 700 : 500,
                   background: isActive ? "#2563eb" : "var(--gray-100, #f3f4f6)",
-                  color: isActive ? "#fff" : tab.id > 1 && !patientSelected ? "var(--gray-300)" : "var(--gray-700, #374151)",
+                  color: isActive ? "#fff" : "var(--gray-700, #374151)",
                   display: "flex",
                   alignItems: "center",
                   gap: ".3rem",
                   transition: "background .15s, color .15s",
-                  opacity: tab.id > 1 && !patientSelected ? 0.45 : 1,
                 }}
               >
                 {tab.icon && <i className={tab.icon} style={{ fontSize: ".85rem" }} />}
@@ -768,12 +765,9 @@ export default function TaoHoSo() {
             ? <Tab1ChildContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} moiQuanHeOptions={moiQuanHeOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} loadIcd10={loadIcd10Options} />
             : isTeen
             ? <Tab1TeenContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} />
-            : <Tab1Content form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} />
+            : <Tab1Content form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} ngheNghiepOptions={ngheNghiepOptions} />
           }
         </div>
-        <div
-          style={!patientSelected ? { pointerEvents: "none", opacity: 0.4, filter: "grayscale(40%)", userSelect: "none" } : undefined}
-        >
         <div ref={(el) => (sectionRefs.current[1] = el)}>
           {isTeen
             ? <Tab2TeenContent form={form} setForm={setForm} loaiHinhKCBOptions={loaiHinhKCBOptions} />
@@ -819,7 +813,6 @@ export default function TaoHoSo() {
             <Tab8ChildContent form={form} setForm={setForm} />
           </div>
         )}
-        </div>
       </div>
 
       {showPatientPicker && (
