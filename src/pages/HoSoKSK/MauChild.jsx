@@ -1,7 +1,8 @@
-import React, { useState } from "react";
-import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, GD_ICD10_OPTIONS, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, PHAN_LOAI_LS, PHAN_LOAI_SK } from "./formShared";
+import React, { useEffect, useState } from "react";
+import { getBungCoQuanSinhDuc, saveBungCoQuanSinhDuc, getCoXuongThanKinh, saveCoXuongThanKinh, getDanhGiaDinhDuong, saveDanhGiaDinhDuong, DG_VONG_DAU_REVERSE } from "../../services";
+import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
 
-export function Tab1ChildContent({ form, setForm, gioiTinhOptions = [], moiQuanHeOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [] }) {
+export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], moiQuanHeOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], loadIcd10 }) {
   const set = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const radioSet = (key, val) =>
@@ -140,12 +141,12 @@ export function Tab1ChildContent({ form, setForm, gioiTinhOptions = [], moiQuanH
           </FieldGroup>
 
           <FieldGroup label="Loại hình khám bệnh, chữa bệnh">
-            <select style={inputStyle} value={form.loaiHinhKham} onChange={set("loaiHinhKham")}>
-              <option value="">Chọn loại hình khám bệnh, chữa bệnh</option>
-              <option value="Khám ngoại trú">Khám ngoại trú</option>
-              <option value="Khám tại nhà">Khám tại nhà</option>
-              <option value="Khám tập trung">Khám tập trung</option>
-            </select>
+            <SearchableSingleSelect
+              options={loaiHinhKCBOptions.map((o) => ({ value: o.Id, label: o.TenLoaiHinhKCB }))}
+              value={form.loaiHinhKham}
+              onChange={(val) => setForm((p) => ({ ...p, loaiHinhKham: val }))}
+              placeholder="—Chọn loại hình—"
+            />
           </FieldGroup>
         </Grid3>
 
@@ -170,10 +171,15 @@ export function Tab1ChildContent({ form, setForm, gioiTinhOptions = [], moiQuanH
                   Có
                 </label>
               </div>
-              <select style={inputStyle} value={form[icdKey] || ""} onChange={set(icdKey)}>
-                <option value="">Chọn DM ICD10</option>
-                {GD_ICD10_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
-              </select>
+              {form[key] === "Có" && (
+                <SearchableSingleSelect
+                  options={[]}
+                  loadOptions={loadIcd10}
+                  value={form[icdKey] || ""}
+                  onChange={(val) => setForm((prev) => ({ ...prev, [icdKey]: val }))}
+                  placeholder="Chọn ICD10..."
+                />
+              )}
             </div>
           ))}
 
@@ -266,9 +272,32 @@ export function Tab3ChildContent({ form, setForm }) {
   );
 }
 
-export function Tab4ChildContent({ form, setForm }) {
+export function Tab4ChildContent({ form, setForm, tiepNhanId }) {
+  const [saving, setSaving] = useState(false);
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const checkSet = (key) => setForm((prev) => ({ ...prev, [key]: !prev[key] }));
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getDanhGiaDinhDuong(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        child_chieuDai: d.CHIEU_DAI ?? prev.child_chieuDai,
+        child_chieuDaiSD: d.CHIEU_DAI_TUOI_SD ?? prev.child_chieuDaiSD,
+        child_canNang: d.CAN_NANG ?? prev.child_canNang,
+        child_canNangSD: d.CAN_NANG_TUOI_SD ?? prev.child_canNangSD,
+        child_vongDau: d.VONG_DAU ?? prev.child_vongDau,
+        child_danhGiaVongDau: DG_VONG_DAU_REVERSE[d.DG_VONG_DAU] ?? prev.child_danhGiaVongDau,
+        child_chuViVongCanhTay: d.CHU_VI_VONG_CANH_TAY ?? prev.child_chuViVongCanhTay,
+        child_phuDinhDuong: !!d.PHU_DINH_DUONG,
+        child_thieuMau: !!d.DGDD_THIEU_MAU,
+        child_coiXuong: !!d.DGDD_COI_XUONG,
+        child_suyDinhDuong: !!d.SUY_DINH_DUONG,
+        child_thuaCan: !!d.THUA_CAN_BEO_PHI,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
 
   const TINH_TRANG = [
     { key: "child_phuDinhDuong", label: "Phù dinh dưỡng" },
@@ -326,6 +355,19 @@ export function Tab4ChildContent({ form, setForm }) {
             <input type="checkbox" checked={!!form[item.key]} onChange={() => checkSet(item.key)} style={{ width: 16, height: 16, cursor: "pointer" }} />
           </div>
         ))}
+      </div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: ".75rem" }}>
+        <button
+          disabled={saving || !tiepNhanId}
+          onClick={async () => {
+            setSaving(true);
+            try { await saveDanhGiaDinhDuong(form, tiepNhanId); }
+            finally { setSaving(false); }
+          }}
+          style={{ padding: ".45rem 1.1rem", borderRadius: "var(--radius-md)", border: "none", background: saving || !tiepNhanId ? "var(--gray-300)" : "var(--primary)", color: "#fff", fontWeight: 600, fontSize: ".85rem", cursor: saving || !tiepNhanId ? "not-allowed" : "pointer" }}
+        >
+          {saving ? "Đang lưu…" : "Lưu mục 4"}
+        </button>
       </div>
     </Card>
   );
@@ -405,14 +447,51 @@ export function Tab6ChildContent({ form, setForm }) {
   );
 }
 
-export function Tab7ChildContent({ form, setForm }) {
+export function Tab7ChildContent({ form, setForm, tiepNhanId }) {
+  const [savingBung, setSavingBung] = useState(false);
+  const [savingCo, setSavingCo] = useState(false);
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getBungCoQuanSinhDuc(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        cl_hinhDangBung: d.HINH_DANG_BUNG_RON ?? prev.cl_hinhDangBung,
+        cl_ganLachTo: d.GAN_LACH_TO ?? prev.cl_ganLachTo,
+        cl_khoiBatThuongBung: d.KHOI_BAT_THUONG ?? prev.cl_khoiBatThuongBung,
+        cl_loHauMon: d.LO_HAU_MON ?? prev.cl_loHauMon,
+        cl_coQuanSinhDuc: d.CO_QUAN_SINH_DUC_NGOAI ?? prev.cl_coQuanSinhDuc,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getCoXuongThanKinh(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        cl_vanDongKhongDoiXung: d.VAN_DONG_KHONG_DOI_XUNG ?? prev.cl_vanDongKhongDoiXung,
+        cl_phanXaBu: d.PHAN_XA_BU ?? prev.cl_phanXaBu,
+        cl_phanXaNam: d.PHAN_XA_NAM ?? prev.cl_phanXaNam,
+        cl_phanXaMoro: d.PHAN_XA_MORO ?? prev.cl_phanXaMoro,
+        cl_truongLucCo: d.TRUONG_LUC_CO ?? prev.cl_truongLucCo,
+        cl_khopHang: d.KHOP_HANG ?? prev.cl_khopHang,
+        cl_phanXaCo: d.PHAN_XA_CO ?? prev.cl_phanXaCo,
+        cl_kiemTraLung: d.KIEM_TRA_LUNG_COT_SONG ?? prev.cl_kiemTraLung,
+        cl_khamTuChi: d.TU_CHI_KHOP ?? prev.cl_khamTuChi,
+        cl_quanSatDangDi: d.QUAN_SAT_DANG_DI ?? prev.cl_quanSatDangDi,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
   const Sel = ({ k, label }) => (
     <FieldGroup label={label}>
-      <select style={inputStyle} value={form[k] || ""} onChange={set(k)}>
+      <select style={inputStyle} value={form[k] ?? ""} onChange={set(k)}>
         <option value="">Chọn kết quả</option>
-        <option value="Bình thường">Bình thường</option>
-        <option value="Bất thường">Bất thường</option>
+        <option value={1}>Bình thường</option>
+        <option value={0}>Không bình thường</option>
       </select>
     </FieldGroup>
   );
@@ -502,6 +581,22 @@ export function Tab7ChildContent({ form, setForm }) {
         <Sel k="cl_coQuanSinhDuc" label="Cơ quan sinh dục ngoài" />
         <div />
       </Grid3>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: ".75rem" }}>
+        <button
+          disabled={savingBung || !tiepNhanId}
+          onClick={async () => {
+            setSavingBung(true);
+            try {
+              await saveBungCoQuanSinhDuc(form, tiepNhanId);
+            } finally {
+              setSavingBung(false);
+            }
+          }}
+          style={{ padding: ".45rem 1.1rem", borderRadius: "var(--radius-md)", border: "none", background: savingBung || !tiepNhanId ? "var(--gray-300)" : "var(--primary)", color: "#fff", fontWeight: 600, fontSize: ".85rem", cursor: savingBung || !tiepNhanId ? "not-allowed" : "pointer" }}
+        >
+          {savingBung ? "Đang lưu…" : "Lưu mục 5"}
+        </button>
+      </div>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>6. Cơ xương và thần kinh</div>
       <Grid3>
@@ -517,6 +612,22 @@ export function Tab7ChildContent({ form, setForm }) {
         <Sel k="cl_quanSatDangDi" label="Quan sát dáng đi" />
         <div /><div />
       </Grid3>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: ".75rem" }}>
+        <button
+          disabled={savingCo || !tiepNhanId}
+          onClick={async () => {
+            setSavingCo(true);
+            try {
+              await saveCoXuongThanKinh(form, tiepNhanId);
+            } finally {
+              setSavingCo(false);
+            }
+          }}
+          style={{ padding: ".45rem 1.1rem", borderRadius: "var(--radius-md)", border: "none", background: savingCo || !tiepNhanId ? "var(--gray-300)" : "var(--primary)", color: "#fff", fontWeight: 600, fontSize: ".85rem", cursor: savingCo || !tiepNhanId ? "not-allowed" : "pointer" }}
+        >
+          {savingCo ? "Đang lưu…" : "Lưu mục 6"}
+        </button>
+      </div>
     </Card>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, GD_ICD10_OPTIONS, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, PHAN_LOAI_LS, PHAN_LOAI_SK } from "./formShared";
+import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
 
-export function Tab1TeenContent({ form, setForm, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [] }) {
+export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [] }) {
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   return (
@@ -118,7 +118,7 @@ export function Tab1TeenContent({ form, setForm, gioiTinhOptions = [], danTocOpt
   );
 }
 
-export function Tab2TeenContent({ form, setForm }) {
+export function Tab2TeenContent({ form, setForm, loaiHinhKCBOptions = [] }) {
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   return (
@@ -143,12 +143,12 @@ export function Tab2TeenContent({ form, setForm }) {
           <input style={inputStyle} type="time" value={form.gioKham} onChange={set("gioKham")} />
         </FieldGroup>
         <FieldGroup label="Loại hình khám bệnh" required>
-          <select style={inputStyle} value={form.loaiHinhKham} onChange={set("loaiHinhKham")}>
-            <option value="">—Chọn—</option>
-            <option value="Khám ngoại trú">Khám ngoại trú</option>
-            <option value="Khám tại nhà">Khám tại nhà</option>
-            <option value="Khám tập trung">Khám tập trung</option>
-          </select>
+          <SearchableSingleSelect
+            options={loaiHinhKCBOptions.map((o) => ({ value: o.Id, label: o.TenLoaiHinhKCB }))}
+            value={form.loaiHinhKham}
+            onChange={(val) => setForm((p) => ({ ...p, loaiHinhKham: val }))}
+            placeholder="—Chọn loại hình—"
+          />
         </FieldGroup>
       </div>
     </Card>
@@ -164,7 +164,7 @@ export const TEEN_VACCINES = [
   { id: "viemGanB", label: "Viêm gan B" },
 ];
 
-export function Tab3TeenContent({ form, setForm }) {
+export function Tab3TeenContent({ form, setForm, loadIcd10 }) {
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const radioSet = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
 
@@ -216,7 +216,7 @@ export function Tab3TeenContent({ form, setForm }) {
           {(form.teen_gdBenhBamSinh || "Không") === "Có" && (
             <div style={{ marginTop: ".75rem" }}>
               <div style={{ fontSize: ".8rem", color: "var(--gray-500)", marginBottom: ".35rem" }}>Tiền sử bệnh, tật gia đình</div>
-              <SearchableSelect options={GD_ICD10_OPTIONS} value={form.teen_gdICD10 || []} onChange={(val) => setForm((prev) => ({ ...prev, teen_gdICD10: val }))} />
+              <SearchableSelect loadOptions={loadIcd10} value={form.teen_gdICD10 || []} onChange={(val) => setForm((prev) => ({ ...prev, teen_gdICD10: val }))} />
             </div>
           )}
         </div>
@@ -299,7 +299,7 @@ export function Tab3TeenContent({ form, setForm }) {
           {(form.teen_benhBamSinhManTinh || "Không") === "Có" && (
             <div style={{ marginTop: ".75rem" }}>
               <div style={{ fontSize: ".8rem", color: "var(--gray-500)", marginBottom: ".35rem" }}>Tên bệnh (Có thể chọn nhiều mẫu)</div>
-              <SearchableSelect options={GD_ICD10_OPTIONS} value={form.teen_benhBamSinhICD10 || []} onChange={(val) => setForm((prev) => ({ ...prev, teen_benhBamSinhICD10: val }))} />
+              <SearchableSelect loadOptions={loadIcd10} value={form.teen_benhBamSinhICD10 || []} onChange={(val) => setForm((prev) => ({ ...prev, teen_benhBamSinhICD10: val }))} />
             </div>
           )}
         </div>
@@ -324,12 +324,15 @@ export function Tab3TeenContent({ form, setForm }) {
   );
 }
 
-export function Tab5TeenContent({ form, setForm }) {
+export function Tab5TeenContent({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
   const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
 
   const plSelect = (key) => (
-    <select style={inputStyle} value={form[key] || "Loại II (Khỏe)"} onChange={set(key)}>
-      {PHAN_LOAI_LS.map((o) => <option key={o}>{o}</option>)}
+    <select style={inputStyle} value={form[key] || ""} onChange={set(key)}>
+      <option value="">—Chọn—</option>
+      {phanLoaiSucKhoeOptions.map((o) => (
+        <option key={o.Id} value={o.Id}>{o.TenPhanLoaiSucKhoe}</option>
+      ))}
     </select>
   );
 

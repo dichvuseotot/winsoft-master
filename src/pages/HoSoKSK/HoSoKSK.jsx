@@ -35,53 +35,69 @@ export default function HoSoKSK() {
   const [fDen,        setFDen]      = useState(TODAY)
   const [fMauPhieu,   setFMauPhieu] = useState('')
   const [quickFilter, setQuickFilter] = useState('')
-  const [perPage,     setPerPage]   = useState(10)
+  const [perPage,     setPerPage]   = useState(20)
+  const [page,        setPage]      = useState(1)
   const [selected,    setSelected]  = useState([])
   const [data,        setData]      = useState([])
+  const [total,       setTotal]     = useState(0)
+  const [totalPages,  setTotalPages]= useState(1)
   const [loading,     setLoading]   = useState(false)
+  const [applied,     setApplied]   = useState({ fromDate: TODAY, toDate: TODAY, mauPhieu: undefined, search: '' })
 
   const fetchData = async (params) => {
     setLoading(true)
     try {
-      const result = await getThongTinHanhChinhList(params)
-      setData(result)
-    } catch {
-      setData([])
+      const res = await getThongTinHanhChinhList(params)
+      setData(res.items)
+      setTotal(res.total)
+      setTotalPages(res.totalPages)
+    } catch (e) {
+      console.error(e)
     } finally {
       setLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchData({ fromDate: TODAY, toDate: TODAY })
+    fetchData({ fromDate: TODAY, toDate: TODAY, page: 1, pageSize: perPage })
   }, [])
 
   const handleFilter = () => {
-    fetchData({ fromDate: fTu, toDate: fDen, mauPhieu: fMauPhieu || undefined })
+    const params = { fromDate: fTu, toDate: fDen, mauPhieu: fMauPhieu || undefined, search: fHoTen || fCCCD || '', page: 1, pageSize: perPage }
+    setApplied({ fromDate: fTu, toDate: fDen, mauPhieu: fMauPhieu || undefined, search: fHoTen || fCCCD || '' })
+    setPage(1)
+    fetchData(params)
   }
 
   const handleReset = () => {
-    setFHoTen(''); setFCCCD(''); setFTu(TODAY); setFDen(TODAY); setFMauPhieu(''); setQuickFilter('')
-    fetchData({ fromDate: TODAY, toDate: TODAY })
+    setFHoTen(''); setFCCCD(''); setFTu(TODAY); setFDen(TODAY); setFMauPhieu(''); setQuickFilter(''); setPage(1)
+    const params = { fromDate: TODAY, toDate: TODAY, page: 1, pageSize: perPage }
+    setApplied({ fromDate: TODAY, toDate: TODAY, mauPhieu: undefined, search: '' })
+    fetchData(params)
   }
 
+  const goToPage = (p) => {
+    setPage(p)
+    fetchData({ ...applied, page: p, pageSize: perPage })
+  }
+
+  const toTrangThai = (r) => r.IsSynchronize === 1 ? 'da-dong-bo' : 'chua-dong-bo'
+
   const filtered = data.filter(r => {
-    if (quickFilter && r.trangThai !== quickFilter) return false
-    if (fHoTen && !(r.HO_TEN || '').toLowerCase().includes(fHoTen.toLowerCase())) return false
-    if (fCCCD  && !(r.SO_CCCD || '').includes(fCCCD)) return false
+    if (quickFilter && toTrangThai(r) !== quickFilter) return false
     return true
   })
 
-  const displayed  = filtered.slice(0, perPage)
+  const displayed  = filtered
   const allChecked = displayed.length > 0 && displayed.every(r => selected.includes(r.Id))
   const toggleAll  = () => setSelected(allChecked ? [] : displayed.map(r => r.Id))
   const toggleOne  = (id) => setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])
 
   const counts = {
-    'da-dong-bo':   data.filter(r => r.trangThai === 'da-dong-bo').length,
-    'chua-dong-bo': data.filter(r => r.trangThai === 'chua-dong-bo').length,
-    'dong-bo-loi':  data.filter(r => r.trangThai === 'dong-bo-loi').length,
-    'dang-dong-bo': data.filter(r => r.trangThai === 'dang-dong-bo').length,
+    'da-dong-bo':   data.filter(r => toTrangThai(r) === 'da-dong-bo').length,
+    'chua-dong-bo': data.filter(r => toTrangThai(r) === 'chua-dong-bo').length,
+    'dong-bo-loi':  0,
+    'dang-dong-bo': 0,
   }
 
   const selectStyle = { width: '100%', height: 38, borderRadius: 'var(--radius-md)', border: '1.5px solid var(--gray-200)', padding: '0 .75rem', fontSize: '.85rem', fontFamily: 'var(--font-body)', color: 'var(--gray-700)', background: 'var(--gray-100)', cursor: 'pointer', outline: 'none' }
@@ -177,9 +193,9 @@ export default function HoSoKSK() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
             <span style={{ fontSize: '.83rem', color: 'var(--gray-600)' }}>Mỗi trang:</span>
-            <select value={perPage} onChange={e => setPerPage(Number(e.target.value))}
+            <select value={perPage} onChange={e => { const n = Number(e.target.value); setPerPage(n); setPage(1); fetchData({ ...applied, page: 1, pageSize: n }) }}
               style={{ height: 32, borderRadius: 'var(--radius-sm)', border: '1.5px solid var(--gray-200)', padding: '0 .5rem', fontSize: '.83rem', fontFamily: 'var(--font-body)', color: 'var(--gray-700)', background: 'var(--gray-100)', cursor: 'pointer', outline: 'none' }}>
-              {[10, 25, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
+              {[10, 20, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
           <button style={{ height: 34, padding: '0 .875rem', borderRadius: 'var(--radius-sm)', border: 'none', background: '#2563eb', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.35rem' }}>
@@ -207,6 +223,7 @@ export default function HoSoKSK() {
                   { label: 'Ngày khám', sort: true },
                   { label: 'Trạng thái liên thông', sort: true },
                   { label: 'Ghi chú' },
+                  { label: 'Ngày tạo', sort: true },
                 ].map((h, i) => (
                   <th key={i} style={{ fontSize: '.72rem', fontWeight: 700, color: 'var(--gray-500)', letterSpacing: '.06em', textTransform: 'uppercase', padding: '.6rem .875rem', background: 'var(--gray-50)', whiteSpace: 'nowrap', width: h.w, textAlign: h.center ? 'center' : 'left' }}>
                     {h.label}{h.sort && <i className="bi bi-chevron-expand ms-1" style={{ opacity: .4 }} />}
@@ -216,29 +233,30 @@ export default function HoSoKSK() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--gray-400)', fontSize: '.85rem' }}>Đang tải...</td></tr>
+                <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--gray-400)', fontSize: '.85rem' }}>Đang tải...</td></tr>
               ) : displayed.length === 0 ? (
-                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--gray-400)', fontSize: '.85rem' }}>Không tìm thấy kết quả</td></tr>
+                <tr><td colSpan={9} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--gray-400)', fontSize: '.85rem' }}>Không tìm thấy kết quả</td></tr>
               ) : displayed.map((r) => {
-                const st = STATUS_LABEL[r.trangThai] || STATUS_LABEL['chua-dong-bo']
+                const st = STATUS_LABEL[toTrangThai(r)]
                 const checked = selected.includes(r.Id)
                 return (
                   <tr key={r.Id} className={checked ? 'row-checked' : ''} style={{ background: checked ? 'var(--primary-bg)' : 'transparent', borderBottom: '1px solid var(--gray-100)' }}>
                     <td style={{ padding: '.6rem .875rem', textAlign: 'center' }}>
-                      <button title="Xem chi tiết" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontSize: '1rem', padding: '0 .2rem' }}><i className="bi bi-eye" /></button>
-                      <button title="Chỉnh sửa" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-500)', fontSize: '1rem', padding: '0 .2rem' }}><i className="bi bi-pencil" /></button>
+                      <button title="Xem chi tiết" onClick={() => navigate(`/ho-so-ksk/tao-moi?id=${r.Id}&mauPhieu=${r.td_loaimau_kskid}&mode=view`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontSize: '1rem', padding: '0 .2rem' }}><i className="bi bi-eye" /></button>
+                      <button title="Chỉnh sửa" onClick={() => navigate(`/ho-so-ksk/tao-moi?id=${r.Id}&mauPhieu=${r.td_loaimau_kskid}`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-500)', fontSize: '1rem', padding: '0 .2rem' }}><i className="bi bi-pencil" /></button>
                     </td>
                     <td style={{ padding: '.6rem .875rem', textAlign: 'center' }}>
                       <input type="checkbox" checked={checked} onChange={() => toggleOne(r.Id)} style={{ cursor: 'pointer' }} />
                     </td>
                     <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', fontWeight: 600, color: 'var(--gray-800)' }}>{r.HO_TEN}</td>
                     <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-600)', fontFamily: 'monospace' }}>{r.SO_CCCD}</td>
-                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-700)' }}>{MAU_PHIEU_LABEL[r.KSKCD_DM_TypeId] ?? r.KSKCD_DM_TypeId}</td>
+                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-700)' }}>{MAU_PHIEU_LABEL[r.td_loaimau_kskid] ?? r.td_loaimau_kskid}</td>
                     <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-600)', whiteSpace: 'nowrap' }}>{r.NGAY_VAO}</td>
                     <td style={{ padding: '.6rem .875rem' }}>
                       <span style={{ background: st.bg, color: st.color, fontSize: '.75rem', fontWeight: 700, padding: '.2em .65em', borderRadius: 99, whiteSpace: 'nowrap' }}>{st.label}</span>
                     </td>
                     <td style={{ padding: '.6rem .875rem', fontSize: '.82rem', color: 'var(--gray-400)' }}>—</td>
+                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-600)', whiteSpace: 'nowrap' }}>{r.PostingDate ? new Date(r.PostingDate).toLocaleString('vi-VN') : '—'}</td>
                   </tr>
                 )
               })}
@@ -246,9 +264,34 @@ export default function HoSoKSK() {
           </table>
         </div>
 
-        {filtered.length > 0 && (
-          <div style={{ marginTop: '.875rem', fontSize: '.78rem', color: 'var(--gray-400)', textAlign: 'right' }}>
-            Hiển thị {displayed.length} / {filtered.length} kết quả
+        {total > 0 && (
+          <div style={{ marginTop: '.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '.5rem' }}>
+            <div style={{ fontSize: '.78rem', color: 'var(--gray-400)' }}>
+              Trang {page} / {totalPages} — Tổng {total} kết quả
+            </div>
+            <div style={{ display: 'flex', gap: '.35rem' }}>
+              <button
+                disabled={page <= 1}
+                onClick={() => goToPage(page - 1)}
+                style={{ height: 30, padding: '0 .75rem', borderRadius: 'var(--radius-sm)', border: '1.5px solid var(--gray-200)', background: 'var(--gray-100)', color: page <= 1 ? 'var(--gray-300)' : 'var(--gray-700)', fontSize: '.8rem', cursor: page <= 1 ? 'not-allowed' : 'pointer' }}
+              >‹ Trước</button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === totalPages || Math.abs(p - page) <= 1)
+                .reduce((acc, p, i, arr) => {
+                  if (i > 0 && p - arr[i - 1] > 1) acc.push('...')
+                  acc.push(p)
+                  return acc
+                }, [])
+                .map((p, i) => p === '...'
+                  ? <span key={`e${i}`} style={{ padding: '0 .3rem', fontSize: '.8rem', color: 'var(--gray-400)' }}>…</span>
+                  : <button key={p} onClick={() => goToPage(p)} style={{ height: 30, minWidth: 30, padding: '0 .5rem', borderRadius: 'var(--radius-sm)', border: '1.5px solid', borderColor: p === page ? '#2563eb' : 'var(--gray-200)', background: p === page ? '#2563eb' : 'var(--gray-100)', color: p === page ? '#fff' : 'var(--gray-700)', fontSize: '.8rem', fontWeight: p === page ? 700 : 400, cursor: 'pointer' }}>{p}</button>
+                )}
+              <button
+                disabled={page >= totalPages}
+                onClick={() => goToPage(page + 1)}
+                style={{ height: 30, padding: '0 .75rem', borderRadius: 'var(--radius-sm)', border: '1.5px solid var(--gray-200)', background: 'var(--gray-100)', color: page >= totalPages ? 'var(--gray-300)' : 'var(--gray-700)', fontSize: '.8rem', cursor: page >= totalPages ? 'not-allowed' : 'pointer' }}
+              >Sau ›</button>
+            </div>
           </div>
         )}
       </div>

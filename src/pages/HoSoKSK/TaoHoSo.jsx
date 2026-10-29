@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "react-router";
 import { useNavigate } from "react-router";
 import "./TaoHoSo.css";
 import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content } from "./MauAdult";
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
-import { saveThongTinHanhChinh, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList } from "../../services";
+import { saveThongTinHanhChinh, getThongTinHanhChinhById, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getThongTinHanhChinhList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List } from "../../services";
 
 const TODAY = new Date().toISOString().slice(0, 10);
 
@@ -39,41 +40,6 @@ const TABS_TEEN = [
   { id: 7, label: "7. Kết luận" },
 ];
 
-const SAMPLE_PATIENTS = [
-  {
-    soDinhDanh: "079201001234",
-    hoTen: "Nguyễn Văn An",
-    gioiTinh: "Nam",
-    ngaySinh: "1985-03-15",
-    ngheNghiep: "01 — Công nhân",
-    dienThoai: "0901234567",
-    tinhThanhPho: "79",
-    phuongXa: "Phường Nhà Bè",
-    danToc: "01",
-  },
-  {
-    soDinhDanh: "079201005678",
-    hoTen: "Trần Thị Bình",
-    gioiTinh: "Nữ",
-    ngaySinh: "1992-07-22",
-    ngheNghiep: "05 — Viên chức",
-    dienThoai: "0912345678",
-    tinhThanhPho: "79",
-    phuongXa: "Phường Nhà Bè",
-    danToc: "01",
-  },
-  {
-    soDinhDanh: "079201009012",
-    hoTen: "Lê Hoàng Cường",
-    gioiTinh: "Nam",
-    ngaySinh: "1978-11-05",
-    ngheNghiep: "02 — Nông dân",
-    dienThoai: "0923456789",
-    tinhThanhPho: "79",
-    phuongXa: "Phường Nhà Bè",
-    danToc: "01",
-  },
-];
 
 const MAU_PHIEU_OPTIONS = [
   { id: 1, label: "Mẫu phiếu KSK và KSK định kỳ cho người đủ 18 tuổi trở lên (v1)" },
@@ -81,12 +47,43 @@ const MAU_PHIEU_OPTIONS = [
   { id: 3, label: "Mẫu giấy KSK và KSK định kỳ cho Trẻ em dưới 06 tuổi (v1)" },
 ];
 
-function PatientPickerModal({ onClose, onSelect }) {
+
+function PatientPickerModal({ onClose, onSelect, mauPhieu, gioiTinhOptions = [] }) {
   const [q, setQ] = useState("");
-  const filtered = SAMPLE_PATIENTS.filter(
+  const [patients, setPatients] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [total, setTotal] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
+  const today = new Date().toISOString().slice(0, 10);
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  const [fromDate, setFromDate] = useState(sevenDaysAgo);
+  const [toDate, setToDate] = useState(today);
+
+  const thStyle = { padding: ".5rem 1rem", textAlign: "left", fontWeight: 600, color: "var(--gray-500)", whiteSpace: "nowrap", borderBottom: "2px solid var(--gray-200)", fontSize: ".75rem", textTransform: "uppercase", letterSpacing: ".04em", background: "var(--gray-50)" };
+  const tdStyle = { padding: ".6rem 1rem", borderBottom: "1px solid var(--gray-100)", color: "var(--gray-600)", whiteSpace: "nowrap", fontSize: ".83rem" };
+
+  const fetchPatients = (fd, td, p) => {
+    setLoading(true);
+    getThongTinHanhChinhList({ fromDate: fd, toDate: td, mauPhieu, page: p, pageSize: PAGE_SIZE })
+      .then(({ items, total: t, totalPages: tp }) => {
+        setPatients(items);
+        setTotal(t);
+        setTotalPages(tp);
+      })
+      .catch(() => setPatients([]))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchPatients(fromDate, toDate, 1);
+  }, [mauPhieu]);
+
+  const filtered = patients.filter(
     (p) =>
-      p.hoTen.toLowerCase().includes(q.toLowerCase()) ||
-      p.soDinhDanh.includes(q),
+      (p.HO_TEN || "").toLowerCase().includes(q.toLowerCase()) ||
+      (p.SO_CCCD || "").includes(q),
   );
   return (
     <div
@@ -152,6 +149,28 @@ function PatientPickerModal({ onClose, onSelect }) {
             ×
           </button>
         </div>
+        <div style={{ padding: ".625rem 1.5rem", borderBottom: "1px solid var(--gray-200)", display: "flex", alignItems: "center", gap: ".5rem", flexWrap: "wrap" }}>
+          <span style={{ fontSize: ".8rem", color: "var(--gray-500)", whiteSpace: "nowrap" }}>Từ ngày</span>
+          <input
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            style={{ height: 32, border: "1px solid var(--gray-200)", borderRadius: 6, padding: "0 .5rem", fontSize: ".8rem", background: "#fff", color: "var(--gray-800)", outline: "none" }}
+          />
+          <span style={{ fontSize: ".8rem", color: "var(--gray-500)", whiteSpace: "nowrap" }}>đến</span>
+          <input
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            style={{ height: 32, border: "1px solid var(--gray-200)", borderRadius: 6, padding: "0 .5rem", fontSize: ".8rem", background: "#fff", color: "var(--gray-800)", outline: "none" }}
+          />
+          <button
+            onClick={() => { setPage(1); fetchPatients(fromDate, toDate, 1); }}
+            style={{ height: 32, padding: "0 .875rem", background: "var(--primary)", color: "#fff", border: "none", borderRadius: 6, fontSize: ".8rem", fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}
+          >
+            Tìm
+          </button>
+        </div>
         <div
           style={{
             padding: ".75rem 1.5rem",
@@ -192,93 +211,88 @@ function PatientPickerModal({ onClose, onSelect }) {
             />
           </div>
         </div>
-        <div style={{ overflowY: "auto", flex: 1 }}>
-          {filtered.length === 0 ? (
-            <div
-              style={{
-                padding: "2rem",
-                textAlign: "center",
-                color: "var(--gray-400)",
-                fontSize: ".875rem",
-              }}
-            >
+        <div style={{ overflow: "auto", flex: 1, padding: "0 1rem 1rem" }}>
+          {loading ? (
+            <div style={{ padding: "3rem", textAlign: "center", color: "var(--gray-400)", fontSize: ".875rem" }}>
+              <i className="bi bi-arrow-repeat" style={{ fontSize: "1.4rem", display: "block", marginBottom: ".5rem", opacity: .5 }} />
+              Đang tải...
+            </div>
+          ) : filtered.length === 0 ? (
+            <div style={{ padding: "3rem", textAlign: "center", color: "var(--gray-400)", fontSize: ".875rem" }}>
+              <i className="bi bi-inbox" style={{ fontSize: "1.6rem", display: "block", marginBottom: ".5rem", opacity: .4 }} />
               Không tìm thấy bệnh nhân
             </div>
           ) : (
-            filtered.map((p, i) => (
-              <div
-                key={i}
-                onClick={() => {
-                  onSelect(p);
-                  onClose();
-                }}
-                style={{
-                  padding: ".875rem 1.5rem",
-                  cursor: "pointer",
-                  borderBottom: "1px solid var(--gray-100)",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1rem",
-                  transition: "background .12s",
-                }}
-                onMouseEnter={(e) =>
-                  (e.currentTarget.style.background = "var(--primary-bg)")
-                }
-                onMouseLeave={(e) =>
-                  (e.currentTarget.style.background = "transparent")
-                }
-              >
-                <div
-                  style={{
-                    width: 38,
-                    height: 38,
-                    borderRadius: "50%",
-                    background:
-                      "linear-gradient(135deg, var(--primary), var(--primary-deep))",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: ".85rem",
-                    flexShrink: 0,
-                  }}
-                >
-                  {p.hoTen.split(" ").pop()[0]}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div
-                    style={{
-                      fontWeight: 600,
-                      fontSize: ".9rem",
-                      color: "var(--gray-900)",
-                    }}
-                  >
-                    {p.hoTen}
-                  </div>
-                  <div
-                    style={{
-                      fontSize: ".78rem",
-                      color: "var(--gray-500)",
-                      marginTop: 2,
-                    }}
-                  >
-                    {p.gioiTinh} · {p.ngaySinh} · CCCD: {p.soDinhDanh}
-                  </div>
-                </div>
-                <div
-                  style={{
-                    fontSize: ".78rem",
-                    color: "var(--gray-400)",
-                    flexShrink: 0,
-                  }}
-                >
-                  {p.ngheNghiep.split("—")[1]?.trim()}
-                </div>
-              </div>
-            ))
+            <div style={{ borderRadius: 10, border: "1px solid var(--gray-200)", overflow: "auto", marginTop: ".75rem" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 620 }}>
+                <thead>
+                  <tr>
+                    <th style={thStyle}>#</th>
+                    <th style={thStyle}>ID</th>
+                    <th style={thStyle}>Họ tên</th>
+                    <th style={thStyle}>Giới tính</th>
+                    <th style={thStyle}>Ngày sinh</th>
+                    <th style={thStyle}>Số CCCD</th>
+                    <th style={thStyle}>Thời gian tạo</th>
+                    <th style={thStyle}>Lý do khám</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((p, i) => (
+                    <tr
+                      key={p.Id}
+                      onClick={async () => {
+                        const detail = await getThongTinHanhChinhById(p.Id).catch(() => null);
+                        onSelect(detail ?? p);
+                        onClose();
+                      }}
+                      style={{ cursor: "pointer", background: i % 2 === 0 ? "#fff" : "var(--gray-50)", transition: "background .12s" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--primary-bg)")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = i % 2 === 0 ? "#fff" : "var(--gray-50)")}
+                    >
+                      <td style={{ ...tdStyle, color: "var(--gray-400)", width: 36, textAlign: "center" }}>{(page - 1) * PAGE_SIZE + i + 1}</td>
+                      <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: ".75rem", color: "var(--gray-400)" }}>{p.Id}</td>
+                      <td style={{ ...tdStyle, color: "var(--gray-900)", fontWeight: 600 }}>{p.HO_TEN}</td>
+                      <td style={tdStyle}>
+                        <span style={{ padding: ".15em .55em", borderRadius: 99, fontSize: ".75rem", fontWeight: 600, background: p.GIOI_TINH === 0 ? "#dbeafe" : "#fce7f3", color: p.GIOI_TINH === 0 ? "#1d4ed8" : "#be185d" }}>
+                          {gioiTinhOptions.find((g) => g.Id === p.GIOI_TINH)?.TenGioiTinh ?? ""}
+                        </span>
+                      </td>
+                      <td style={tdStyle}>{p.NGAY_SINH}</td>
+                      <td style={{ ...tdStyle, fontFamily: "monospace", letterSpacing: ".03em" }}>{p.SO_CCCD}</td>
+                      <td style={tdStyle}>{p.PostingDate ? new Date(p.PostingDate).toLocaleString("vi-VN") : p.NGAY_VAO}</td>
+                      <td style={{ ...tdStyle, color: "var(--gray-400)", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis" }}>{p.LY_DO_VV || "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
+        {totalPages > 1 && (
+          <div style={{ padding: ".625rem 1.5rem", borderTop: "1px solid var(--gray-200)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <span style={{ fontSize: ".78rem", color: "var(--gray-500)" }}>Tổng: {total} bản ghi</span>
+            <div style={{ display: "flex", gap: ".375rem", alignItems: "center" }}>
+              <button
+                disabled={page <= 1}
+                onClick={() => { const p = page - 1; setPage(p); fetchPatients(fromDate, toDate, p); }}
+                style={{ height: 28, padding: "0 .625rem", border: "1px solid var(--gray-200)", borderRadius: 6, background: page <= 1 ? "var(--gray-100)" : "#fff", color: page <= 1 ? "var(--gray-400)" : "var(--gray-700)", cursor: page <= 1 ? "default" : "pointer", fontSize: ".8rem" }}
+              >‹</button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((pg) => (
+                <button
+                  key={pg}
+                  onClick={() => { setPage(pg); fetchPatients(fromDate, toDate, pg); }}
+                  style={{ height: 28, minWidth: 28, padding: "0 .4rem", border: "1px solid var(--gray-200)", borderRadius: 6, background: pg === page ? "var(--primary)" : "#fff", color: pg === page ? "#fff" : "var(--gray-700)", cursor: "pointer", fontSize: ".8rem", fontWeight: pg === page ? 700 : 400 }}
+                >{pg}</button>
+              ))}
+              <button
+                disabled={page >= totalPages}
+                onClick={() => { const p = page + 1; setPage(p); fetchPatients(fromDate, toDate, p); }}
+                style={{ height: 28, padding: "0 .625rem", border: "1px solid var(--gray-200)", borderRadius: 6, background: page >= totalPages ? "var(--gray-100)" : "#fff", color: page >= totalPages ? "var(--gray-400)" : "var(--gray-700)", cursor: page >= totalPages ? "default" : "pointer", fontSize: ".8rem" }}
+              >›</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -286,13 +300,20 @@ function PatientPickerModal({ onClose, onSelect }) {
 
 export default function TaoHoSo() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("id");
+  const editMauPhieu = searchParams.get("mauPhieu");
+  const viewOnly = searchParams.get("mode") === "view";
   const [activeTab, setActiveTab] = useState(1);
   const [mauPhieu, setMauPhieu] = useState(() => {
+    if (editMauPhieu) return Number(editMauPhieu);
     const saved = localStorage.getItem("taoHoSo_mauPhieu");
     return saved ? Number(saved) : MAU_PHIEU_OPTIONS[0].id;
   });
   const [showPatientPicker, setShowPatientPicker] = useState(false);
   const [patientSearch, setPatientSearch] = useState("");
+  const [patientSelected, setPatientSelected] = useState(!!(editId || viewOnly));
+  const [tiepNhanId, setTiepNhanId] = useState(editId || null);
   const [saving, setSaving] = useState(false);
   const [gioiTinhOptions, setGioiTinhOptions] = useState([]);
   const [moiQuanHeOptions, setMoiQuanHeOptions] = useState([]);
@@ -301,6 +322,8 @@ export default function TaoHoSo() {
   const [nguonChiTraOptions, setNguonChiTraOptions] = useState([]);
   const [tinhThanhOptions, setTinhThanhOptions] = useState([]);
   const [phuongXaOptions, setPhuongXaOptions] = useState([]);
+  const [phanLoaiSucKhoeOptions, setPhanLoaiSucKhoeOptions] = useState([]);
+  const [loaiHinhKCBOptions, setLoaiHinhKCBOptions] = useState([]);
   const sectionRefs = useRef([]);
   const tabBarRef = useRef(null);
   const isScrollingTo = useRef(false);
@@ -341,7 +364,47 @@ export default function TaoHoSo() {
     getDoiTuongList().then((data) => setDoiTuongOptions(data)).catch(() => {});
     getNguonChiTraList().then((data) => setNguonChiTraOptions(data)).catch(() => {});
     getTinhThanhList().then((data) => setTinhThanhOptions(data)).catch(() => {});
+    getPhanLoaiSucKhoeList().then((data) => setPhanLoaiSucKhoeOptions(data)).catch(() => {});
+    getLoaiHinhKCBList().then((data) => setLoaiHinhKCBOptions(data)).catch(() => {});
   }, []);
+
+  const loadIcd10Options = async (search, page = 1) => {
+    return getICD10List({ search, page, pageSize: 20 });
+  };
+
+  useEffect(() => {
+    if (!editId) return;
+    getThongTinHanhChinhById(editId).then((p) => {
+      if (!p) return;
+      setForm((prev) => ({
+        ...prev,
+        soDinhDanh: p.SO_CCCD || prev.soDinhDanh,
+        hoTen: p.HO_TEN || prev.hoTen,
+        gioiTinh: p.GIOI_TINH ?? prev.gioiTinh,
+        ngaySinh: p.NGAY_SINH || prev.ngaySinh,
+        ngayCap: p.NGAYCAP_CCCD || prev.ngayCap,
+        noiCap: p.NOICAP_CCCD || prev.noiCap,
+        danToc: p.MA_DAN_TOC || prev.danToc,
+        nhomMau: p.NHOM_MAU || prev.nhomMau,
+        soNha: p.DIA_CHI || prev.soNha,
+        tinhThanhPho: p.MATINH_CU_TRU || prev.tinhThanhPho,
+        phuongXa: p.MAXA_CU_TRU || prev.phuongXa,
+        ngheNghiep: p.MA_NGHE_NGHIEP || prev.ngheNghiep,
+        noiCongTac: p.NOI_LAM_VIEC_HOC_TAP || prev.noiCongTac,
+        dienThoai: p.DIEN_THOAI || prev.dienThoai,
+        lyDoKham: p.LY_DO_VV || prev.lyDoKham,
+        doiTuongKham: p.DOI_TUONG || prev.doiTuongKham,
+        nguonChiTra: p.NGUON_CHI_TRA ?? prev.nguonChiTra,
+        loaiHinhKham: p.MA_LOAI_KCB || prev.loaiHinhKham,
+        ngayKham: p.NGAY_VAO || prev.ngayKham,
+        maLanKham: p.MA_LK || prev.maLanKham,
+        hoTenNguoiDiCung: p.HO_TEN_NGUOI_DI_CUNG || prev.hoTenNguoiDiCung,
+        soDinhDanhGiamHo: p.SO_CCCD_NGUOI_DI_CUNG || prev.soDinhDanhGiamHo,
+        moiQuanHe: p.MOI_QUAN_HE_VOI_TRE ?? prev.moiQuanHe,
+        dienThoaiNguoiDiCung: p.DIEN_THOAI_NGUOI_DI_CUNG || prev.dienThoaiNguoiDiCung,
+      }));
+    }).catch(() => {});
+  }, [editId]);
 
   useEffect(() => {
     const observers = sectionRefs.current.map((el, i) => {
@@ -515,6 +578,7 @@ export default function TaoHoSo() {
             </label>
             <select
               value={mauPhieu}
+              disabled={viewOnly}
               onChange={(e) => {
                 const val = Number(e.target.value);
                 localStorage.setItem("taoHoSo_mauPhieu", val);
@@ -540,75 +604,84 @@ export default function TaoHoSo() {
               ))}
             </select>
 
-            <button
-              disabled={saving}
-              onClick={async () => {
-                setSaving(true);
-                try {
-                  await saveThongTinHanhChinh(form, mauPhieu);
-                } catch {
-                  // handled inside service
-                } finally {
-                  setSaving(false);
-                }
-              }}
-              style={{
-                height: "36px",
-                padding: "0 1.1rem",
-                background: saving ? "#86efac" : "#16a34a",
-                color: "#fff",
-                border: "none",
-                borderRadius: "var(--radius-md, 8px)",
-                fontWeight: 600,
-                fontSize: ".85rem",
-                cursor: saving ? "not-allowed" : "pointer",
-                fontFamily: "var(--font-body)",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {saving ? "Đang lưu..." : "Lưu"}
-            </button>
+            {!viewOnly && (
+              <button
+                disabled={saving}
+                onClick={async () => {
+                  setSaving(true);
+                  try {
+                    await saveThongTinHanhChinh(form, mauPhieu, editId || null);
+                  } catch {
+                    // handled inside service
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                style={{
+                  height: "36px",
+                  padding: "0 1.1rem",
+                  background: saving ? "#86efac" : "#16a34a",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "var(--radius-md, 8px)",
+                  fontWeight: 600,
+                  fontSize: ".85rem",
+                  cursor: saving ? "not-allowed" : "pointer",
+                  fontFamily: "var(--font-body)",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {saving ? "Đang lưu..." : "Lưu"}
+              </button>
+            )}
 
-            <button
-              onClick={() => navigate("/ho-so-ksk")}
-              style={{
-                height: "36px",
-                padding: "0 1.1rem",
-                background: "var(--gray-100)",
-                color: "var(--gray-700, #374151)",
-                border: "1.5px solid var(--gray-300, #d1d5db)",
-                borderRadius: "var(--radius-md, 8px)",
-                fontWeight: 600,
-                fontSize: ".85rem",
-                cursor: "pointer",
-                fontFamily: "var(--font-body)",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Quay lại
-            </button>
-
-            <button
-              onClick={() => setShowPatientPicker(true)}
-              title="Chọn bệnh nhân"
-              style={{
-                height: "36px",
-                width: "36px",
-                padding: 0,
-                background: "var(--primary, #0067AC)",
-                color: "#fff",
-                border: "none",
-                borderRadius: "var(--radius-md, 8px)",
-                fontSize: "1rem",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-              }}
-            >
-              <i className="bi bi-person-lines-fill" />
-            </button>
+            {viewOnly ? (
+              <button
+                onClick={() => window.print()}
+                style={{
+                  height: "36px",
+                  padding: "0 1.1rem",
+                  background: "var(--primary, #0067AC)",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "var(--radius-md, 8px)",
+                  fontWeight: 600,
+                  fontSize: ".85rem",
+                  cursor: "pointer",
+                  fontFamily: "var(--font-body)",
+                  whiteSpace: "nowrap",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: ".4rem",
+                }}
+              >
+                <i className="bi bi-printer-fill" /> In phiếu khám
+              </button>
+            ) : (
+              <>
+                <button
+                  onClick={() => setShowPatientPicker(true)}
+                  title="Chọn bệnh nhân"
+                  style={{
+                    height: "36px",
+                    width: "36px",
+                    padding: 0,
+                    background: "var(--primary, #0067AC)",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "var(--radius-md, 8px)",
+                    fontSize: "1rem",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexShrink: 0,
+                  }}
+                >
+                  <i className="bi bi-person-lines-fill" />
+                </button>
+              </>
+            )}
           </div>
         </div>
 
@@ -633,23 +706,24 @@ export default function TaoHoSo() {
               <button
                 key={tab.id}
                 data-tab={tab.id}
-                onClick={() => scrollToSection(tab.id)}
+                onClick={() => patientSelected || tab.id === 1 ? scrollToSection(tab.id) : null}
                 style={{
                   flexShrink: 0,
                   height: "34px",
                   padding: "0 .875rem",
                   borderRadius: 99,
                   border: "none",
-                  cursor: "pointer",
+                  cursor: tab.id === 1 || patientSelected ? "pointer" : "not-allowed",
                   fontFamily: "var(--font-body)",
                   fontSize: ".8rem",
                   fontWeight: isActive ? 700 : 500,
                   background: isActive ? "#2563eb" : "var(--gray-100, #f3f4f6)",
-                  color: isActive ? "#fff" : "var(--gray-700, #374151)",
+                  color: isActive ? "#fff" : tab.id > 1 && !patientSelected ? "var(--gray-300)" : "var(--gray-700, #374151)",
                   display: "flex",
                   alignItems: "center",
                   gap: ".3rem",
                   transition: "background .15s, color .15s",
+                  opacity: tab.id > 1 && !patientSelected ? 0.45 : 1,
                 }}
               >
                 {tab.icon && <i className={tab.icon} style={{ fontSize: ".85rem" }} />}
@@ -683,19 +757,26 @@ export default function TaoHoSo() {
           display: "flex",
           flexDirection: "column",
           gap: "2.5rem",
+          pointerEvents: viewOnly ? "none" : undefined,
+          userSelect: viewOnly ? "none" : undefined,
+          opacity: viewOnly ? 0.6 : undefined,
+          filter: viewOnly ? "grayscale(30%)" : undefined,
         }}
       >
         <div ref={(el) => (sectionRefs.current[0] = el)}>
           {isChild
-            ? <Tab1ChildContent form={form} setForm={setForm} gioiTinhOptions={gioiTinhOptions} moiQuanHeOptions={moiQuanHeOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} />
+            ? <Tab1ChildContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} moiQuanHeOptions={moiQuanHeOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} loadIcd10={loadIcd10Options} />
             : isTeen
-            ? <Tab1TeenContent form={form} setForm={setForm} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} />
-            : <Tab1Content form={form} setForm={setForm} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} />
+            ? <Tab1TeenContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} />
+            : <Tab1Content form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} />
           }
         </div>
+        <div
+          style={!patientSelected ? { pointerEvents: "none", opacity: 0.4, filter: "grayscale(40%)", userSelect: "none" } : undefined}
+        >
         <div ref={(el) => (sectionRefs.current[1] = el)}>
           {isTeen
-            ? <Tab2TeenContent form={form} setForm={setForm} />
+            ? <Tab2TeenContent form={form} setForm={setForm} loaiHinhKCBOptions={loaiHinhKCBOptions} />
             : <Tab2Content form={form} setForm={setForm} subtitle={isChild ? "" : undefined} />
           }
         </div>
@@ -703,22 +784,22 @@ export default function TaoHoSo() {
           {isChild
             ? <Tab3ChildContent form={form} setForm={setForm} />
             : isTeen
-            ? <Tab3TeenContent form={form} setForm={setForm} />
-            : <Tab3Content form={form} setForm={setForm} />
+            ? <Tab3TeenContent form={form} setForm={setForm} loadIcd10={loadIcd10Options} />
+            : <Tab3Content form={form} setForm={setForm} loadIcd10={loadIcd10Options} />
           }
         </div>
         <div ref={(el) => (sectionRefs.current[3] = el)}>
           {isChild
-            ? <Tab4ChildContent form={form} setForm={setForm} />
-            : <Tab4Content form={form} setForm={setForm} />
+            ? <Tab4ChildContent form={form} setForm={setForm} tiepNhanId={tiepNhanId} />
+            : <Tab4Content form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
           }
         </div>
         <div ref={(el) => (sectionRefs.current[4] = el)}>
           {isChild
             ? <Tab5ChildContent form={form} setForm={setForm} />
             : isTeen
-            ? <Tab5TeenContent form={form} setForm={setForm} />
-            : <Tab5Content form={form} setForm={setForm} />
+            ? <Tab5TeenContent form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
+            : <Tab5Content form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
           }
         </div>
         <div ref={(el) => (sectionRefs.current[5] = el)}>
@@ -729,8 +810,8 @@ export default function TaoHoSo() {
         </div>
         <div ref={(el) => (sectionRefs.current[6] = el)}>
           {isChild
-            ? <Tab7ChildContent form={form} setForm={setForm} />
-            : <Tab7Content form={form} setForm={setForm} />
+            ? <Tab7ChildContent form={form} setForm={setForm} tiepNhanId={tiepNhanId} />
+            : <Tab7Content form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} loadIcd10={loadIcd10Options} />
           }
         </div>
         {isChild && (
@@ -738,24 +819,44 @@ export default function TaoHoSo() {
             <Tab8ChildContent form={form} setForm={setForm} />
           </div>
         )}
+        </div>
       </div>
 
       {showPatientPicker && (
         <PatientPickerModal
+          mauPhieu={mauPhieu}
+          gioiTinhOptions={gioiTinhOptions}
           onClose={() => setShowPatientPicker(false)}
           onSelect={(p) => {
             setForm((prev) => ({
               ...prev,
-              soDinhDanh: p.soDinhDanh || prev.soDinhDanh,
-              hoTen: p.hoTen || prev.hoTen,
-              gioiTinh: p.gioiTinh || prev.gioiTinh,
-              ngaySinh: p.ngaySinh || prev.ngaySinh,
-              ngheNghiep: p.ngheNghiep || prev.ngheNghiep,
-              dienThoai: p.dienThoai || prev.dienThoai,
-              tinhThanhPho: p.tinhThanhPho || prev.tinhThanhPho,
-              phuongXa: p.phuongXa || prev.phuongXa,
-              danToc: p.danToc || prev.danToc,
+              soDinhDanh: p.SO_CCCD || prev.soDinhDanh,
+              hoTen: p.HO_TEN || prev.hoTen,
+              gioiTinh: p.GIOI_TINH ?? prev.gioiTinh,
+              ngaySinh: p.NGAY_SINH || prev.ngaySinh,
+              ngheNghiep: p.MA_NGHE_NGHIEP || prev.ngheNghiep,
+              dienThoai: p.DIEN_THOAI || prev.dienThoai,
+              tinhThanhPho: p.MATINH_CU_TRU || prev.tinhThanhPho,
+              phuongXa: p.MAXA_CU_TRU || prev.phuongXa,
+              danToc: p.MA_DAN_TOC || prev.danToc,
+              noiCap: p.NOICAP_CCCD || prev.noiCap,
+              nhomMau: p.NHOM_MAU || prev.nhomMau,
+              sinhNon: p.SINH_NON ?? prev.sinhNon,
+              tuanThaiKhiSinh: p.TUAN_THAI || prev.tuanThaiKhiSinh,
+              soNha: p.DIA_CHI || prev.soNha,
+              hoTenNguoiDiCung: p.HO_TEN_NGUOI_DI_CUNG || prev.hoTenNguoiDiCung,
+              soDinhDanhGiamHo: p.SO_CCCD_NGUOI_DI_CUNG || prev.soDinhDanhGiamHo,
+              moiQuanHe: p.MOI_QUAN_HE_VOI_TRE ?? prev.moiQuanHe,
+              dienThoaiNguoiDiCung: p.DIEN_THOAI_NGUOI_DI_CUNG || prev.dienThoaiNguoiDiCung,
+              lyDoKham: p.LY_DO_VV || prev.lyDoKham,
+              doiTuongKham: p.DOI_TUONG || prev.doiTuongKham,
+              nguonChiTra: p.NGUON_CHI_TRA ?? prev.nguonChiTra,
+              loaiHinhKham: p.MA_LOAI_KCB || prev.loaiHinhKham,
+              ngayKham: p.NGAY_VAO || prev.ngayKham,
+              maLanKham: p.MA_LK || prev.maLanKham,
             }));
+            setTiepNhanId(p.Id ?? p.KSKCD_TiepNhanId ?? null);
+            setPatientSelected(true);
             setShowPatientPicker(false);
           }}
         />

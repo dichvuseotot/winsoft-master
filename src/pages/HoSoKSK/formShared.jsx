@@ -228,13 +228,52 @@ export function SearchableSelect({
   onChange,
   placeholder = "Chọn hoặc tìm kiếm danh mục ICD-10...",
   options,
+  loadOptions,
 }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const ref = useRef(null);
-  const filtered = options.filter((o) =>
+  const filtered = (options || []).filter((o) =>
     o.toLowerCase().includes(q.toLowerCase()),
   );
+
+  const [asyncOptions, setAsyncOptions] = useState([]);
+  const [loadingOpts, setLoadingOpts] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+
+  useEffect(() => {
+    if (!loadOptions) return;
+    const timer = setTimeout(() => {
+      setLoadingOpts(true);
+      setPage(1);
+      loadOptions(q, 1).then(({ items, hasMore: more }) => {
+        setAsyncOptions(items);
+        setHasMore(more);
+        setLoadingOpts(false);
+      }).catch(() => setLoadingOpts(false));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [q, loadOptions]);
+
+  const loadMore = () => {
+    if (!loadOptions || loadingOpts || !hasMore) return;
+    const nextPage = page + 1;
+    setLoadingOpts(true);
+    loadOptions(q, nextPage).then(({ items, hasMore: more }) => {
+      setAsyncOptions((prev) => [...prev, ...items]);
+      setHasMore(more);
+      setPage(nextPage);
+      setLoadingOpts(false);
+    }).catch(() => setLoadingOpts(false));
+  };
+
+  const handleListScroll = (e) => {
+    const el = e.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 40) loadMore();
+  };
+
+  const displayOptions = loadOptions ? asyncOptions : filtered;
 
   useEffect(() => {
     if (!open) return;
@@ -263,7 +302,7 @@ export function SearchableSelect({
           flexWrap: "wrap",
           gap: ".3rem",
           cursor: "pointer",
-          background: "#fff",
+          background: "var(--gray-100)",
         }}
         onClick={() => setOpen((o) => !o)}
       >
@@ -400,8 +439,10 @@ export function SearchableSelect({
               />
             </div>
           </div>
-          <div style={{ overflowY: "auto", flex: 1 }}>
-            {filtered.length === 0 ? (
+          <div style={{ overflowY: "auto", flex: 1 }} onScroll={handleListScroll}>
+            {loadingOpts && asyncOptions.length === 0 ? (
+              <div style={{ padding: ".75rem 1rem", fontSize: ".82rem", color: "var(--gray-400)" }}>Đang tải...</div>
+            ) : displayOptions.length === 0 ? (
               <div
                 style={{
                   padding: ".75rem 1rem",
@@ -412,48 +453,53 @@ export function SearchableSelect({
                 Không tìm thấy
               </div>
             ) : (
-              filtered.map((o) => {
-                const selected = value.includes(o);
-                return (
-                  <div
-                    key={o}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggle(o);
-                    }}
-                    style={{
-                      padding: ".55rem 1rem",
-                      fontSize: ".83rem",
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: ".5rem",
-                      color: selected ? "var(--primary)" : "var(--gray-700)",
-                      background: selected
-                        ? "var(--primary-bg)"
-                        : "transparent",
-                    }}
-                    onMouseEnter={(e) => {
-                      if (!selected)
-                        e.currentTarget.style.background = "var(--gray-50)";
-                    }}
-                    onMouseLeave={(e) => {
-                      if (!selected)
-                        e.currentTarget.style.background = "transparent";
-                    }}
-                  >
-                    <i
-                      className={`bi ${selected ? "bi-check-square-fill" : "bi-square"}`}
-                      style={{
-                        fontSize: ".8rem",
-                        color: selected ? "var(--primary)" : "var(--gray-300)",
-                        flexShrink: 0,
+              <>
+                {displayOptions.map((o) => {
+                  const selected = value.includes(o);
+                  return (
+                    <div
+                      key={o}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggle(o);
                       }}
-                    />
-                    {o}
-                  </div>
-                );
-              })
+                      style={{
+                        padding: ".55rem 1rem",
+                        fontSize: ".83rem",
+                        cursor: "pointer",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: ".5rem",
+                        color: selected ? "var(--primary)" : "var(--gray-700)",
+                        background: selected
+                          ? "var(--primary-bg)"
+                          : "transparent",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!selected)
+                          e.currentTarget.style.background = "var(--gray-50)";
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!selected)
+                          e.currentTarget.style.background = "transparent";
+                      }}
+                    >
+                      <i
+                        className={`bi ${selected ? "bi-check-square-fill" : "bi-square"}`}
+                        style={{
+                          fontSize: ".8rem",
+                          color: selected ? "var(--primary)" : "var(--gray-300)",
+                          flexShrink: 0,
+                        }}
+                      />
+                      {o}
+                    </div>
+                  );
+                })}
+                {loadingOpts && (
+                  <div style={{ padding: ".5rem 1rem", fontSize: ".78rem", color: "var(--gray-400)", textAlign: "center" }}>Đang tải thêm...</div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -462,7 +508,7 @@ export function SearchableSelect({
   );
 }
 
-export function SearchableSingleSelect({ value = "", onChange, options = [], placeholder = "—Chọn—" }) {
+export function SearchableSingleSelect({ value = "", onChange, options = [], placeholder = "—Chọn—", loadOptions }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const ref = useRef(null);
@@ -472,6 +518,44 @@ export function SearchableSingleSelect({ value = "", onChange, options = [], pla
   );
 
   const selected = options.find((o) => String(o.value) === String(value));
+
+  const [asyncOptions, setAsyncOptions] = useState([]);
+  const [loadingOpts, setLoadingOpts] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+
+  useEffect(() => {
+    if (!loadOptions) return;
+    const timer = setTimeout(() => {
+      setLoadingOpts(true);
+      setPage(1);
+      loadOptions(q, 1).then(({ items, hasMore: more }) => {
+        setAsyncOptions(items);
+        setHasMore(more);
+        setLoadingOpts(false);
+      }).catch(() => setLoadingOpts(false));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [q, loadOptions]);
+
+  const loadMore = () => {
+    if (!loadOptions || loadingOpts || !hasMore) return;
+    const nextPage = page + 1;
+    setLoadingOpts(true);
+    loadOptions(q, nextPage).then(({ items, hasMore: more }) => {
+      setAsyncOptions((prev) => [...prev, ...items]);
+      setHasMore(more);
+      setPage(nextPage);
+      setLoadingOpts(false);
+    }).catch(() => setLoadingOpts(false));
+  };
+
+  const handleListScroll = (e) => {
+    const el = e.currentTarget;
+    if (el.scrollHeight - el.scrollTop - el.clientHeight < 40) loadMore();
+  };
+
+  const displayOptions = loadOptions ? asyncOptions.map((o) => ({ value: o, label: o })) : filtered;
 
   useEffect(() => {
     if (!open) { setQ(""); return; }
@@ -495,27 +579,27 @@ export function SearchableSingleSelect({ value = "", onChange, options = [], pla
           cursor: "pointer",
           background: "#fff",
           fontSize: ".875rem",
-          color: selected ? "var(--gray-800)" : "var(--gray-400)",
+          color: (selected || (loadOptions && value)) ? "var(--gray-800)" : "var(--gray-400)",
         }}
       >
         <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-          {selected ? selected.label : placeholder}
+          {selected ? selected.label : (loadOptions && value) ? value : placeholder}
         </span>
         <i className={`bi bi-chevron-${open ? "up" : "down"}`} style={{ fontSize: ".75rem", color: "var(--gray-400)", flexShrink: 0, marginLeft: ".4rem" }} />
       </div>
       {open && (
         <div style={{
           position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0,
-          background: "#fff", border: "1px solid var(--gray-200)",
+          background: "var(--gray-100)", border: "1px solid var(--gray-200)",
           borderRadius: 10, zIndex: 200,
           boxShadow: "0 8px 24px rgba(0,103,172,.13), 0 2px 6px rgba(0,0,0,.06)",
           overflow: "hidden",
         }}>
-          <div style={{ padding: ".5rem .625rem", background: "#f0f7ff", borderBottom: "1px solid #dbeafe" }}>
-            <div style={{
+          <div style={{ padding: ".5rem .625rem", background: "var(--gray-200)", borderBottom: "1px solid var(--gray-200)" }}>
+            <div className="dropdown-search-wrapper" style={{
               display: "flex", alignItems: "center", gap: ".5rem",
               background: "#fff", borderRadius: 6, padding: ".3rem .625rem",
-              border: "1.5px solid #bfdbfe",
+              border: "1.5px solid var(--gray-300)", outline: "none",
             }}>
               <i className="bi bi-search" style={{ color: "#2563eb", fontSize: ".8rem", flexShrink: 0 }} />
               <input
@@ -534,35 +618,45 @@ export function SearchableSingleSelect({ value = "", onChange, options = [], pla
               )}
             </div>
           </div>
-          <div style={{ maxHeight: 224, overflowY: "auto" }}>
-            {filtered.length === 0 ? (
+          <div style={{ maxHeight: 224, overflowY: "auto" }} onScroll={handleListScroll}>
+            {loadingOpts && asyncOptions.length === 0 ? (
+              <div style={{ padding: "1rem", textAlign: "center", fontSize: ".84rem", color: "var(--gray-400)" }}>
+                <i className="bi bi-hourglass-split" style={{ fontSize: "1.2rem", display: "block", marginBottom: ".25rem" }} />
+                Đang tải...
+              </div>
+            ) : displayOptions.length === 0 ? (
               <div style={{ padding: "1rem", textAlign: "center", fontSize: ".84rem", color: "var(--gray-400)" }}>
                 <i className="bi bi-inbox" style={{ fontSize: "1.2rem", display: "block", marginBottom: ".25rem" }} />
                 Không tìm thấy
               </div>
             ) : (
-              filtered.map((o) => {
-                const isActive = String(o.value) === String(value);
-                return (
-                <div
-                  key={o.value}
-                  onClick={() => { onChange(o.value); setOpen(false); }}
-                  style={{
-                    padding: ".5rem .875rem", fontSize: ".84rem", cursor: "pointer",
-                    display: "flex", alignItems: "center", gap: ".5rem",
-                    background: isActive ? "#eff6ff" : "transparent",
-                    color: isActive ? "#2563eb" : "var(--gray-800)",
-                    fontWeight: isActive ? 600 : 400,
-                    borderLeft: isActive ? "3px solid #2563eb" : "3px solid transparent",
-                  }}
-                  onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "var(--gray-50)"; }}
-                  onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
-                >
-                  {isActive && <i className="bi bi-check2" style={{ fontSize: ".85rem", flexShrink: 0 }} />}
-                  {o.label}
-                </div>
-                );
-              })
+              <>
+                {displayOptions.map((o) => {
+                  const isActive = String(o.value) === String(value);
+                  return (
+                    <div
+                      key={o.value}
+                      onClick={() => { onChange(o.value); setOpen(false); }}
+                      style={{
+                        padding: ".5rem .875rem", fontSize: ".84rem", cursor: "pointer",
+                        display: "flex", alignItems: "center", gap: ".5rem",
+                        background: isActive ? "var(--primary-bg)" : "transparent",
+                        color: isActive ? "#2563eb" : "var(--gray-800)",
+                        fontWeight: isActive ? 600 : 400,
+                        borderLeft: isActive ? "3px solid #2563eb" : "3px solid transparent",
+                      }}
+                      onMouseEnter={(e) => { if (!isActive) e.currentTarget.style.background = "var(--gray-200)"; }}
+                      onMouseLeave={(e) => { if (!isActive) e.currentTarget.style.background = "transparent"; }}
+                    >
+                      {isActive && <i className="bi bi-check2" style={{ fontSize: ".85rem", flexShrink: 0 }} />}
+                      {o.label}
+                    </div>
+                  );
+                })}
+                {loadingOpts && (
+                  <div style={{ padding: ".5rem 1rem", fontSize: ".78rem", color: "var(--gray-400)", textAlign: "center" }}>Đang tải thêm...</div>
+                )}
+              </>
             )}
           </div>
         </div>
@@ -770,19 +864,3 @@ export function SignatureBox({ id }) {
     </div>
   );
 }
-
-export const PHAN_LOAI_LS = [
-  "Loại I (Tốt)",
-  "Loại II (Khỏe)",
-  "Loại III (Trung bình)",
-  "Loại IV (Yếu)",
-  "Loại V (Kém)",
-];
-
-export const PHAN_LOAI_SK = [
-  "Loại I - Tốt",
-  "Loại II - Khoẻ",
-  "Loại III - Trung bình",
-  "Loại IV - Yếu",
-  "Loại V - Kém",
-];

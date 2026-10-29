@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, GD_ICD10_OPTIONS, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, PHAN_LOAI_LS, PHAN_LOAI_SK } from "./formShared";
+import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
 
-export function Tab1Content({ form, setForm, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [] }) {
+export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [] }) {
   const set = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
@@ -178,16 +178,12 @@ export function Tab1Content({ form, setForm, gioiTinhOptions = [], danTocOptions
 
 
           <FieldGroup label="Loại hình khám bệnh, chữa bệnh" required>
-            <select
-              style={inputStyle}
+            <SearchableSingleSelect
+              options={loaiHinhKCBOptions.map((o) => ({ value: o.Id, label: o.TenLoaiHinhKCB }))}
               value={form.loaiHinhKham}
-              onChange={set("loaiHinhKham")}
-            >
-              <option value="">Chọn hoặc tìm kiếm...</option>
-              <option value="Khám ngoại trú">Khám ngoại trú</option>
-              <option value="Khám tại nhà">Khám tại nhà</option>
-              <option value="Khám tập trung">Khám tập trung</option>
-            </select>
+              onChange={(val) => setForm((p) => ({ ...p, loaiHinhKham: val }))}
+              placeholder="—Chọn loại hình—"
+            />
           </FieldGroup>
 
           <div />
@@ -393,7 +389,7 @@ function BanThanTable({ items, startIdx, form, setRadio }) {
   );
 }
 
-export function Tab3Content({ form, setForm }) {
+export function Tab3Content({ form, setForm, loadIcd10 }) {
   const setRadio = (key) => (val) =>
     setForm((prev) => ({ ...prev, [key]: val }));
 
@@ -479,7 +475,7 @@ export function Tab3Content({ form, setForm }) {
                 </span>
               </div>
               <SearchableSelect
-                options={GD_ICD10_OPTIONS}
+                loadOptions={loadIcd10}
                 value={form.gdICD10}
                 onChange={(val) =>
                   setForm((prev) => ({ ...prev, gdICD10: val }))
@@ -554,7 +550,7 @@ export function Tab3Content({ form, setForm }) {
                 </span>
               </div>
               <SearchableSelect
-                options={GD_ICD10_OPTIONS}
+                loadOptions={loadIcd10}
                 value={form.dieuTriICD10 || []}
                 onChange={(val) =>
                   setForm((prev) => ({ ...prev, dieuTriICD10: val }))
@@ -606,7 +602,7 @@ function Grid6({ children }) {
   );
 }
 
-export function Tab4Content({ form, setForm }) {
+export function Tab4Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
   const set = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
@@ -682,14 +678,13 @@ export function Tab4Content({ form, setForm }) {
         <FieldGroup label="Phân loại thể lực">
           <select
             style={inputStyle}
-            value={form.phanLoaiTheLuc || "Loại II (Khỏe)"}
+            value={form.phanLoaiTheLuc || ""}
             onChange={set("phanLoaiTheLuc")}
           >
-            <option value="Loại I (Tốt)">Loại I (Tốt)</option>
-            <option value="Loại II (Khỏe)">Loại II (Khỏe)</option>
-            <option value="Loại III (Trung bình)">Loại III (Trung bình)</option>
-            <option value="Loại IV (Yếu)">Loại IV (Yếu)</option>
-            <option value="Loại V (Kém)">Loại V (Kém)</option>
+            <option value="">—Chọn—</option>
+            {phanLoaiSucKhoeOptions.map((o) => (
+              <option key={o.Id} value={o.Id}>{o.TenPhanLoaiSucKhoe}</option>
+            ))}
           </select>
         </FieldGroup>
       </Grid6>
@@ -711,17 +706,14 @@ const THI_LUC_OPT = [
   "< 1/10",
 ];
 
-export function Tab5Content({ form, setForm }) {
+export function Tab5Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
   const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
 
   const plSelect = (key) => (
-    <select
-      style={inputStyle}
-      value={form[key] || "Loại II (Khỏe)"}
-      onChange={set(key)}
-    >
-      {PHAN_LOAI_LS.map((o) => (
-        <option key={o}>{o}</option>
+    <select style={inputStyle} value={form[key] || ""} onChange={set(key)}>
+      <option value="">—Chọn—</option>
+      {phanLoaiSucKhoeOptions.map((o) => (
+        <option key={o.Id} value={o.Id}>{o.TenPhanLoaiSucKhoe}</option>
       ))}
     </select>
   );
@@ -1218,7 +1210,7 @@ export function Tab6Content({ form, setForm }) {
 
       {secLabel("C. Chẩn đoán hình ảnh")}
 
-      <div style={{ marginBottom: "1.25rem" }}>
+      <div style={{ marginBottom: ".75rem" }}>
         {fieldLabel("102. Chẩn đoán hình ảnh (XQ tim phổi thẳng)")}
         <input
           style={{ ...inputStyle }}
@@ -1226,6 +1218,17 @@ export function Tab6Content({ form, setForm }) {
           placeholder="Kết quả chẩn đoán hình ảnh..."
           value={form.cls_cdha || ""}
           onChange={set("cls_cdha")}
+        />
+      </div>
+
+      <div style={{ marginBottom: "1.25rem" }}>
+        {fieldLabel("102a. Siêu âm")}
+        <input
+          style={{ ...inputStyle }}
+          type="text"
+          placeholder="Kết quả siêu âm..."
+          value={form.cls_sieuAm || ""}
+          onChange={set("cls_sieuAm")}
         />
       </div>
 
@@ -1364,19 +1367,8 @@ export function Tab6Content({ form, setForm }) {
   );
 }
 
-const ICD10_OPTIONS = [
-  "Z00.0 - Khám sức khoẻ tổng quát",
-  "Z00.1 - Kiểm tra sức khoẻ định kỳ trẻ em",
-  "Z13 - Khám sàng lọc các bệnh và rối loạn khác",
-  "Z82 - Tiền sử gia đình về một số bệnh nhất định",
-  "I10 - Tăng huyết áp nguyên phát",
-  "E11 - Đái tháo đường type 2",
-  "J44 - Bệnh phổi tắc nghẽn mạn tính",
-  "K29 - Viêm dạ dày và tá tràng",
-  "M54 - Đau lưng",
-];
 
-export function Tab7Content({ form, setForm }) {
+export function Tab7Content({ form, setForm, phanLoaiSucKhoeOptions = [], loadIcd10 }) {
   const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
 
   return (
@@ -1401,18 +1393,12 @@ export function Tab7Content({ form, setForm }) {
           </div>
 
           <FieldGroup label="Chọn danh mục ICD-10">
-            <select
-              style={inputStyle}
+            <SearchableSingleSelect
+              loadOptions={loadIcd10}
               value={form.kl_icd10 || ""}
-              onChange={set("kl_icd10")}
-            >
-              <option value="">Chọn hoặc tìm kiếm danh mục ICD-10...</option>
-              {ICD10_OPTIONS.map((o) => (
-                <option key={o} value={o}>
-                  {o}
-                </option>
-              ))}
-            </select>
+              onChange={(val) => setForm((p) => ({ ...p, kl_icd10: val }))}
+              placeholder="Chọn hoặc tìm kiếm danh mục ICD-10..."
+            />
           </FieldGroup>
 
           <div style={{ marginTop: ".75rem" }}>
@@ -1438,12 +1424,13 @@ export function Tab7Content({ form, setForm }) {
           <FieldGroup label="Chọn phân loại sức khỏe" required>
             <select
               style={inputStyle}
-              value={form.kl_phanLoai || "Loại II - Khoẻ"}
+              value={form.kl_phanLoai || ""}
               onChange={set("kl_phanLoai")}
             >
-              {PHAN_LOAI_SK.map((o) => (
-                <option key={o} value={o}>
-                  {o}
+              <option value="">—Chọn—</option>
+              {phanLoaiSucKhoeOptions.map((o) => (
+                <option key={o.Id} value={o.Id}>
+                  {o.TenPhanLoaiSucKhoe}
                 </option>
               ))}
             </select>

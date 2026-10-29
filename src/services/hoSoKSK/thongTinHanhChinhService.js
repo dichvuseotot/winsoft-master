@@ -3,14 +3,26 @@ import { api } from "../api";
 
 const ENDPOINT = "/add-update-thong-tin-hanh-chinh";
 
-export async function getThongTinHanhChinhList({ fromDate, toDate, mauPhieu, tiepNhanId = "" } = {}) {
+export async function getThongTinHanhChinhById(id) {
+  const res = await api.get(`/get-thong-tin-hanh-chinh?KSKCD_TiepNhanId=${id}`);
+  return (res.data ?? [])[0] ?? null;
+}
+
+export async function getThongTinHanhChinhList({ fromDate, toDate, mauPhieu, search = "", page = 1, pageSize = 20 } = {}) {
   const params = new URLSearchParams();
-  if (tiepNhanId) params.set("KSKCD_TiepNhanId", tiepNhanId);
   if (fromDate) params.set("FromDate", fromDate);
   if (toDate) params.set("ToDate", toDate);
+  params.set("Search", search);
+  params.set("Page", page);
+  params.set("PageSize", pageSize);
   if (mauPhieu) params.set("td_loaimau_kskid", mauPhieu);
-  const res = await api.get(`/get-thong-tin-hanh-chinh?${params.toString()}`);
-  return res.data ?? [];
+  const res = await api.get(`/list-thong-tin-hanh-chinh?${params.toString()}`);
+  const items = res.data ?? [];
+  return {
+    items,
+    total: Number(res.pagination?.Total ?? 0),
+    totalPages: Number(res.pagination?.TotalPages ?? 1),
+  };
 }
 
 
@@ -75,7 +87,7 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     LY_DO_VV: form.lyDoKham,
     MA_NGHE_NGHIEP: form.ngheNghiep,
     NOI_LAM_VIEC_HOC_TAP: form.noiCongTac,
-    KSKCD_DM_TypeId: Number(mauPhieu),
+    td_loaimau_kskid: Number(mauPhieu),
     MA_LK: form.maLanKham,
     DOI_TUONG: String(form.doiTuongKham),
     NGUON_CHI_TRA: Number(form.nguonChiTra),
