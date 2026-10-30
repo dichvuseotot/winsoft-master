@@ -48,6 +48,11 @@ export async function getKhamTheLuc(tiepNhanId) {
   return (res.data ?? [])[0] ?? null;
 }
 
+export async function getKetLuan(tiepNhanId) {
+  const res = await api.get(`/get-ket-luan?KSKCD_TiepNhanId=${tiepNhanId}`);
+  return (res.data ?? [])[0] ?? null;
+}
+
 export async function getCLS(tiepNhanId) {
   const res = await api.get(`/get-kham-can-lam-sang?KSKCD_TiepNhanId=${tiepNhanId}`);
   return res.data ?? [];
@@ -352,5 +357,15 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
 
     // ── Cận lâm sàng ──────────────────────────────────────────────────────
     CLSList: buildCLSItems(form, resolvedId),
+
+    // ── Kết luận ──────────────────────────────────────────────────────────
+    Id_KetLuan:              generateId(),
+    KET_LUAN_BENH:           (form.kl_icd10 || []).map((s) => s.split(" - ")[0]).join(";") || null,
+    KET_LUAN_BENH_FULL:      (form.kl_icd10 || []).join(";") || null,
+    GHI_RO_VAN_DE_SUC_KHOE: form.kl_tinhTrang || null,
+    PHAN_LOAI_SK:            form.kl_phanLoai ? Number(form.kl_phanLoai) : null,
+    EmployeeCode_KL:    "1",
+    EmployeeCodeDoctor_KL: "Nghia",
+    PostingDate:             nowVN(),
   };
 }

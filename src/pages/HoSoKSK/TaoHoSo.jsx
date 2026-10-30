@@ -5,7 +5,7 @@ import "./TaoHoSo.css";
 import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content } from "./MauAdult";
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
-import { saveAdultTiepNhan, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
+import { saveAdultTiepNhan, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
 import { todayVN, daysAgoVN, timeNowVN } from "../../utils/date";
 
 const TODAY = todayVN();
@@ -453,7 +453,8 @@ export default function TaoHoSo() {
       getKhamRHM(editId).catch(() => null),
       getCLS(editId).catch(() => []),
       getTienSuBenh(editId).catch(() => null),
-    ]).then(([p, tl, nk, ngk, dl, spk, mat, tmh, rhm, clsItems, tsb]) => {
+      getKetLuan(editId).catch(() => null),
+    ]).then(([p, tl, nk, ngk, dl, spk, mat, tmh, rhm, clsItems, tsb, kl]) => {
       if (!p) return;
       setForm((prev) => ({
         ...prev,
@@ -535,6 +536,10 @@ export default function TaoHoSo() {
         rhm_pl:      rhm?.KHAM_RANG_HAM_MAT_PL  ?? prev.rhm_pl,
         ...(clsItems.length > 0 && mapCLSToForm(clsItems)),
         ...(tsb && mapTSBToForm(tsb)),
+        // Kết luận
+        kl_icd10:     kl?.KET_LUAN_BENH_FULL ? kl.KET_LUAN_BENH_FULL.split(";").filter(Boolean) : prev.kl_icd10,
+        kl_tinhTrang: kl?.GHI_RO_VAN_DE_SUC_KHOE ?? prev.kl_tinhTrang,
+        kl_phanLoai:  kl?.PHAN_LOAI_SK ?? prev.kl_phanLoai,
       }));
     });
   }, [editId]);
@@ -998,7 +1003,8 @@ export default function TaoHoSo() {
                 getKhamRHM(pid).catch(() => null),
                 getCLS(pid).catch(() => []),
                 getTienSuBenh(pid).catch(() => null),
-              ]).then(([tl, nk, ngk, dl, spk, mat, tmh, rhm, clsItems, tsb]) => {
+                getKetLuan(pid).catch(() => null),
+              ]).then(([tl, nk, ngk, dl, spk, mat, tmh, rhm, clsItems, tsb, kl]) => {
                 setForm((prev) => ({
                   ...prev,
                   ...(tl && {
@@ -1063,6 +1069,10 @@ export default function TaoHoSo() {
                   }),
                   ...(clsItems.length > 0 && mapCLSToForm(clsItems)),
                   ...(tsb && mapTSBToForm(tsb)),
+                  // Kết luận
+                  kl_icd10:     kl?.KET_LUAN_BENH_FULL ? kl.KET_LUAN_BENH_FULL.split(";").filter(Boolean) : prev.kl_icd10,
+                  kl_tinhTrang: kl?.GHI_RO_VAN_DE_SUC_KHOE ?? prev.kl_tinhTrang,
+                  kl_phanLoai:  kl?.PHAN_LOAI_SK ?? prev.kl_phanLoai,
                 }));
               });
             }
