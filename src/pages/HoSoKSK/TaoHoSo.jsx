@@ -5,7 +5,7 @@ import "./TaoHoSo.css";
 import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content } from "./MauAdult";
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
-import { saveAdultTiepNhan, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
+import { saveAdultTiepNhan, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
 import { todayVN, daysAgoVN, timeNowVN } from "../../utils/date";
 
 const TODAY = todayVN();
@@ -294,6 +294,73 @@ function PatientPickerModal({ onClose, onSelect, mauPhieu, gioiTinhOptions = [] 
   );
 }
 
+function mapTSBToForm(tsb) {
+  if (!tsb) return {};
+  const bit = (v) => v === true || v === 1 ? "Có" : "Không";
+  return {
+    gdChung:        tsb.TSGD_MAC_BENH === true || tsb.TSGD_MAC_BENH === 1 ? "Có" : "Không",
+    gdICD10:        tsb.TSGD_MA_BENH_FULL ? tsb.TSGD_MA_BENH_FULL.split(";").filter(Boolean) : [],
+    bt_0:           bit(tsb.TSBT_BENH_TRONG_5_NAM_QUA),
+    bt_1:           bit(tsb.TSBT_BENH_THAN_KINH),
+    bt_2:           bit(tsb.TSBT_BENH_MAT),
+    bt_3:           bit(tsb.TSBT_BENH_TAI),
+    bt_4:           bit(tsb.TSBT_BENH_TIM),
+    bt_5:           bit(tsb.TSBT_PHAU_THUAT_TIM),
+    bt_6:           bit(tsb.TSBT_TANG_HUYET_AP),
+    bt_7:           bit(tsb.TSBT_KHO_THO),
+    bt_8:           bit(tsb.TSBT_BENH_PHOI),
+    bt_9:           bit(tsb.TSBT_BENH_THAN),
+    bt_10:          bit(tsb.TSBT_NGHIEN_RUOU),
+    bt_11:          bit(tsb.TSBT_DAI_THAO_DUONG),
+    bt_12:          bit(tsb.TSBT_BENH_TAM_THAN),
+    bt_13:          bit(tsb.TSBT_MAT_Y_THUC),
+    bt_14:          bit(tsb.TSBT_NGAT),
+    bt_15:          bit(tsb.TSBT_BENH_TIEU_HOA),
+    bt_16:          bit(tsb.TSBT_ROI_LOAN_GIAC_NGU),
+    bt_17:          bit(tsb.TSBT_TAI_BIEN),
+    bt_18:          bit(tsb.TSBT_BENH_COT_SONG),
+    bt_19:          bit(tsb.TSBT_RUOU_THUONG_XUYEN),
+    bt_20:          bit(tsb.TSBT_MA_TUY),
+    bt_21:          bit(tsb.TSBT_BENH_KHAC),
+    benhKhacChiTiet: tsb.TSBT_MA_BENH_KHAC_FULL ? tsb.TSBT_MA_BENH_KHAC_FULL.split(";").filter(Boolean) : [],
+    dangDieuTri:    (tsb.TSBT_DANG_DIEU_TRI_BENH === true || tsb.TSBT_DANG_DIEU_TRI_BENH === 1) ? "Có" : "Không",
+    dieuTriICD10:   tsb.BENH_DANG_DIEU_TRI ? tsb.BENH_DANG_DIEU_TRI.split(";").filter(Boolean) : [],
+    thuocDangSD:    tsb.TSBT_TEN_THUOC_LIEU_LUONG || "",
+  };
+}
+
+function mapCLSToForm(clsItems) {
+  const find = (chiSo) => clsItems.find((i) => i.TEN_CHI_SO === chiSo);
+  const r = (chiSo) => find(chiSo)?.GIA_TRI ?? null;
+  const id = (chiSo) => find(chiSo)?.Id ?? null;
+  const khac = clsItems.find((i) => i.TEN_DICH_VU === "Cận lâm sàng khác");
+  return {
+    cls_huyetHoc:          r("Tổng phân tích tế bào máu ngoại vi"),
+    cls_huyetHoc_id:       id("Tổng phân tích tế bào máu ngoại vi"),
+    cls_duongMau:          r("Đường máu"),
+    cls_duongMau_id:       id("Đường máu"),
+    cls_ure:               r("Urê"),
+    cls_ure_id:            id("Urê"),
+    cls_creatinin:         r("Creatinin"),
+    cls_creatinin_id:      id("Creatinin"),
+    cls_asat:              r("ASAT"),
+    cls_asat_id:           id("ASAT"),
+    cls_alat:              r("ALAT"),
+    cls_alat_id:           id("ALAT"),
+    cls_nuocTieu:          r("Tổng phân tích nước tiểu"),
+    cls_nuocTieu_id:       id("Tổng phân tích nước tiểu"),
+    cls_nuocTieuKhac:      r("Khác"),
+    cls_nuocTieuKhac_id:   id("Khác"),
+    cls_cdha:              r("XQ tim phổi thẳng"),
+    cls_cdha_id:           id("XQ tim phổi thẳng"),
+    cls_sieuAm:            r("Siêu âm"),
+    cls_sieuAm_id:         id("Siêu âm"),
+    cls_coKhac:            khac ? "Có" : "",
+    cls_ketQuaChiTiet:     khac?.GIA_TRI ?? null,
+    cls_ketQuaChiTiet_id:  khac?.Id ?? null,
+  };
+}
+
 export default function TaoHoSo() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -350,6 +417,7 @@ export default function TaoHoSo() {
     ngayKham: TODAY,
     gioKham: timeNowVN(),
     gdICD10: [],
+    kl_icd10: [],
     dieuTriICD10: [],
     thuocDangSD: "",
   });
@@ -383,7 +451,9 @@ export default function TaoHoSo() {
       getKhamMat(editId).catch(() => null),
       getKhamTMH(editId).catch(() => null),
       getKhamRHM(editId).catch(() => null),
-    ]).then(([p, tl, nk, ngk, dl, spk, mat, tmh, rhm]) => {
+      getCLS(editId).catch(() => []),
+      getTienSuBenh(editId).catch(() => null),
+    ]).then(([p, tl, nk, ngk, dl, spk, mat, tmh, rhm, clsItems, tsb]) => {
       if (!p) return;
       setForm((prev) => ({
         ...prev,
@@ -463,6 +533,8 @@ export default function TaoHoSo() {
         rhm_ketQua:  rhm?.BENH_RANG_HAM_MAT     ?? prev.rhm_ketQua,
         rhm_benh:    rhm?.BENH_KHAC_RANG_HAM_MAT ?? prev.rhm_benh,
         rhm_pl:      rhm?.KHAM_RANG_HAM_MAT_PL  ?? prev.rhm_pl,
+        ...(clsItems.length > 0 && mapCLSToForm(clsItems)),
+        ...(tsb && mapTSBToForm(tsb)),
       }));
     });
   }, [editId]);
@@ -924,7 +996,9 @@ export default function TaoHoSo() {
                 getKhamMat(pid).catch(() => null),
                 getKhamTMH(pid).catch(() => null),
                 getKhamRHM(pid).catch(() => null),
-              ]).then(([tl, nk, ngk, dl, spk, mat, tmh, rhm]) => {
+                getCLS(pid).catch(() => []),
+                getTienSuBenh(pid).catch(() => null),
+              ]).then(([tl, nk, ngk, dl, spk, mat, tmh, rhm, clsItems, tsb]) => {
                 setForm((prev) => ({
                   ...prev,
                   ...(tl && {
@@ -987,6 +1061,8 @@ export default function TaoHoSo() {
                     rhm_benh:    rhm.BENH_KHAC_RANG_HAM_MAT ?? prev.rhm_benh,
                     rhm_pl:      rhm.KHAM_RANG_HAM_MAT_PL   ?? prev.rhm_pl,
                   }),
+                  ...(clsItems.length > 0 && mapCLSToForm(clsItems)),
+                  ...(tsb && mapTSBToForm(tsb)),
                 }));
               });
             }

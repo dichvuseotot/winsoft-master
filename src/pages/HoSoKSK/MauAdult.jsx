@@ -338,54 +338,67 @@ const tblHeaderStyle = {
   letterSpacing: ".05em",
 };
 
-function BanThanTable({ items, startIdx, form, setRadio }) {
+function BanThanTable({ items, startIdx, form, setRadio, setForm, loadIcd10 }) {
   return (
     <div
       style={{
         border: "1px solid var(--gray-200)",
         borderRadius: 8,
-        overflow: "hidden",
       }}
     >
-      <div style={tblHeaderStyle}>
+      <div style={{ ...tblHeaderStyle, borderRadius: "8px 8px 0 0" }}>
         <span>STT</span>
         <span>TIỀN SỬ BỆNH LÝ</span>
         <span style={{ textAlign: "right" }}>CHỌN</span>
       </div>
       {items.map((item, i) => {
         const key = `bt_${startIdx + i}`;
+        const isLast = i === items.length - 1;
+        const isBenhKhac = key === "bt_21";
         return (
-          <div
-            key={key}
-            style={{
-              display: "grid",
-              gridTemplateColumns: "36px 1fr 96px",
-              padding: ".5rem .75rem",
-              borderBottom:
-                i < items.length - 1 ? "1px solid var(--gray-100)" : "none",
-              alignItems: "center",
-            }}
-          >
-            <span style={{ fontSize: ".78rem", color: "var(--gray-400)" }}>
-              {startIdx + i + 1}
-            </span>
-            <span
+          <React.Fragment key={key}>
+            <div
               style={{
-                fontSize: ".83rem",
-                color: "var(--gray-800)",
-                lineHeight: 1.4,
+                display: "grid",
+                gridTemplateColumns: "36px 1fr 96px",
+                padding: ".5rem .75rem",
+                borderBottom: (!isLast || (isBenhKhac && form.bt_21 === "Có")) ? "1px solid var(--gray-100)" : "none",
+                alignItems: "center",
               }}
             >
-              {item}
-            </span>
-            <div style={{ display: "flex", justifyContent: "flex-end" }}>
-              <RadioKhongCo
-                name={key}
-                value={form[key] || "Không"}
-                onChange={setRadio(key)}
-              />
+              <span style={{ fontSize: ".78rem", color: "var(--gray-400)" }}>
+                {startIdx + i + 1}
+              </span>
+              <span
+                style={{
+                  fontSize: ".83rem",
+                  color: "var(--gray-800)",
+                  lineHeight: 1.4,
+                }}
+              >
+                {item}
+              </span>
+              <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                <RadioKhongCo
+                  name={key}
+                  value={form[key] || "Không"}
+                  onChange={setRadio(key)}
+                />
+              </div>
             </div>
-          </div>
+            {isBenhKhac && form.bt_21 === "Có" && (
+              <div style={{ padding: ".5rem .75rem" }}>
+                <div style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--gray-700)", marginBottom: ".35rem" }}>
+                  Ghi rõ tên bệnh khác
+                </div>
+                <SearchableSelect
+                  loadOptions={loadIcd10}
+                  value={form.benhKhacChiTiet || []}
+                  onChange={(val) => setForm((prev) => ({ ...prev, benhKhacChiTiet: val }))}
+                />
+              </div>
+            )}
+          </React.Fragment>
         );
       })}
     </div>
@@ -502,12 +515,16 @@ export function Tab3Content({ form, setForm, loadIcd10 }) {
             form={form}
             setRadio={setRadio}
           />
-          <BanThanTable
-            items={right}
-            startIdx={11}
-            form={form}
-            setRadio={setRadio}
-          />
+          <div>
+            <BanThanTable
+              items={right}
+              startIdx={11}
+              form={form}
+              setRadio={setRadio}
+              setForm={setForm}
+              loadIcd10={loadIcd10}
+            />
+          </div>
         </div>
       </Card>
 
@@ -1391,11 +1408,10 @@ export function Tab7Content({ form, setForm, phanLoaiSucKhoeOptions = [], loadIc
           </div>
 
           <FieldGroup label="Chọn danh mục ICD-10">
-            <SearchableSingleSelect
+            <SearchableSelect
               loadOptions={loadIcd10}
-              value={form.kl_icd10 || ""}
+              value={form.kl_icd10 || []}
               onChange={(val) => setForm((p) => ({ ...p, kl_icd10: val }))}
-              placeholder="Chọn hoặc tìm kiếm danh mục ICD-10..."
             />
           </FieldGroup>
 

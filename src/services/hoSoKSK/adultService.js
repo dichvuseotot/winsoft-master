@@ -1,5 +1,6 @@
 import Swal from "sweetalert2";
 import { api } from "../api";
+import { nowVN } from "../../utils/date";
 
 
 export async function getKhamNoiKhoa(tiepNhanId) {
@@ -37,9 +38,19 @@ export async function getKhamRHM(tiepNhanId) {
   return (res.data ?? [])[0] ?? null;
 }
 
+export async function getTienSuBenh(tiepNhanId) {
+  const res = await api.get(`/get-tien-su-benh?KSKCD_TiepNhanId=${tiepNhanId}`);
+  return (res.data ?? [])[0] ?? null;
+}
+
 export async function getKhamTheLuc(tiepNhanId) {
   const res = await api.get(`/get-kham-lam-sang-the-luc?KSKCD_TiepNhanId=${tiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
+}
+
+export async function getCLS(tiepNhanId) {
+  const res = await api.get(`/get-kham-can-lam-sang?KSKCD_TiepNhanId=${tiepNhanId}`);
+  return res.data ?? [];
 }
 
 export async function saveAdultTiepNhan(form, mauPhieu, id = null) {
@@ -48,6 +59,45 @@ export async function saveAdultTiepNhan(form, mauPhieu, id = null) {
     const payload = toPayload(form, mauPhieu, resolvedId, id);
     console.log(`[saveAdultTiepNhan] TYPE: ${id ? "UPDATE" : "ADD"} | id:`, id);
     console.log("[saveAdultTiepNhan] payload:", payload);
+    console.log("[Tiền sử bệnh]", {
+      // Gia đình
+      Id_TienSuBenh:                payload.Id_TienSuBenh,
+      TSGD_MAC_BENH:                payload.TSGD_MAC_BENH,
+      TSGD_MA_BENH:                 payload.TSGD_MA_BENH,
+      TSGD_MA_BENH_FULL:            payload.TSGD_MA_BENH_FULL,
+      EmployeeCode_TienSuBenh:      payload.EmployeeCode_TienSuBenh,
+      EmployeeCodeDoctor_TienSuBenh: payload.EmployeeCodeDoctor_TienSuBenh,
+      DepartmentCode:               payload.DepartmentCode,
+      PostingDate:                  payload.PostingDate,
+      // Bản thân
+      TSBT_BENH_TRONG_5_NAM_QUA:   payload.TSBT_BENH_TRONG_5_NAM_QUA,
+      TSBT_BENH_THAN_KINH:         payload.TSBT_BENH_THAN_KINH,
+      TSBT_BENH_MAT:               payload.TSBT_BENH_MAT,
+      TSBT_BENH_TAI:               payload.TSBT_BENH_TAI,
+      TSBT_BENH_TIM:               payload.TSBT_BENH_TIM,
+      TSBT_PHAU_THUAT_TIM:         payload.TSBT_PHAU_THUAT_TIM,
+      TSBT_TANG_HUYET_AP:          payload.TSBT_TANG_HUYET_AP,
+      TSBT_KHO_THO:                payload.TSBT_KHO_THO,
+      TSBT_BENH_PHOI:              payload.TSBT_BENH_PHOI,
+      TSBT_BENH_THAN:              payload.TSBT_BENH_THAN,
+      TSBT_NGHIEN_RUOU:            payload.TSBT_NGHIEN_RUOU,
+      TSBT_DAI_THAO_DUONG:         payload.TSBT_DAI_THAO_DUONG,
+      TSBT_BENH_TAM_THAN:          payload.TSBT_BENH_TAM_THAN,
+      TSBT_MAT_Y_THUC:             payload.TSBT_MAT_Y_THUC,
+      TSBT_NGAT:                   payload.TSBT_NGAT,
+      TSBT_BENH_TIEU_HOA:          payload.TSBT_BENH_TIEU_HOA,
+      TSBT_ROI_LOAN_GIAC_NGU:      payload.TSBT_ROI_LOAN_GIAC_NGU,
+      TSBT_TAI_BIEN:               payload.TSBT_TAI_BIEN,
+      TSBT_BENH_COT_SONG:          payload.TSBT_BENH_COT_SONG,
+      TSBT_RUOU_THUONG_XUYEN:      payload.TSBT_RUOU_THUONG_XUYEN,
+      TSBT_MA_TUY:                 payload.TSBT_MA_TUY,
+      TSBT_BENH_KHAC:              payload.TSBT_BENH_KHAC,
+      TSBT_MA_BENH_KHAC:           payload.TSBT_MA_BENH_KHAC,       // benhKhacChiTiet (ICD bt_21)
+      TSBT_MA_BENH_KHAC_FULL:      payload.TSBT_MA_BENH_KHAC_FULL,
+      TSBT_DANG_DIEU_TRI_BENH:     payload.TSBT_DANG_DIEU_TRI_BENH,
+      BENH_DANG_DIEU_TRI:          payload.BENH_DANG_DIEU_TRI,
+      TSBT_TEN_THUOC_LIEU_LUONG:   payload.TSBT_TEN_THUOC_LIEU_LUONG,
+    });
     const result = await api.post("/add-update-tiep-nhan", payload);
     const TiepNhanId = result.data?.ID ?? result.ID ?? resolvedId;
     await Swal.fire({
@@ -69,6 +119,42 @@ export async function saveAdultTiepNhan(form, mauPhieu, id = null) {
     });
     throw error;
   }
+}
+
+function clsRecord(tiepNhanId, tenDichVu, tenChiSo, giaTri, donViDo = null, existingId = null) {
+  return {
+    ID_CLS:              existingId ?? generateId(),
+    KSKCD_TiepNhanId:   tiepNhanId,
+    MA_DICH_VU:         null,
+    TEN_DICH_VU:        tenDichVu,
+    MA_CHI_SO:          null,
+    TEN_CHI_SO:         tenChiSo,
+    GIA_TRI:            giaTri,
+    DON_VI_DO:          donViDo,
+    MO_TA:              null,
+    KET_LUAN:           null,
+    CKDT_KET_QUA_CLS:   null,
+    EmployeeCode:       "1",
+    EmployeeCodeDoctor: "Nghia",
+    PostingDate:        nowVN(),
+  };
+}
+
+function buildCLSItems(form, tiepNhanId) {
+  const items = [];
+  if (form.cls_huyetHoc)     items.push(clsRecord(tiepNhanId, "Huyết học",            "Tổng phân tích tế bào máu ngoại vi", form.cls_huyetHoc,     null,     form.cls_huyetHoc_id));
+  if (form.cls_duongMau)     items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",       "Đường máu",                          form.cls_duongMau,     "mmol/L", form.cls_duongMau_id));
+  if (form.cls_ure)          items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",       "Urê",                                form.cls_ure,          "mmol/L", form.cls_ure_id));
+  if (form.cls_creatinin)    items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",       "Creatinin",                          form.cls_creatinin,    "μmol/L", form.cls_creatinin_id));
+  if (form.cls_asat)         items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",       "ASAT",                               form.cls_asat,         "U/L",    form.cls_asat_id));
+  if (form.cls_alat)         items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",       "ALAT",                               form.cls_alat,         "U/L",    form.cls_alat_id));
+  if (form.cls_nuocTieu)     items.push(clsRecord(tiepNhanId, "Xét nghiệm nước tiểu", "Tổng phân tích nước tiểu",           form.cls_nuocTieu,     null,     form.cls_nuocTieu_id));
+  if (form.cls_nuocTieuKhac) items.push(clsRecord(tiepNhanId, "Xét nghiệm nước tiểu", "Khác",                               form.cls_nuocTieuKhac, null,     form.cls_nuocTieuKhac_id));
+  if (form.cls_cdha)         items.push(clsRecord(tiepNhanId, "Chẩn đoán hình ảnh",   "XQ tim phổi thẳng",                  form.cls_cdha,         null,     form.cls_cdha_id));
+  if (form.cls_sieuAm)       items.push(clsRecord(tiepNhanId, "Chẩn đoán hình ảnh",   "Siêu âm",                            form.cls_sieuAm,       null,     form.cls_sieuAm_id));
+  if (form.cls_coKhac === "Có" && form.cls_ketQuaChiTiet)
+    items.push(clsRecord(tiepNhanId, "Cận lâm sàng khác", "Kết quả chi tiết", form.cls_ketQuaChiTiet, null, form.cls_ketQuaChiTiet_id));
+  return items;
 }
 
 function generateId() {
@@ -113,8 +199,51 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     NGAY_VAO: form.ngayKham,
     TYPE: originalId ? "UPDATE" : "ADD",
 
+    // ── Tiền sử bệnh gia đình ─────────────────────────────────────────────
+    Id_TienSuBenh:                generateId(),
+    TSGD_MAC_BENH:                form.gdChung === "Có" ? 1 : 0,
+    TSGD_MA_BENH:                 (form.gdICD10 || []).map((s) => s.split(" - ")[0]).join(";") || null,
+    TSGD_MA_BENH_FULL:            (form.gdICD10 || []).join(";") || null,
+    EmployeeCode_TienSuBenh:      "1",
+    EmployeeCodeDoctor_TienSuBenh: "Nghia",
+    DepartmentCode:               null,
+    PostingDate:                  nowVN(),
+
+    // ── Tiền sử bệnh bản thân ─────────────────────────────────────────────
+    TSBT_BENH_TRONG_5_NAM_QUA:   form.bt_0  === "Có" ? 1 : 0,
+    TSBT_BENH_THAN_KINH:         form.bt_1  === "Có" ? 1 : 0,
+    TSBT_BENH_MAT:               form.bt_2  === "Có" ? 1 : 0,
+    TSBT_BENH_TAI:               form.bt_3  === "Có" ? 1 : 0,
+    TSBT_BENH_TIM:               form.bt_4  === "Có" ? 1 : 0,
+    TSBT_PHAU_THUAT_TIM:         form.bt_5  === "Có" ? 1 : 0,
+    TSBT_TANG_HUYET_AP:          form.bt_6  === "Có" ? 1 : 0,
+    TSBT_KHO_THO:                form.bt_7  === "Có" ? 1 : 0,
+    TSBT_BENH_PHOI:              form.bt_8  === "Có" ? 1 : 0,
+    TSBT_BENH_THAN:              form.bt_9  === "Có" ? 1 : 0,
+    TSBT_NGHIEN_RUOU:            form.bt_10 === "Có" ? 1 : 0,
+    TSBT_DAI_THAO_DUONG:         form.bt_11 === "Có" ? 1 : 0,
+    TSBT_BENH_TAM_THAN:          form.bt_12 === "Có" ? 1 : 0,
+    TSBT_MAT_Y_THUC:             form.bt_13 === "Có" ? 1 : 0,
+    TSBT_NGAT:                   form.bt_14 === "Có" ? 1 : 0,
+    TSBT_BENH_TIEU_HOA:          form.bt_15 === "Có" ? 1 : 0,
+    TSBT_ROI_LOAN_GIAC_NGU:      form.bt_16 === "Có" ? 1 : 0,
+    TSBT_TAI_BIEN:               form.bt_17 === "Có" ? 1 : 0,
+    TSBT_BENH_COT_SONG:          form.bt_18 === "Có" ? 1 : 0,
+    TSBT_RUOU_THUONG_XUYEN:      form.bt_19 === "Có" ? 1 : 0,
+    TSBT_MA_TUY:                 form.bt_20 === "Có" ? 1 : 0,
+    TSBT_BENH_KHAC:              form.bt_21 === "Có" ? 1 : 0,
+    TSBT_MA_BENH_KHAC:           (form.benhKhacChiTiet || []).map((s) => s.split(" - ")[0]).join(";") || null,
+    TSBT_MA_BENH_KHAC_FULL:      (form.benhKhacChiTiet || []).join(";") || null,
+    TSBT_DANG_DIEU_TRI_BENH:     form.dangDieuTri === "Có" ? 1 : 0,
+    BENH_DANG_DIEU_TRI:          (form.dieuTriICD10 || []).join(";") || null,
+    TSBT_TEN_THUOC_LIEU_LUONG:   form.thuocDangSD || null,
+    TSBT_THAI_SAN:               0,
+    TSBT_MA_BENH_THAI_SAN:       null,
+    TSBT_MA_BENH_THAI_SAN_FULL:  null,
+    TSBT_TEN_THUOC_THAI_SAN:     null,
+
     // ── Khám thể lực ──────────────────────────────────────────────────────
-    TheLucId: generateId(),
+    Id_TheLuc: generateId(),
     KSKCD_TiepNhanId: resolvedId,
     CHIEU_CAO: form.chieuCao ? Number(form.chieuCao) : null,
     CAN_NANG: form.canNang || null,
@@ -124,12 +253,14 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     MACH: form.mach || null,
     HUYET_AP: form.huyetAp || null,
     KHAM_THE_LUC_PL: form.phanLoaiTheLuc ? Number(form.phanLoaiTheLuc) : null,
-    EmployeeCode: null,
-    EmployeeCodeDoctor: null,
-    PostingDate: null,
+    EmployeeCode_TheLuc: "1",
+    EmployeeCodeDoctor_TheLuc: "Nghia",
+    PostingDate: nowVN(),
 
     // ── Nội khoa ──────────────────────────────────────────────────────────
-    NoiKhoaId: generateId(),
+    Id_NoiKhoa: generateId(),
+    EmployeeCode_NoiKhoa: "1",
+    EmployeeCodeDoctor_NoiKhoa: "Nghia",
     NOI_KHOA_TUAN_HOAN:         form.nk_a   || null,
     NOI_KHOA_TUAN_HOAN_PL:      form.nk_a_pl ? Number(form.nk_a_pl) : null,
     CKDT_NOI_KHOA_TUAN_HOAN:    null,
@@ -156,25 +287,33 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     CKDT_NOI_KHOA_TAM_THAN:      null,
 
     // ── Ngoại khoa ────────────────────────────────────────────────────────
-    NgoaiKhoaId:                  generateId(),
+    Id_NgoaiKhoa:                 generateId(),
+    EmployeeCode_NgoaiKhoa:       "1",
+    EmployeeCodeDoctor_NgoaiKhoa: "Nghia",
     KET_QUA_KHAM_NGOAI_KHOA:     form.ngk    || null,
     KHAM_NGOAI_KHOA_PL:          form.ngk_pl ? Number(form.ngk_pl) : null,
     CKDT_KHAM_NGOAI_KHOA:        null,
 
     // ── Da liễu ───────────────────────────────────────────────────────────
-    DaLieuId:                     generateId(),
+    Id_DaLieu:                    generateId(),
+    EmployeeCode_DaLieu:          "1",
+    EmployeeCodeDoctor_DaLieu:    "Nghia",
     KET_QUA_KHAM_DA_LIEU:        form.dl     || null,
     KHAM_DA_LIEU_PL:             form.dl_pl  ? Number(form.dl_pl) : null,
     CKDT_KHAM_DA_LIEU:           null,
 
     // ── Sản phụ khoa ──────────────────────────────────────────────────────
-    SanPhuKhoaId:                 generateId(),
+    Id_SanPhuKhoa:                generateId(),
+    EmployeeCode_SanPhuKhoa:      "1",
+    EmployeeCodeDoctor_SanPhuKhoa: "Nghia",
     KET_QUA_KHAM_SAN_PHU_KHOA:  form.spk    || null,
     KHAM_SAN_PHU_KHOA_PL:       form.spk_pl ? Number(form.spk_pl) : null,
     CKDT_KHAM_SAN_PHU_KHOA:     null,
 
     // ── Răng Hàm Mặt ──────────────────────────────────────────────────────
-    RangHamMatId:                 generateId(),
+    Id_RHM:                       generateId(),
+    EmployeeCode_RHM:             "1",
+    EmployeeCodeDoctor_RHM:       "Nghia",
     HAM_TREN:                    form.rhm_hamTren  || null,
     HAM_DUOI:                    form.rhm_hamDuoi  || null,
     BENH_RANG_HAM_MAT:           form.rhm_ketQua   || null,
@@ -183,7 +322,9 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     CKDT_KHAM_RANG_HAM_MAT:     null,
 
     // ── Tai Mũi Họng ──────────────────────────────────────────────────────
-    TaiMuiHongId:                 generateId(),
+    Id_TMH:                       generateId(),
+    EmployeeCode_TMH:             "1",
+    EmployeeCodeDoctor_TMH:       "Nghia",
     TAI_TRAI_NOI_THUONG:         form.tmh_tt_trai || null,
     TAI_TRAI_NOI_THAM:           form.tmh_th_trai || null,
     TAI_PHAI_NOI_THUONG:         form.tmh_tt_phai || null,
@@ -194,7 +335,9 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     CKDT_KHAM_TAI_MUI_HONG:     null,
 
     // ── Mắt ───────────────────────────────────────────────────────────────
-    MatId:                        generateId(),
+    Id_Mat:                       generateId(),
+    EmployeeCode_Mat:             "1",
+    EmployeeCodeDoctor_Mat:       "Nghia",
     VI_TRI_HAI_MAT:              null,
     MI_MAT_KET_MAC:              null,
     LAC_MAT:                     null,
@@ -206,5 +349,8 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     BENH_KHAC_MAT:              form.mat_benh    || null,
     KHAM_MAT_PL:                form.mat_pl ? Number(form.mat_pl) : null,
     CKDT_KHAM_MAT:              null,
+
+    // ── Cận lâm sàng ──────────────────────────────────────────────────────
+    CLSList: buildCLSItems(form, resolvedId),
   };
 }

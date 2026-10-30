@@ -302,7 +302,7 @@ export function SearchableSelect({
           flexWrap: "wrap",
           gap: ".3rem",
           cursor: "pointer",
-          background: "var(--gray-100)",
+          background: "#fff",
         }}
         onClick={() => setOpen((o) => !o)}
       >
@@ -392,51 +392,33 @@ export function SearchableSelect({
             left: 0,
             right: 0,
             background: "var(--gray-100)",
-            border: "1.5px solid var(--gray-200)",
-            borderRadius: 6,
+            border: "1px solid var(--gray-200)",
+            borderRadius: 10,
             zIndex: 200,
-            boxShadow: "var(--shadow-lg)",
-            maxHeight: 280,
+            boxShadow: "0 8px 24px rgba(0,103,172,.13), 0 2px 6px rgba(0,0,0,.06)",
+            overflow: "hidden",
             display: "flex",
             flexDirection: "column",
           }}
         >
-          <div
-            style={{
-              padding: ".5rem",
-              borderBottom: "1px solid var(--gray-200)",
-            }}
-          >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: ".4rem",
-                background: "var(--gray-50)",
-                border: "1px solid var(--gray-200)",
-                borderRadius: 4,
-                padding: ".35rem .6rem",
-              }}
-            >
-              <i
-                className="bi bi-search"
-                style={{ color: "var(--gray-400)", fontSize: ".8rem" }}
-              />
+          <div style={{ padding: ".5rem .625rem", background: "var(--gray-200)", borderBottom: "1px solid var(--gray-200)" }}>
+            <div style={{
+              display: "flex", alignItems: "center", gap: ".5rem",
+              background: "#fff", borderRadius: 6, padding: ".3rem .625rem",
+              border: "1.5px solid var(--gray-300)", outline: "none",
+            }}>
+              <i className="bi bi-search" style={{ color: "#2563eb", fontSize: ".8rem", flexShrink: 0 }} />
               <input
                 autoFocus
                 value={q}
                 onChange={(e) => setQ(e.target.value)}
-                placeholder="Tìm kiếm"
+                placeholder="Tìm kiếm..."
                 onClick={(e) => e.stopPropagation()}
-                style={{
-                  border: "none",
-                  outline: "none",
-                  background: "transparent",
-                  fontSize: ".83rem",
-                  width: "100%",
-                  color: "var(--gray-800)",
-                }}
+                style={{ border: "none", outline: "none", boxShadow: "none", background: "transparent", fontSize: ".84rem", width: "100%", color: "var(--gray-800)" }}
               />
+              {q && (
+                <i className="bi bi-x" onClick={() => setQ("")} style={{ color: "var(--gray-400)", fontSize: ".9rem", cursor: "pointer", flexShrink: 0 }} />
+              )}
             </div>
           </div>
           <div style={{ overflowY: "auto", flex: 1 }} onScroll={handleListScroll}>
