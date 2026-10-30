@@ -1,6 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router'
-import { getThongTinHanhChinhList } from '../../services'
 
 const TODAY = new Date().toISOString().slice(0, 10)
 
@@ -38,48 +37,23 @@ export default function HoSoKSK() {
   const [perPage,     setPerPage]   = useState(20)
   const [page,        setPage]      = useState(1)
   const [selected,    setSelected]  = useState([])
-  const [data,        setData]      = useState([])
-  const [total,       setTotal]     = useState(0)
-  const [totalPages,  setTotalPages]= useState(1)
-  const [loading,     setLoading]   = useState(false)
-  const [applied,     setApplied]   = useState({ fromDate: TODAY, toDate: TODAY, mauPhieu: undefined, search: '' })
-
-  const fetchData = async (params) => {
-    setLoading(true)
-    try {
-      const res = await getThongTinHanhChinhList(params)
-      setData(res.items)
-      setTotal(res.total)
-      setTotalPages(res.totalPages)
-    } catch (e) {
-      console.error(e)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    fetchData({ fromDate: TODAY, toDate: TODAY, page: 1, pageSize: perPage })
-  }, [])
+  const [data]                      = useState([])
+  const [total]                     = useState(0)
+  const [totalPages]                = useState(1)
+  const [loading]                   = useState(false)
+  const [, setApplied]              = useState({ fromDate: TODAY, toDate: TODAY, mauPhieu: undefined, search: '' })
 
   const handleFilter = () => {
-    const params = { fromDate: fTu, toDate: fDen, mauPhieu: fMauPhieu || undefined, search: fHoTen || fCCCD || '', page: 1, pageSize: perPage }
     setApplied({ fromDate: fTu, toDate: fDen, mauPhieu: fMauPhieu || undefined, search: fHoTen || fCCCD || '' })
     setPage(1)
-    fetchData(params)
   }
 
   const handleReset = () => {
     setFHoTen(''); setFCCCD(''); setFTu(TODAY); setFDen(TODAY); setFMauPhieu(''); setQuickFilter(''); setPage(1)
-    const params = { fromDate: TODAY, toDate: TODAY, page: 1, pageSize: perPage }
     setApplied({ fromDate: TODAY, toDate: TODAY, mauPhieu: undefined, search: '' })
-    fetchData(params)
   }
 
-  const goToPage = (p) => {
-    setPage(p)
-    fetchData({ ...applied, page: p, pageSize: perPage })
-  }
+  const goToPage = (p) => { setPage(p) }
 
   const toTrangThai = (r) => r.IsSynchronize === 1 ? 'da-dong-bo' : 'chua-dong-bo'
 
@@ -193,7 +167,7 @@ export default function HoSoKSK() {
         <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
             <span style={{ fontSize: '.83rem', color: 'var(--gray-600)' }}>Mỗi trang:</span>
-            <select value={perPage} onChange={e => { const n = Number(e.target.value); setPerPage(n); setPage(1); fetchData({ ...applied, page: 1, pageSize: n }) }}
+            <select value={perPage} onChange={e => { const n = Number(e.target.value); setPerPage(n); setPage(1) }}
               style={{ height: 32, borderRadius: 'var(--radius-sm)', border: '1.5px solid var(--gray-200)', padding: '0 .5rem', fontSize: '.83rem', fontFamily: 'var(--font-body)', color: 'var(--gray-700)', background: 'var(--gray-100)', cursor: 'pointer', outline: 'none' }}>
               {[10, 20, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
             </select>

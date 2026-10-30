@@ -5,7 +5,7 @@ import "./TaoHoSo.css";
 import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content } from "./MauAdult";
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
-import { saveAdultTiepNhan, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
+import { saveAdultTiepNhan, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
 import { todayVN, daysAgoVN, timeNowVN } from "../../utils/date";
 
 const TODAY = todayVN();
@@ -376,7 +376,14 @@ export default function TaoHoSo() {
     Promise.all([
       getThongTinHanhChinhById(editId).catch(() => null),
       getKhamTheLuc(editId).catch(() => null),
-    ]).then(([p, tl]) => {
+      getKhamNoiKhoa(editId).catch(() => null),
+      getNgoaiKhoa(editId).catch(() => null),
+      getDaLieu(editId).catch(() => null),
+      getSanPhuKhoa(editId).catch(() => null),
+      getKhamMat(editId).catch(() => null),
+      getKhamTMH(editId).catch(() => null),
+      getKhamRHM(editId).catch(() => null),
+    ]).then(([p, tl, nk, ngk, dl, spk, mat, tmh, rhm]) => {
       if (!p) return;
       setForm((prev) => ({
         ...prev,
@@ -410,6 +417,52 @@ export default function TaoHoSo() {
         mach: tl?.MACH ?? prev.mach,
         huyetAp: tl?.HUYET_AP ?? prev.huyetAp,
         phanLoaiTheLuc: tl?.KHAM_THE_LUC_PL ?? prev.phanLoaiTheLuc,
+        // Nội khoa
+        nk_a: nk?.NOI_KHOA_TUAN_HOAN ?? prev.nk_a,
+        nk_a_pl: nk?.NOI_KHOA_TUAN_HOAN_PL ?? prev.nk_a_pl,
+        nk_b: nk?.NOI_KHOA_HO_HAP ?? prev.nk_b,
+        nk_b_pl: nk?.NOI_KHOA_HO_HAP_PL ?? prev.nk_b_pl,
+        nk_c: nk?.NOI_KHOA_TIEU_HOA ?? prev.nk_c,
+        nk_c_pl: nk?.NOI_KHOA_TIEU_HOA_PL ?? prev.nk_c_pl,
+        nk_d: nk?.NOI_KHOA_THAN_TN_SD ?? prev.nk_d,
+        nk_d_pl: nk?.NOI_KHOA_THAN_TN_SD_PL ?? prev.nk_d_pl,
+        nk_e: nk?.NOI_KHOA_NOI_TIET ?? prev.nk_e,
+        nk_e_pl: nk?.NOI_KHOA_NOI_TIET_PL ?? prev.nk_e_pl,
+        nk_f: nk?.NOI_KHOA_CO_XUONG_KHOP ?? prev.nk_f,
+        nk_f_pl: nk?.NOI_KHOA_CO_XUONG_KHOP_PL ?? prev.nk_f_pl,
+        nk_g: nk?.NOI_KHOA_THAN_KINH ?? prev.nk_g,
+        nk_g_pl: nk?.NOI_KHOA_THAN_KINH_PL ?? prev.nk_g_pl,
+        nk_h: nk?.NOI_KHOA_TAM_THAN ?? prev.nk_h,
+        nk_h_pl: nk?.NOI_KHOA_TAM_THAN_PL ?? prev.nk_h_pl,
+        // Ngoại khoa
+        ngk: ngk?.KET_QUA_KHAM_NGOAI_KHOA ?? prev.ngk,
+        ngk_pl: ngk?.KHAM_NGOAI_KHOA_PL ?? prev.ngk_pl,
+        // Da liễu
+        dl: dl?.KET_QUA_KHAM_DA_LIEU ?? prev.dl,
+        dl_pl: dl?.KHAM_DA_LIEU_PL ?? prev.dl_pl,
+        // Sản phụ khoa
+        spk: spk?.KET_QUA_KHAM_SAN_PHU_KHOA ?? prev.spk,
+        spk_pl: spk?.KHAM_SAN_PHU_KHOA_PL ?? prev.spk_pl,
+        // Mắt
+        mat_kk_phai: mat?.KHONG_KINH_MAT_PHAI ?? prev.mat_kk_phai,
+        mat_kk_trai: mat?.KHONG_KINH_MAT_TRAI ?? prev.mat_kk_trai,
+        mat_ck_phai: mat?.CO_KINH_MAT_PHAI   ?? prev.mat_ck_phai,
+        mat_ck_trai: mat?.CO_KINH_MAT_TRAI   ?? prev.mat_ck_trai,
+        mat_benh:    mat?.BENH_KHAC_MAT      ?? prev.mat_benh,
+        mat_pl:      mat?.KHAM_MAT_PL        ?? prev.mat_pl,
+        // Tai Mũi Họng
+        tmh_tt_trai: tmh?.TAI_TRAI_NOI_THUONG  ?? prev.tmh_tt_trai,
+        tmh_th_trai: tmh?.TAI_TRAI_NOI_THAM    ?? prev.tmh_th_trai,
+        tmh_tt_phai: tmh?.TAI_PHAI_NOI_THUONG  ?? prev.tmh_tt_phai,
+        tmh_th_phai: tmh?.TAI_PHAI_NOI_THAM    ?? prev.tmh_th_phai,
+        tmh_benh:    tmh?.BENH_TAI_MUI_HONG    ?? prev.tmh_benh,
+        tmh_pl:      tmh?.KHAM_TAI_MUI_HONG_PL ?? prev.tmh_pl,
+        // Răng Hàm Mặt
+        rhm_hamTren: rhm?.HAM_TREN              ?? prev.rhm_hamTren,
+        rhm_hamDuoi: rhm?.HAM_DUOI              ?? prev.rhm_hamDuoi,
+        rhm_ketQua:  rhm?.BENH_RANG_HAM_MAT     ?? prev.rhm_ketQua,
+        rhm_benh:    rhm?.BENH_KHAC_RANG_HAM_MAT ?? prev.rhm_benh,
+        rhm_pl:      rhm?.KHAM_RANG_HAM_MAT_PL  ?? prev.rhm_pl,
       }));
     });
   }, [editId]);
@@ -862,17 +915,80 @@ export default function TaoHoSo() {
             const pid = p.Id ?? p.KSKCD_TiepNhanId ?? null;
             setTiepNhanId(pid);
             if (pid) {
-              getKhamTheLuc(pid).then((tl) => {
-                if (!tl) return;
+              Promise.all([
+                getKhamTheLuc(pid).catch(() => null),
+                getKhamNoiKhoa(pid).catch(() => null),
+                getNgoaiKhoa(pid).catch(() => null),
+                getDaLieu(pid).catch(() => null),
+                getSanPhuKhoa(pid).catch(() => null),
+                getKhamMat(pid).catch(() => null),
+                getKhamTMH(pid).catch(() => null),
+                getKhamRHM(pid).catch(() => null),
+              ]).then(([tl, nk, ngk, dl, spk, mat, tmh, rhm]) => {
                 setForm((prev) => ({
                   ...prev,
-                  chieuCao: tl.CHIEU_CAO ?? prev.chieuCao,
-                  canNang: tl.CAN_NANG ?? prev.canNang,
-                  mach: tl.MACH ?? prev.mach,
-                  huyetAp: tl.HUYET_AP ?? prev.huyetAp,
-                  phanLoaiTheLuc: tl.KHAM_THE_LUC_PL ?? prev.phanLoaiTheLuc,
+                  ...(tl && {
+                    chieuCao: tl.CHIEU_CAO ?? prev.chieuCao,
+                    canNang: tl.CAN_NANG ?? prev.canNang,
+                    mach: tl.MACH ?? prev.mach,
+                    huyetAp: tl.HUYET_AP ?? prev.huyetAp,
+                    phanLoaiTheLuc: tl.KHAM_THE_LUC_PL ?? prev.phanLoaiTheLuc,
+                  }),
+                  ...(nk && {
+                    nk_a: nk.NOI_KHOA_TUAN_HOAN ?? prev.nk_a,
+                    nk_a_pl: nk.NOI_KHOA_TUAN_HOAN_PL ?? prev.nk_a_pl,
+                    nk_b: nk.NOI_KHOA_HO_HAP ?? prev.nk_b,
+                    nk_b_pl: nk.NOI_KHOA_HO_HAP_PL ?? prev.nk_b_pl,
+                    nk_c: nk.NOI_KHOA_TIEU_HOA ?? prev.nk_c,
+                    nk_c_pl: nk.NOI_KHOA_TIEU_HOA_PL ?? prev.nk_c_pl,
+                    nk_d: nk.NOI_KHOA_THAN_TN_SD ?? prev.nk_d,
+                    nk_d_pl: nk.NOI_KHOA_THAN_TN_SD_PL ?? prev.nk_d_pl,
+                    nk_e: nk.NOI_KHOA_NOI_TIET ?? prev.nk_e,
+                    nk_e_pl: nk.NOI_KHOA_NOI_TIET_PL ?? prev.nk_e_pl,
+                    nk_f: nk.NOI_KHOA_CO_XUONG_KHOP ?? prev.nk_f,
+                    nk_f_pl: nk.NOI_KHOA_CO_XUONG_KHOP_PL ?? prev.nk_f_pl,
+                    nk_g: nk.NOI_KHOA_THAN_KINH ?? prev.nk_g,
+                    nk_g_pl: nk.NOI_KHOA_THAN_KINH_PL ?? prev.nk_g_pl,
+                    nk_h: nk.NOI_KHOA_TAM_THAN ?? prev.nk_h,
+                    nk_h_pl: nk.NOI_KHOA_TAM_THAN_PL ?? prev.nk_h_pl,
+                  }),
+                  ...(ngk && {
+                    ngk: ngk.KET_QUA_KHAM_NGOAI_KHOA ?? prev.ngk,
+                    ngk_pl: ngk.KHAM_NGOAI_KHOA_PL ?? prev.ngk_pl,
+                  }),
+                  ...(dl && {
+                    dl: dl.KET_QUA_KHAM_DA_LIEU ?? prev.dl,
+                    dl_pl: dl.KHAM_DA_LIEU_PL ?? prev.dl_pl,
+                  }),
+                  ...(spk && {
+                    spk: spk.KET_QUA_KHAM_SAN_PHU_KHOA ?? prev.spk,
+                    spk_pl: spk.KHAM_SAN_PHU_KHOA_PL ?? prev.spk_pl,
+                  }),
+                  ...(mat && {
+                    mat_kk_phai: mat.KHONG_KINH_MAT_PHAI ?? prev.mat_kk_phai,
+                    mat_kk_trai: mat.KHONG_KINH_MAT_TRAI ?? prev.mat_kk_trai,
+                    mat_ck_phai: mat.CO_KINH_MAT_PHAI   ?? prev.mat_ck_phai,
+                    mat_ck_trai: mat.CO_KINH_MAT_TRAI   ?? prev.mat_ck_trai,
+                    mat_benh:    mat.BENH_KHAC_MAT      ?? prev.mat_benh,
+                    mat_pl:      mat.KHAM_MAT_PL        ?? prev.mat_pl,
+                  }),
+                  ...(tmh && {
+                    tmh_tt_trai: tmh.TAI_TRAI_NOI_THUONG  ?? prev.tmh_tt_trai,
+                    tmh_th_trai: tmh.TAI_TRAI_NOI_THAM    ?? prev.tmh_th_trai,
+                    tmh_tt_phai: tmh.TAI_PHAI_NOI_THUONG  ?? prev.tmh_tt_phai,
+                    tmh_th_phai: tmh.TAI_PHAI_NOI_THAM    ?? prev.tmh_th_phai,
+                    tmh_benh:    tmh.BENH_TAI_MUI_HONG    ?? prev.tmh_benh,
+                    tmh_pl:      tmh.KHAM_TAI_MUI_HONG_PL ?? prev.tmh_pl,
+                  }),
+                  ...(rhm && {
+                    rhm_hamTren: rhm.HAM_TREN               ?? prev.rhm_hamTren,
+                    rhm_hamDuoi: rhm.HAM_DUOI               ?? prev.rhm_hamDuoi,
+                    rhm_ketQua:  rhm.BENH_RANG_HAM_MAT      ?? prev.rhm_ketQua,
+                    rhm_benh:    rhm.BENH_KHAC_RANG_HAM_MAT ?? prev.rhm_benh,
+                    rhm_pl:      rhm.KHAM_RANG_HAM_MAT_PL   ?? prev.rhm_pl,
+                  }),
                 }));
-              }).catch(() => {});
+              });
             }
             setShowPatientPicker(false);
           }}

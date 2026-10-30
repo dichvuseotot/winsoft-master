@@ -171,6 +171,15 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
 
 
 
+          <FieldGroup label="Lý do khám sức khỏe" required>
+            <input
+              style={inputStyle}
+              type="text"
+              value={form.lyDoKham || ""}
+              onChange={set("lyDoKham")}
+            />
+          </FieldGroup>
+
           <FieldGroup label="Loại hình khám bệnh, chữa bệnh" required>
             <SearchableSingleSelect
               options={loaiHinhKCBOptions.map((o) => ({ value: o.Id, label: o.TenLoaiHinhKCB }))}
@@ -700,6 +709,63 @@ const THI_LUC_OPT = [
   "< 1/10",
 ];
 
+function NK({ label, fk, form, setForm, phanLoaiSucKhoeOptions }) {
+  const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
+  return (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "1fr 300px",
+        gap: "1.25rem",
+        padding: "1rem 0",
+        borderBottom: "1px solid var(--gray-100)",
+        alignItems: "start",
+      }}
+    >
+      <div>
+        <div style={{ fontSize: ".84rem", color: "var(--gray-700)", fontWeight: 500, marginBottom: ".5rem" }}>
+          {label}
+        </div>
+        <input style={{ ...inputStyle, marginBottom: ".5rem" }} type="text" value={form[fk] || ""} onChange={set(fk)} />
+        <label style={{ ...labelStyle, marginTop: ".25rem" }}>Phân loại</label>
+        <select style={inputStyle} value={form[`${fk}_pl`] || ""} onChange={set(`${fk}_pl`)}>
+          <option value="">—Chọn—</option>
+          {phanLoaiSucKhoeOptions.map((o) => (
+            <option key={o.Id} value={o.Id}>{o.TenPhanLoaiSucKhoe}</option>
+          ))}
+        </select>
+      </div>
+      <SignatureBox id={fk} />
+    </div>
+  );
+}
+
+function SimpleExam({ secLabel, resultLabel, fk, form, setForm, phanLoaiSucKhoeOptions }) {
+  const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
+  return (
+    <div style={{ marginTop: "1.25rem" }}>
+      <div style={subLabelStyle}>{secLabel}</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "1.25rem", alignItems: "start" }}>
+        <div>
+          <FieldGroup label={resultLabel}>
+            <input style={inputStyle} type="text" value={form[fk] || ""} onChange={set(fk)} />
+          </FieldGroup>
+          <div style={{ marginTop: ".5rem" }}>
+            <label style={labelStyle}>Phân loại</label>
+            <select style={inputStyle} value={form[`${fk}_pl`] || ""} onChange={set(`${fk}_pl`)}>
+              <option value="">—Chọn—</option>
+              {phanLoaiSucKhoeOptions.map((o) => (
+                <option key={o.Id} value={o.Id}>{o.TenPhanLoaiSucKhoe}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <SignatureBox id={fk} />
+      </div>
+    </div>
+  );
+}
+
 export function Tab5Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
   const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
 
@@ -719,71 +785,6 @@ export function Tab5Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
         <option key={o}>{o}</option>
       ))}
     </select>
-  );
-
-  const NK = ({ label, fk }) => (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 300px",
-        gap: "1.25rem",
-        padding: "1rem 0",
-        borderBottom: "1px solid var(--gray-100)",
-        alignItems: "start",
-      }}
-    >
-      <div>
-        <div
-          style={{
-            fontSize: ".84rem",
-            color: "var(--gray-700)",
-            fontWeight: 500,
-            marginBottom: ".5rem",
-          }}
-        >
-          {label}
-        </div>
-        <input
-          style={{ ...inputStyle, marginBottom: ".5rem" }}
-          type="text"
-          value={form[fk] || ""}
-          onChange={set(fk)}
-        />
-        <label style={{ ...labelStyle, marginTop: ".25rem" }}>Phân loại</label>
-        {plSelect(`${fk}_pl`)}
-      </div>
-      <SignatureBox id={fk} />
-    </div>
-  );
-
-  const SimpleExam = ({ secLabel, resultLabel, fk }) => (
-    <div style={{ marginTop: "1.25rem" }}>
-      <div style={subLabelStyle}>{secLabel}</div>
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 300px",
-          gap: "1.25rem",
-          alignItems: "start",
-        }}
-      >
-        <div>
-          <FieldGroup label={resultLabel}>
-            <input
-              style={inputStyle}
-              type="text"
-              value={form[fk] || ""}
-              onChange={set(fk)}
-            />
-          </FieldGroup>
-          <div style={{ marginTop: ".5rem" }}>
-            <label style={labelStyle}>Phân loại</label>
-            {plSelect(`${fk}_pl`)}
-          </div>
-        </div>
-        <SignatureBox id={fk} />
-      </div>
-    </div>
   );
 
   return (
@@ -815,31 +816,34 @@ export function Tab5Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
           Họ tên và chữ ký của bác sĩ
         </div>
       </div>
-      <NK label="a, Tuần hoàn" fk="nk_a" />
-      <NK label="b, Hô hấp" fk="nk_b" />
-      <NK label="c, Tiêu hóa" fk="nk_c" />
-      <NK label="d, Thận - Tiết niệu - Sinh dục" fk="nk_d" />
-      <NK label="e, Nội tiết" fk="nk_e" />
-      <NK label="f, Cơ - xương - khớp" fk="nk_f" />
-      <NK label="g, Thần kinh" fk="nk_g" />
-      <NK label="h, Tâm thần" fk="nk_h" />
+      <NK label="a, Tuần hoàn" fk="nk_a" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
+      <NK label="b, Hô hấp" fk="nk_b" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
+      <NK label="c, Tiêu hóa" fk="nk_c" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
+      <NK label="d, Thận - Tiết niệu - Sinh dục" fk="nk_d" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
+      <NK label="e, Nội tiết" fk="nk_e" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
+      <NK label="f, Cơ - xương - khớp" fk="nk_f" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
+      <NK label="g, Thần kinh" fk="nk_g" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
+      <NK label="h, Tâm thần" fk="nk_h" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
 
       <SimpleExam
         secLabel="2. Ngoại khoa"
         resultLabel="Kết quả khám ngoại khoa"
         fk="ngk"
+        form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions}
       />
 
       <SimpleExam
         secLabel="3. Da liễu"
         resultLabel="Kết quả khám da liễu"
         fk="dl"
+        form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions}
       />
 
       <SimpleExam
         secLabel="4. Sản phụ khoa"
         resultLabel="Kết quả khám sản phụ khoa"
         fk="spk"
+        form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions}
       />
 
       <div style={{ marginTop: "1.25rem" }}>
