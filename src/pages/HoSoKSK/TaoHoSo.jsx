@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { useNavigate } from "react-router";
 import "./TaoHoSo.css";
-import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content } from "./MauAdult";
+import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content, CLS_DINH_KY_DATA } from "./MauAdult";
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
 import { saveAdultTiepNhan, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
@@ -99,53 +99,27 @@ function PatientPickerModal({ onClose, onSelect, mauPhieu, gioiTinhOptions = [] 
           background: "var(--gray-100)",
           borderRadius: "var(--radius-lg)",
           width: "100%",
-          maxWidth: 640,
+          maxWidth: 960,
           boxShadow: "var(--shadow-xl)",
-          maxHeight: "80vh",
+          height: "85vh",
           display: "flex",
           flexDirection: "column",
+          overflow: "hidden",
         }}
       >
-        <div
-          style={{
-            padding: "1.25rem 1.5rem",
-            borderBottom: "1px solid var(--gray-200)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
+        {/* Header */}
+        <div style={{ padding: "1rem 1.25rem", borderBottom: "1px solid var(--gray-200)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: ".5rem" }}>
-            <i
-              className="bi bi-person-lines-fill"
-              style={{ color: "var(--primary)", fontSize: "1.1rem" }}
-            />
-            <span
-              style={{
-                fontFamily: "var(--font-display)",
-                fontWeight: 700,
-                fontSize: "1rem",
-                color: "var(--gray-900)",
-              }}
-            >
+            <i className="bi bi-person-lines-fill" style={{ color: "var(--primary)", fontSize: "1.1rem" }} />
+            <span style={{ fontFamily: "var(--font-display)", fontWeight: 700, fontSize: "1rem", color: "var(--gray-900)" }}>
               Danh sách bệnh nhân
             </span>
           </div>
-          <button
-            onClick={onClose}
-            style={{
-              border: "none",
-              background: "none",
-              cursor: "pointer",
-              color: "var(--gray-400)",
-              fontSize: "1.2rem",
-              lineHeight: 1,
-            }}
-          >
-            ×
-          </button>
+          <button onClick={onClose} style={{ border: "none", background: "none", cursor: "pointer", color: "var(--gray-400)", fontSize: "1.2rem", lineHeight: 1, padding: "0 .25rem" }}>×</button>
         </div>
-        <div style={{ padding: ".625rem 1.5rem", borderBottom: "1px solid var(--gray-200)", display: "flex", alignItems: "center", gap: ".5rem", flexWrap: "wrap" }}>
+
+        {/* Date filter */}
+        <div style={{ padding: ".625rem 1.25rem", borderBottom: "1px solid var(--gray-200)", display: "flex", alignItems: "center", gap: ".5rem", flexWrap: "wrap", flexShrink: 0 }}>
           <span style={{ fontSize: ".8rem", color: "var(--gray-500)", whiteSpace: "nowrap" }}>Từ ngày</span>
           <input
             type="date"
@@ -167,47 +141,23 @@ function PatientPickerModal({ onClose, onSelect, mauPhieu, gioiTinhOptions = [] 
             Tìm
           </button>
         </div>
-        <div
-          style={{
-            padding: ".75rem 1.5rem",
-            borderBottom: "1px solid var(--gray-200)",
-          }}
-        >
-          <div
-            className="patient-search-wrapper"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: ".5rem",
-              background: "#fff",
-              border: "1px solid var(--gray-200)",
-              borderRadius: "var(--radius-md)",
-              padding: ".4rem .75rem",
-              transition: "border-color .15s, box-shadow .15s",
-            }}
-          >
-            <i
-              className="bi bi-search"
-              style={{ color: "var(--gray-400)", fontSize: ".85rem" }}
-            />
+
+        {/* Search */}
+        <div style={{ padding: ".625rem 1.25rem", borderBottom: "1px solid var(--gray-200)", flexShrink: 0 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: ".5rem", background: "#fff", border: "1px solid var(--gray-200)", borderRadius: "var(--radius-md)", padding: ".4rem .75rem" }}>
+            <i className="bi bi-search" style={{ color: "var(--gray-400)", fontSize: ".85rem" }} />
             <input
               autoFocus
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Tìm theo tên hoặc số định danh..."
-              style={{
-                border: "none",
-                outline: "none",
-                boxShadow: "none",
-                background: "transparent",
-                fontSize: ".875rem",
-                width: "100%",
-                color: "var(--gray-800)",
-              }}
+              style={{ border: "none", outline: "none", boxShadow: "none", background: "transparent", fontSize: ".875rem", width: "100%", color: "var(--gray-800)" }}
             />
           </div>
         </div>
-        <div style={{ overflow: "auto", flex: 1, padding: "0 1rem 1rem" }}>
+
+        {/* Table content */}
+        <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
           {loading ? (
             <div style={{ padding: "3rem", textAlign: "center", color: "var(--gray-400)", fontSize: ".875rem" }}>
               <i className="bi bi-arrow-repeat" style={{ fontSize: "1.4rem", display: "block", marginBottom: ".5rem", opacity: .5 }} />
@@ -219,56 +169,54 @@ function PatientPickerModal({ onClose, onSelect, mauPhieu, gioiTinhOptions = [] 
               Không tìm thấy bệnh nhân
             </div>
           ) : (
-            <div style={{ borderRadius: 10, border: "1px solid var(--gray-200)", overflow: "auto", marginTop: ".75rem" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 620 }}>
-                <thead>
-                  <tr>
-                    <th style={thStyle}>#</th>
-                    <th style={thStyle}>ID</th>
-                    <th style={thStyle}>Họ tên</th>
-                    <th style={thStyle}>Giới tính</th>
-                    <th style={thStyle}>Ngày sinh</th>
-                    <th style={thStyle}>Số CCCD</th>
-                    <th style={thStyle}>Thời gian tạo</th>
-                    <th style={thStyle}>Lý do khám</th>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 700 }}>
+              <thead>
+                <tr style={{ position: "sticky", top: 0, zIndex: 1 }}>
+                  <th style={thStyle}>#</th>
+                  <th style={thStyle}>Họ tên</th>
+                  <th style={thStyle}>Giới tính</th>
+                  <th style={thStyle}>Ngày sinh</th>
+                  <th style={thStyle}>Số CCCD</th>
+                  <th style={thStyle}>Thời gian tạo</th>
+                  <th style={thStyle}>Lý do khám</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((p, i) => (
+                  <tr
+                    key={p.Id}
+                    onClick={async () => {
+                      const detail = await getThongTinHanhChinhById(p.Id).catch(() => null);
+                      onSelect(detail ?? p);
+                      onClose();
+                    }}
+                    style={{ cursor: "pointer", background: i % 2 === 0 ? "#fff" : "var(--gray-50)", transition: "background .12s" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--primary-bg)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = i % 2 === 0 ? "#fff" : "var(--gray-50)")}
+                  >
+                    <td style={{ ...tdStyle, color: "var(--gray-400)", width: 36, textAlign: "center" }}>{(page - 1) * PAGE_SIZE + i + 1}</td>
+                    <td style={{ ...tdStyle, color: "var(--gray-900)", fontWeight: 600 }}>{p.HO_TEN}</td>
+                    <td style={tdStyle}>
+                      <span style={{ padding: ".15em .55em", borderRadius: 99, fontSize: ".75rem", fontWeight: 600, background: p.GIOI_TINH === 0 ? "#dbeafe" : "#fce7f3", color: p.GIOI_TINH === 0 ? "#1d4ed8" : "#be185d" }}>
+                        {gioiTinhOptions.find((g) => g.Id === p.GIOI_TINH)?.TenGioiTinh ?? ""}
+                      </span>
+                    </td>
+                    <td style={tdStyle}>{p.NGAY_SINH ? p.NGAY_SINH.slice(0, 10) : "—"}</td>
+                    <td style={{ ...tdStyle, fontFamily: "monospace", letterSpacing: ".03em" }}>{p.SO_CCCD || "—"}</td>
+                    <td style={tdStyle}>{p.PostingDate ? new Date(p.PostingDate.replace('Z', '')).toLocaleString('vi-VN') : p.NGAY_VAO ?? '—'}</td>
+                    <td style={{ ...tdStyle, color: "var(--gray-400)", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.LY_DO_VV || "—"}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filtered.map((p, i) => (
-                    <tr
-                      key={p.Id}
-                      onClick={async () => {
-                        const detail = await getThongTinHanhChinhById(p.Id).catch(() => null);
-                        onSelect(detail ?? p);
-                        onClose();
-                      }}
-                      style={{ cursor: "pointer", background: i % 2 === 0 ? "#fff" : "var(--gray-50)", transition: "background .12s" }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "var(--primary-bg)")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = i % 2 === 0 ? "#fff" : "var(--gray-50)")}
-                    >
-                      <td style={{ ...tdStyle, color: "var(--gray-400)", width: 36, textAlign: "center" }}>{(page - 1) * PAGE_SIZE + i + 1}</td>
-                      <td style={{ ...tdStyle, fontFamily: "monospace", fontSize: ".75rem", color: "var(--gray-400)" }}>{p.Id}</td>
-                      <td style={{ ...tdStyle, color: "var(--gray-900)", fontWeight: 600 }}>{p.HO_TEN}</td>
-                      <td style={tdStyle}>
-                        <span style={{ padding: ".15em .55em", borderRadius: 99, fontSize: ".75rem", fontWeight: 600, background: p.GIOI_TINH === 0 ? "#dbeafe" : "#fce7f3", color: p.GIOI_TINH === 0 ? "#1d4ed8" : "#be185d" }}>
-                          {gioiTinhOptions.find((g) => g.Id === p.GIOI_TINH)?.TenGioiTinh ?? ""}
-                        </span>
-                      </td>
-                      <td style={tdStyle}>{p.NGAY_SINH}</td>
-                      <td style={{ ...tdStyle, fontFamily: "monospace", letterSpacing: ".03em" }}>{p.SO_CCCD}</td>
-                      <td style={tdStyle}>{p.PostingDate ? new Date(p.PostingDate.replace('Z', '')).toLocaleString('vi-VN') : p.NGAY_VAO ?? '—'}</td>
-                      <td style={{ ...tdStyle, color: "var(--gray-400)", maxWidth: 160, overflow: "hidden", textOverflow: "ellipsis" }}>{p.LY_DO_VV || "—"}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
           )}
         </div>
-        {totalPages > 1 && (
-          <div style={{ padding: ".625rem 1.5rem", borderTop: "1px solid var(--gray-200)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-            <span style={{ fontSize: ".78rem", color: "var(--gray-500)" }}>Tổng: {total} bản ghi</span>
-            <div style={{ display: "flex", gap: ".375rem", alignItems: "center" }}>
+
+        {/* Footer: total + pagination */}
+        <div style={{ padding: ".625rem 1.25rem", borderTop: "1px solid var(--gray-200)", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0, flexWrap: "wrap", gap: ".5rem" }}>
+          <span style={{ fontSize: ".78rem", color: "var(--gray-500)" }}>Tổng: {total} bản ghi</span>
+          {totalPages > 1 && (
+            <div style={{ display: "flex", gap: ".375rem", alignItems: "center", flexWrap: "wrap" }}>
               <button
                 disabled={page <= 1}
                 onClick={() => { const p = page - 1; setPage(p); fetchPatients(fromDate, toDate, p); }}
@@ -287,8 +235,8 @@ function PatientPickerModal({ onClose, onSelect, mauPhieu, gioiTinhOptions = [] 
                 style={{ height: 28, padding: "0 .625rem", border: "1px solid var(--gray-200)", borderRadius: 6, background: page >= totalPages ? "var(--gray-100)" : "#fff", color: page >= totalPages ? "var(--gray-400)" : "var(--gray-700)", cursor: page >= totalPages ? "default" : "pointer", fontSize: ".8rem" }}
               >›</button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );
@@ -334,6 +282,28 @@ function mapCLSToForm(clsItems) {
   const r = (chiSo) => find(chiSo)?.GIA_TRI ?? null;
   const id = (chiSo) => find(chiSo)?.Id ?? null;
   const khac = clsItems.find((i) => i.TEN_DICH_VU === "Cận lâm sàng khác");
+
+  const dkCodes = new Set(CLS_DINH_KY_DATA.map((d) => d.code));
+  const clsDynamic = clsItems
+    .filter((i) => dkCodes.has(i.TEN_CHI_SO))
+    .map((i) => {
+      const meta = CLS_DINH_KY_DATA.find((d) => d.code === i.TEN_CHI_SO);
+      return {
+        _key:        `${i.TEN_CHI_SO}_${i.Id ?? Date.now()}`,
+        _existingId: i.Id ?? null,
+        code:        i.TEN_CHI_SO,
+        name:        meta?.name ?? i.TEN_DICH_VU,
+        unit:        meta?.unit ?? "",
+        g1:          meta?.g1 ?? "",
+        g2:          meta?.g2 ?? "",
+        g3:          meta?.g3 ?? "",
+        donViDo:     i.DON_VI_DO ?? meta?.unit ?? "",
+        giaTri:      i.GIA_TRI ?? "",
+        moTa:        i.MO_TA ?? "",
+        ketLuan:     i.KET_LUAN ?? "",
+      };
+    });
+
   return {
     cls_huyetHoc:          r("Tổng phân tích tế bào máu ngoại vi"),
     cls_huyetHoc_id:       id("Tổng phân tích tế bào máu ngoại vi"),
@@ -358,6 +328,7 @@ function mapCLSToForm(clsItems) {
     cls_coKhac:            khac ? "Có" : "",
     cls_ketQuaChiTiet:     khac?.GIA_TRI ?? null,
     cls_ketQuaChiTiet_id:  khac?.Id ?? null,
+    clsDynamic,
   };
 }
 
@@ -419,6 +390,7 @@ export default function TaoHoSo() {
     gdICD10: [],
     kl_icd10: [],
     dieuTriICD10: [],
+    clsDynamic: [],
     thuocDangSD: "",
   });
 
@@ -461,8 +433,8 @@ export default function TaoHoSo() {
         soDinhDanh: p.SO_CCCD || prev.soDinhDanh,
         hoTen: p.HO_TEN || prev.hoTen,
         gioiTinh: p.GIOI_TINH ?? prev.gioiTinh,
-        ngaySinh: p.NGAY_SINH || prev.ngaySinh,
-        ngayCap: p.NGAYCAP_CCCD || prev.ngayCap,
+        ngaySinh: p.NGAY_SINH ? p.NGAY_SINH : prev.ngaySinh,
+        ngayCap: p.NGAYCAP_CCCD ? p.NGAYCAP_CCCD : prev.ngayCap,
         noiCap: p.NOICAP_CCCD || prev.noiCap,
         danToc: p.MA_DAN_TOC || prev.danToc,
         nhomMau: p.NHOM_MAU || prev.nhomMau,
@@ -476,7 +448,7 @@ export default function TaoHoSo() {
         doiTuongKham: p.DOI_TUONG || prev.doiTuongKham,
         nguonChiTra: p.NGUON_CHI_TRA ?? prev.nguonChiTra,
         loaiHinhKham: p.MA_LOAI_KCB || prev.loaiHinhKham,
-        ngayKham: p.NGAY_VAO || prev.ngayKham,
+        ngayKham: p.NGAY_VAO ? p.NGAY_VAO : prev.ngayKham,
         maLanKham: p.MA_LK || prev.maLanKham,
         hoTenNguoiDiCung: p.HO_TEN_NGUOI_DI_CUNG || prev.hoTenNguoiDiCung,
         soDinhDanhGiamHo: p.SO_CCCD_NGUOI_DI_CUNG || prev.soDinhDanhGiamHo,
@@ -967,8 +939,9 @@ export default function TaoHoSo() {
               soDinhDanh: p.SO_CCCD || prev.soDinhDanh,
               hoTen: p.HO_TEN || prev.hoTen,
               gioiTinh: p.GIOI_TINH ?? prev.gioiTinh,
-              ngaySinh: p.NGAY_SINH || prev.ngaySinh,
+              ngaySinh: p.NGAY_SINH ? p.NGAY_SINH.slice(0, 10) : prev.ngaySinh,
               ngheNghiep: p.MA_NGHE_NGHIEP || prev.ngheNghiep,
+              noiCongTac: p.NOI_LAM_VIEC_HOC_TAP || prev.noiCongTac,
               dienThoai: p.DIEN_THOAI || prev.dienThoai,
               tinhThanhPho: p.MATINH_CU_TRU || prev.tinhThanhPho,
               phuongXa: p.MAXA_CU_TRU || prev.phuongXa,
@@ -986,7 +959,7 @@ export default function TaoHoSo() {
               doiTuongKham: p.DOI_TUONG || prev.doiTuongKham,
               nguonChiTra: p.NGUON_CHI_TRA ?? prev.nguonChiTra,
               loaiHinhKham: p.MA_LOAI_KCB || prev.loaiHinhKham,
-              ngayKham: p.NGAY_VAO || prev.ngayKham,
+              ngayKham: p.NGAY_VAO ? p.NGAY_VAO.slice(0, 10) : prev.ngayKham,
               maLanKham: p.MA_LK || prev.maLanKham,
             }));
             const pid = p.Id ?? p.KSKCD_TiepNhanId ?? null;

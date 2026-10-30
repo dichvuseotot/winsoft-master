@@ -126,7 +126,7 @@ export async function saveAdultTiepNhan(form, mauPhieu, id = null) {
   }
 }
 
-function clsRecord(tiepNhanId, tenDichVu, tenChiSo, giaTri, donViDo = null, existingId = null) {
+function clsRecord(tiepNhanId, tenDichVu, tenChiSo, giaTri, donViDo = null, existingId = null, moTa = null, ketLuan = null) {
   return {
     ID_CLS:              existingId ?? generateId(),
     KSKCD_TiepNhanId:   tiepNhanId,
@@ -136,11 +136,11 @@ function clsRecord(tiepNhanId, tenDichVu, tenChiSo, giaTri, donViDo = null, exis
     TEN_CHI_SO:         tenChiSo,
     GIA_TRI:            giaTri,
     DON_VI_DO:          donViDo,
-    MO_TA:              null,
-    KET_LUAN:           null,
+    MO_TA:              moTa,
+    KET_LUAN:           ketLuan,
     CKDT_KET_QUA_CLS:   null,
-    EmployeeCode:       "1",
-    EmployeeCodeDoctor: "Nghia",
+    EmployeeCode_CLS:       "1",
+    EmployeeCodeDoctor_CLS: "Nghia",
     PostingDate:        nowVN(),
   };
 }
@@ -159,6 +159,10 @@ function buildCLSItems(form, tiepNhanId) {
   if (form.cls_sieuAm)       items.push(clsRecord(tiepNhanId, "Chẩn đoán hình ảnh",   "Siêu âm",                            form.cls_sieuAm,       null,     form.cls_sieuAm_id));
   if (form.cls_coKhac === "Có" && form.cls_ketQuaChiTiet)
     items.push(clsRecord(tiepNhanId, "Cận lâm sàng khác", "Kết quả chi tiết", form.cls_ketQuaChiTiet, null, form.cls_ketQuaChiTiet_id));
+  for (const dk of (form.clsDynamic || [])) {
+    if (dk.giaTri)
+      items.push(clsRecord(tiepNhanId, dk.name, dk.code, dk.giaTri, dk.donViDo || null, dk._existingId ?? null, dk.moTa || null, dk.ketLuan || null));
+  }
   return items;
 }
 
@@ -212,7 +216,6 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     EmployeeCode_TienSuBenh:      "1",
     EmployeeCodeDoctor_TienSuBenh: "Nghia",
     DepartmentCode:               null,
-    PostingDate:                  nowVN(),
 
     // ── Tiền sử bệnh bản thân ─────────────────────────────────────────────
     TSBT_BENH_TRONG_5_NAM_QUA:   form.bt_0  === "Có" ? 1 : 0,
@@ -260,7 +263,6 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     KHAM_THE_LUC_PL: form.phanLoaiTheLuc ? Number(form.phanLoaiTheLuc) : null,
     EmployeeCode_TheLuc: "1",
     EmployeeCodeDoctor_TheLuc: "Nghia",
-    PostingDate: nowVN(),
 
     // ── Nội khoa ──────────────────────────────────────────────────────────
     Id_NoiKhoa: generateId(),
@@ -308,9 +310,9 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     CKDT_KHAM_DA_LIEU:           null,
 
     // ── Sản phụ khoa ──────────────────────────────────────────────────────
-    Id_SanPhuKhoa:                generateId(),
-    EmployeeCode_SanPhuKhoa:      "1",
-    EmployeeCodeDoctor_SanPhuKhoa: "Nghia",
+    Id_SPK:                generateId(),
+    EmployeeCode_SPK:      "1",
+    EmployeeCodeDoctor_SPK: "Nghia",
     KET_QUA_KHAM_SAN_PHU_KHOA:  form.spk    || null,
     KHAM_SAN_PHU_KHOA_PL:       form.spk_pl ? Number(form.spk_pl) : null,
     CKDT_KHAM_SAN_PHU_KHOA:     null,

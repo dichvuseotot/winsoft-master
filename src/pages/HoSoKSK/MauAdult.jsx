@@ -19,9 +19,14 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
             <input
               style={inputStyle}
               type="text"
+              inputMode="numeric"
               value={form.soDinhDanh}
-              onChange={set("soDinhDanh")}
+              onChange={(e) => {
+                const v = e.target.value.replace(/\D/g, "").slice(0, 12);
+                setForm((prev) => ({ ...prev, soDinhDanh: v }));
+              }}
               placeholder="Nhập đủ 12 số CCCD/ÐĐCN..."
+              maxLength={12}
             />
           </FieldGroup>
 
@@ -1114,22 +1119,48 @@ export function Tab5Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
   );
 }
 
-const CLS_CHISO_OPTIONS = [
-  "-- Chọn Chỉ Số --",
-  "Điện tâm đồ (ECG)",
-  "Siêu âm ổ bụng",
-  "Siêu âm tim",
-  "Đo loãng xương",
-  "Xét nghiệm HIV",
-  "Xét nghiệm viêm gan B (HBsAg)",
-  "Xét nghiệm viêm gan C",
-  "Tầm soát ung thư cổ tử cung (Pap smear)",
-  "Tầm soát ung thư vú (Mammography)",
+export const CLS_DINH_KY_DATA = [
+  { code: "H01", name: "Số lượng hồng cầu",                         unit: "x10¹²/lit", g1: "1. HUYẾT HỌC- TRUYỀN MÁU", g2: "1.1. TẾ BÀO MÁU NGOẠI VI", g3: "1.1.1. Hồng cầu" },
+  { code: "H02", name: "Huyết sắc tố",                              unit: "g/lit",      g1: "1. HUYẾT HỌC- TRUYỀN MÁU", g2: "1.1. TẾ BÀO MÁU NGOẠI VI", g3: "1.1.1. Hồng cầu" },
+  { code: "H03", name: "Hematocrit",                                 unit: "1/lit",      g1: "1. HUYẾT HỌC- TRUYỀN MÁU", g2: "1.1. TẾ BÀO MÁU NGOẠI VI", g3: "1.1.1. Hồng cầu" },
+  { code: "H04", name: "Thể tích trung bình hồng cầu (MCV)",        unit: "fl",         g1: "1. HUYẾT HỌC- TRUYỀN MÁU", g2: "1.1. TẾ BÀO MÁU NGOẠI VI", g3: "1.1.1. Hồng cầu" },
+  { code: "H05", name: "Lượng HST trung bình hồng cầu (MCH)",       unit: "pg",         g1: "1. HUYẾT HỌC- TRUYỀN MÁU", g2: "1.1. TẾ BÀO MÁU NGOẠI VI", g3: "1.1.1. Hồng cầu" },
+  { code: "H06", name: "Nồng độ HST trung bình hồng cầu (MCHC)",    unit: "g/l",        g1: "1. HUYẾT HỌC- TRUYỀN MÁU", g2: "1.1. TẾ BÀO MÁU NGOẠI VI", g3: "1.1.1. Hồng cầu" },
+  { code: "H07", name: "Độ phân tán của đường kính hồng cầu (RDW)", unit: "",           g1: "1. HUYẾT HỌC- TRUYỀN MÁU", g2: "1.1. TẾ BÀO MÁU NGOẠI VI", g3: "1.1.1. Hồng cầu" },
+  { code: "H08", name: "Hồng cầu lưới",                             unit: "%",          g1: "1. HUYẾT HỌC- TRUYỀN MÁU", g2: "1.1. TẾ BÀO MÁU NGOẠI VI", g3: "1.1.1. Hồng cầu" },
 ];
 
 export function Tab6Content({ form, setForm }) {
   const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
   const setRadio = (key) => (val) => setForm((p) => ({ ...p, [key]: val }));
+
+  const [clsDKSelected, setClsDKSelected] = useState("");
+
+  const addDKItem = () => {
+    const item = CLS_DINH_KY_DATA.find((d) => d.code === clsDKSelected);
+    if (!item) return;
+    setForm((prev) => ({
+      ...prev,
+      clsDynamic: [...(prev.clsDynamic || []), {
+        _key: `${item.code}_${Date.now()}`,
+        ...item,
+        donViDo: item.unit,
+        giaTri: "",
+        moTa: "",
+        ketLuan: "",
+      }],
+    }));
+    setClsDKSelected("");
+  };
+
+  const updateDKItem = (key, field, value) =>
+    setForm((prev) => ({
+      ...prev,
+      clsDynamic: (prev.clsDynamic || []).map((i) => i._key === key ? { ...i, [field]: value } : i),
+    }));
+
+  const removeDKItem = (key) =>
+    setForm((prev) => ({ ...prev, clsDynamic: (prev.clsDynamic || []).filter((i) => i._key !== key) }));
 
   const inp = (key, placeholder = "Nhập kết quả...") => (
     <input
@@ -1329,54 +1360,89 @@ export function Tab6Content({ form, setForm }) {
         </div>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: ".75rem",
-          paddingTop: "1rem",
-          borderTop: "1px solid var(--gray-100)",
-        }}
-      >
-        <span
-          style={{
-            fontSize: ".84rem",
-            fontWeight: 600,
-            color: "#2563eb",
-            whiteSpace: "nowrap",
-          }}
-        >
-          Khám sức khoẻ định kỳ
-        </span>
-        <select
-          value={form.cls_chiSo || ""}
-          onChange={set("cls_chiSo")}
-          style={{ ...inputStyle, flex: 1 }}
-        >
-          {CLS_CHISO_OPTIONS.map((o) => (
-            <option key={o} value={o === "-- Chọn Chỉ Số --" ? "" : o}>
-              {o}
-            </option>
-          ))}
-        </select>
-        <button
-          style={{
-            height: 38,
-            padding: "0 1rem",
-            whiteSpace: "nowrap",
-            background: "#2563eb",
-            color: "#fff",
-            border: "none",
-            borderRadius: "var(--radius-md, 8px)",
-            fontWeight: 600,
-            fontSize: ".84rem",
-            cursor: "pointer",
-            fontFamily: "var(--font-body)",
-            flexShrink: 0,
-          }}
-        >
-          + Thêm dịch vụ Cận lâm sàng
-        </button>
+      {/* ── Khám sức khoẻ định kỳ ── */}
+      <div style={{ paddingTop: "1rem", borderTop: "1px solid var(--gray-100)" }}>
+        {/* Search + Add bar */}
+        <div style={{ display: "flex", alignItems: "center", gap: ".75rem", marginBottom: (form.clsDynamic || []).length ? "1.25rem" : 0 }}>
+          <span style={{ fontSize: ".84rem", fontWeight: 600, color: "#2563eb", whiteSpace: "nowrap" }}>Khám sức khoẻ định kỳ</span>
+          <div style={{ flex: 1 }}>
+            <SearchableSingleSelect
+              value={clsDKSelected}
+              onChange={setClsDKSelected}
+              options={CLS_DINH_KY_DATA.map((d) => ({ value: d.code, label: `${d.code} — ${d.name}` }))}
+              placeholder="-- Chọn chỉ số --"
+            />
+          </div>
+          <button
+            onClick={addDKItem}
+            disabled={!clsDKSelected}
+            style={{ height: 38, padding: "0 1rem", whiteSpace: "nowrap", background: clsDKSelected ? "#2563eb" : "#bfdbfe", color: "#fff", border: "none", borderRadius: "var(--radius-md, 8px)", fontWeight: 600, fontSize: ".84rem", cursor: clsDKSelected ? "pointer" : "default", fontFamily: "var(--font-body)", flexShrink: 0 }}
+          >
+            + Thêm dịch vụ Cận lâm sàng
+          </button>
+        </div>
+
+        {/* Grouped dynamic items */}
+        {(() => {
+          const items = form.clsDynamic || [];
+          if (!items.length) return null;
+          const g1List = [...new Set(items.map((i) => i.g1))];
+          return g1List.map((g1) => {
+            const g1Items = items.filter((i) => i.g1 === g1);
+            const g2List = [...new Set(g1Items.map((i) => i.g2))];
+            return (
+              <div key={g1} style={{ marginBottom: "1.25rem" }}>
+                <div style={{ fontSize: ".9rem", fontWeight: 700, color: "var(--gray-900)", paddingBottom: ".4rem", borderBottom: "2px solid #2563eb", marginBottom: ".75rem" }}>{g1}</div>
+                {g2List.map((g2) => {
+                  const g2Items = g1Items.filter((i) => i.g2 === g2);
+                  const g3List = [...new Set(g2Items.map((i) => i.g3))];
+                  return (
+                    <div key={g2} style={{ marginBottom: ".75rem" }}>
+                      <div style={{ fontSize: ".72rem", fontWeight: 700, color: "var(--gray-500)", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: ".5rem" }}>{g2}</div>
+                      {g3List.map((g3) => {
+                        const g3Items = g2Items.filter((i) => i.g3 === g3);
+                        return (
+                          <div key={g3} style={{ marginBottom: ".5rem" }}>
+                            <div style={{ fontSize: ".82rem", fontWeight: 700, color: "var(--gray-800)", marginBottom: ".5rem" }}>{g3}</div>
+                            {[...g3Items].reverse().map((item) => (
+                              <div key={item._key} style={{ background: "var(--gray-50)", border: "1px solid var(--gray-200)", borderRadius: 8, padding: ".75rem", marginBottom: ".5rem" }}>
+                                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: ".5rem" }}>
+                                  <span style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--gray-700)" }}>
+                                    {item.code} - {item.name}{item.unit ? ` (${item.unit})` : ""}
+                                  </span>
+                                  <button onClick={() => removeDKItem(item._key)} style={{ background: "none", border: "none", cursor: "pointer", color: "var(--gray-400)", fontSize: "1.1rem", lineHeight: 1, padding: "0 .25rem" }}>×</button>
+                                </div>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 2fr 2fr", gap: "1.25rem" }}>
+                                  <div>
+                                    <div style={{ fontSize: ".75rem", color: "var(--gray-500)", marginBottom: ".25rem" }}>Giá trị</div>
+                                    <input style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }} placeholder="Nhập kết quả..." value={item.giaTri} onChange={(e) => updateDKItem(item._key, "giaTri", e.target.value)} />
+                                  </div>
+                                  <div>
+                                    <div style={{ fontSize: ".75rem", color: "var(--gray-500)", marginBottom: ".25rem" }}>Đơn vị đo</div>
+                                    <input style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }} placeholder="Nhập đơn vị..." value={item.donViDo} onChange={(e) => updateDKItem(item._key, "donViDo", e.target.value)} />
+                                  </div>
+                                  <div>
+                                    <div style={{ fontSize: ".75rem", color: "var(--gray-500)", marginBottom: ".25rem" }}>Mô tả</div>
+                                    <textarea style={{ ...textareaStyle, minHeight: 58, width: "100%", boxSizing: "border-box" }} rows={2} placeholder="Nhập mô tả..." value={item.moTa} onChange={(e) => updateDKItem(item._key, "moTa", e.target.value)} />
+                                  </div>
+                                  <div>
+                                    <div style={{ fontSize: ".75rem", color: "var(--gray-500)", marginBottom: ".25rem" }}>Kết luận</div>
+                                    <textarea style={{ ...textareaStyle, minHeight: 58, width: "100%", boxSizing: "border-box" }} rows={2} placeholder="Nhập kết luận..." value={item.ketLuan} onChange={(e) => updateDKItem(item._key, "ketLuan", e.target.value)} />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          });
+        })()}
+
       </div>
     </Card>
   );
