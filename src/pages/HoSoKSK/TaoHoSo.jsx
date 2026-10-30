@@ -278,19 +278,26 @@ function mapTSBToForm(tsb) {
 }
 
 function mapCLSToForm(clsItems) {
+  const itemId = (i) => i.Id ?? i.ID_CLS ?? null;
   const find = (chiSo) => clsItems.find((i) => i.TEN_CHI_SO === chiSo);
   const r = (chiSo) => find(chiSo)?.GIA_TRI ?? null;
-  const id = (chiSo) => find(chiSo)?.Id ?? null;
+  const id = (chiSo) => itemId(find(chiSo) ?? {});
   const khac = clsItems.find((i) => i.TEN_DICH_VU === "Cận lâm sàng khác");
 
   const dkCodes = new Set(CLS_DINH_KY_DATA.map((d) => d.code));
-  const clsDynamic = clsItems
+  // Deduplicate: mỗi code chỉ lấy 1 item (item cuối = mới nhất)
+  const seen = new Set();
+  const uniqueDkItems = clsItems
     .filter((i) => dkCodes.has(i.TEN_CHI_SO))
-    .map((i) => {
+    .reduceRight((acc, i) => {
+      if (!seen.has(i.TEN_CHI_SO)) { seen.add(i.TEN_CHI_SO); acc.unshift(i); }
+      return acc;
+    }, []);
+  const clsDynamic = uniqueDkItems.map((i) => {
       const meta = CLS_DINH_KY_DATA.find((d) => d.code === i.TEN_CHI_SO);
       return {
-        _key:        `${i.TEN_CHI_SO}_${i.Id ?? Date.now()}`,
-        _existingId: i.Id ?? null,
+        _key:        `${i.TEN_CHI_SO}_${itemId(i) ?? Date.now()}`,
+        _existingId: itemId(i),
         code:        i.TEN_CHI_SO,
         name:        meta?.name ?? i.TEN_DICH_VU,
         unit:        meta?.unit ?? "",
@@ -721,7 +728,15 @@ export default function TaoHoSo() {
                   setSaving(true);
                   try {
                     const result = await saveAdultTiepNhan(form, mauPhieu, tiepNhanId || null);
-                    if (result?.TiepNhanId) setTiepNhanId(result.TiepNhanId);
+                    const savedId = result?.TiepNhanId;
+                    if (savedId) {
+                      setTiepNhanId(savedId);
+                      // Re-fetch CLS để cập nhật _existingId cho clsDynamic, tránh tạo duplicate
+                      const clsItems = await getCLS(savedId).catch(() => []);
+                      if (clsItems.length > 0) {
+                        setForm((prev) => ({ ...prev, ...mapCLSToForm(clsItems) }));
+                      }
+                    }
                   } catch {
                     // handled inside service
                   } finally {
