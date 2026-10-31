@@ -31,9 +31,7 @@ export async function saveBungCoQuanSinhDuc(form, kskcdTiepNhanId) {
       EmployeeCodeDoctor: "Nghĩa",
       PostingDate: nowVN(),
     };
-    console.log("[saveBungCoQuanSinhDuc] payload:", payload);
     const res = await api.post("/add-update-bung-co-quang-sinh-duc", payload);
-    console.log("[saveBungCoQuanSinhDuc] response:", res);
     if (res?.Code !== "ok") throw new Error(res?.Content || "Lỗi không xác định");
     await Swal.fire({ icon: "success", title: "Lưu thành công", text: res.Content, confirmButtonText: "OK", confirmButtonColor: "#16a34a" });
     return res;

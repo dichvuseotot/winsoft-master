@@ -64,45 +64,6 @@ export async function saveAdultTiepNhan(form, mauPhieu, id = null) {
     const payload = toPayload(form, mauPhieu, resolvedId, id);
     console.log(`[saveAdultTiepNhan] TYPE: ${id ? "UPDATE" : "ADD"} | id:`, id);
     console.log("[saveAdultTiepNhan] payload:", payload);
-    console.log("[Tiền sử bệnh]", {
-      // Gia đình
-      Id_TienSuBenh:                payload.Id_TienSuBenh,
-      TSGD_MAC_BENH:                payload.TSGD_MAC_BENH,
-      TSGD_MA_BENH:                 payload.TSGD_MA_BENH,
-      TSGD_MA_BENH_FULL:            payload.TSGD_MA_BENH_FULL,
-      EmployeeCode_TienSuBenh:      payload.EmployeeCode_TienSuBenh,
-      EmployeeCodeDoctor_TienSuBenh: payload.EmployeeCodeDoctor_TienSuBenh,
-      DepartmentCode:               payload.DepartmentCode,
-      PostingDate:                  payload.PostingDate,
-      // Bản thân
-      TSBT_BENH_TRONG_5_NAM_QUA:   payload.TSBT_BENH_TRONG_5_NAM_QUA,
-      TSBT_BENH_THAN_KINH:         payload.TSBT_BENH_THAN_KINH,
-      TSBT_BENH_MAT:               payload.TSBT_BENH_MAT,
-      TSBT_BENH_TAI:               payload.TSBT_BENH_TAI,
-      TSBT_BENH_TIM:               payload.TSBT_BENH_TIM,
-      TSBT_PHAU_THUAT_TIM:         payload.TSBT_PHAU_THUAT_TIM,
-      TSBT_TANG_HUYET_AP:          payload.TSBT_TANG_HUYET_AP,
-      TSBT_KHO_THO:                payload.TSBT_KHO_THO,
-      TSBT_BENH_PHOI:              payload.TSBT_BENH_PHOI,
-      TSBT_BENH_THAN:              payload.TSBT_BENH_THAN,
-      TSBT_NGHIEN_RUOU:            payload.TSBT_NGHIEN_RUOU,
-      TSBT_DAI_THAO_DUONG:         payload.TSBT_DAI_THAO_DUONG,
-      TSBT_BENH_TAM_THAN:          payload.TSBT_BENH_TAM_THAN,
-      TSBT_MAT_Y_THUC:             payload.TSBT_MAT_Y_THUC,
-      TSBT_NGAT:                   payload.TSBT_NGAT,
-      TSBT_BENH_TIEU_HOA:          payload.TSBT_BENH_TIEU_HOA,
-      TSBT_ROI_LOAN_GIAC_NGU:      payload.TSBT_ROI_LOAN_GIAC_NGU,
-      TSBT_TAI_BIEN:               payload.TSBT_TAI_BIEN,
-      TSBT_BENH_COT_SONG:          payload.TSBT_BENH_COT_SONG,
-      TSBT_RUOU_THUONG_XUYEN:      payload.TSBT_RUOU_THUONG_XUYEN,
-      TSBT_MA_TUY:                 payload.TSBT_MA_TUY,
-      TSBT_BENH_KHAC:              payload.TSBT_BENH_KHAC,
-      TSBT_MA_BENH_KHAC:           payload.TSBT_MA_BENH_KHAC,       // benhKhacChiTiet (ICD bt_21)
-      TSBT_MA_BENH_KHAC_FULL:      payload.TSBT_MA_BENH_KHAC_FULL,
-      TSBT_DANG_DIEU_TRI_BENH:     payload.TSBT_DANG_DIEU_TRI_BENH,
-      BENH_DANG_DIEU_TRI:          payload.BENH_DANG_DIEU_TRI,
-      TSBT_TEN_THUOC_LIEU_LUONG:   payload.TSBT_TEN_THUOC_LIEU_LUONG,
-    });
     const result = await api.post("/add-update-tiep-nhan", payload);
     const TiepNhanId = result.data?.ID ?? result.ID ?? resolvedId;
     await Swal.fire({
@@ -270,7 +231,7 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     EmployeeCodeDoctor_NoiKhoa: "Nghia",
     NOI_KHOA_TUAN_HOAN:         form.nk_a   || null,
     NOI_KHOA_TUAN_HOAN_PL:      form.nk_a_pl ? Number(form.nk_a_pl) : null,
-    CKDT_NOI_KHOA_TUAN_HOAN:    null,
+    CKDT_NOI_KHOA_TUAN_HOAN:    form.nk_a_ckdt || null,
     NOI_KHOA_HO_HAP:             form.nk_b   || null,
     NOI_KHOA_HO_HAP_PL:          form.nk_b_pl ? Number(form.nk_b_pl) : null,
     CKDT_NOI_KHOA_HO_HAP:        null,

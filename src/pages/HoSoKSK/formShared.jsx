@@ -657,11 +657,10 @@ export const subLabelStyle = {
   marginBottom: ".75rem",
 };
 
-export function SignatureBox({ id }) {
+export function SignatureBox({ id, onChange }) {
   const canvasRef = useRef(null);
   const [tab, setTab] = useState("sign");
   const [fileName, setFileName] = useState("");
-  const [hasSig, setHasSig] = useState(false);
   const drawing = useRef(false);
   const lastPos = useRef(null);
 
@@ -690,15 +689,17 @@ export function SignatureBox({ id }) {
     ctx.lineCap = "round";
     ctx.stroke();
     lastPos.current = pos;
-    setHasSig(true);
   };
   const onUp = () => {
+    if (!drawing.current) return;
     drawing.current = false;
+    if (onChange && canvasRef.current) {
+      onChange(canvasRef.current.toDataURL("image/png"));
+    }
   };
   const clear = () => {
     const c = canvasRef.current;
     if (c) c.getContext("2d").clearRect(0, 0, c.width, c.height);
-    setHasSig(false);
   };
 
   return (
@@ -782,24 +783,6 @@ export function SignatureBox({ id }) {
               <span style={{ fontSize: ".72rem", color: "var(--gray-400)" }}>
                 Bấm ra ngoài để hoàn thành
               </span>
-              {hasSig && (
-                <button
-                  style={{
-                    height: 26,
-                    padding: "0 .6rem",
-                    background: "#2563eb",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 6,
-                    fontSize: ".72rem",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    fontFamily: "var(--font-body)",
-                  }}
-                >
-                  Xong ✓
-                </button>
-              )}
             </div>
           </div>
         </>

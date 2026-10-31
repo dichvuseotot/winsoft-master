@@ -479,6 +479,7 @@ export default function TaoHoSo() {
         // Nội khoa
         nk_a: nk?.NOI_KHOA_TUAN_HOAN ?? prev.nk_a,
         nk_a_pl: nk?.NOI_KHOA_TUAN_HOAN_PL ?? prev.nk_a_pl,
+        nk_a_ckdt: nk?.CKDT_NOI_KHOA_TUAN_HOAN ?? prev.nk_a_ckdt,
         nk_b: nk?.NOI_KHOA_HO_HAP ?? prev.nk_b,
         nk_b_pl: nk?.NOI_KHOA_HO_HAP_PL ?? prev.nk_b_pl,
         nk_c: nk?.NOI_KHOA_TIEU_HOA ?? prev.nk_c,
@@ -1038,6 +1039,7 @@ export default function TaoHoSo() {
                   ...(nk && {
                     nk_a: nk.NOI_KHOA_TUAN_HOAN ?? prev.nk_a,
                     nk_a_pl: nk.NOI_KHOA_TUAN_HOAN_PL ?? prev.nk_a_pl,
+                    nk_a_ckdt: nk.CKDT_NOI_KHOA_TUAN_HOAN ?? prev.nk_a_ckdt,
                     nk_b: nk.NOI_KHOA_HO_HAP ?? prev.nk_b,
                     nk_b_pl: nk.NOI_KHOA_HO_HAP_PL ?? prev.nk_b_pl,
                     nk_c: nk.NOI_KHOA_TIEU_HOA ?? prev.nk_c,

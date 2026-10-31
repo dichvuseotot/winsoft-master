@@ -739,7 +739,7 @@ const THI_LUC_OPT = [
   "< 1/10",
 ];
 
-function NK({ label, fk, form, setForm, phanLoaiSucKhoeOptions }) {
+function NK({ label, fk, form, setForm, phanLoaiSucKhoeOptions, ckdtKey }) {
   const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
   return (
     <div
@@ -765,7 +765,7 @@ function NK({ label, fk, form, setForm, phanLoaiSucKhoeOptions }) {
           ))}
         </select>
       </div>
-      <SignatureBox id={fk} />
+      <SignatureBox id={fk} onChange={ckdtKey ? (v) => setForm((p) => ({ ...p, [ckdtKey]: v })) : undefined} />
     </div>
   );
 }
@@ -846,7 +846,7 @@ export function Tab5Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
           Họ tên và chữ ký của bác sĩ
         </div>
       </div>
-      <NK label="a, Tuần hoàn" fk="nk_a" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
+      <NK label="a, Tuần hoàn" fk="nk_a" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} ckdtKey="nk_a_ckdt" />
       <NK label="b, Hô hấp" fk="nk_b" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
       <NK label="c, Tiêu hóa" fk="nk_c" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
       <NK label="d, Thận - Tiết niệu - Sinh dục" fk="nk_d" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
