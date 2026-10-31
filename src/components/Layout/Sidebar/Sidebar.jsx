@@ -18,6 +18,12 @@ const NAV_SECTIONS = [
       { path: '/nhap-du-lieu-api', icon: 'bi-diagram-3-fill',  label: 'Nhập dữ liệu từ API' },
     ],
   },
+  {
+    label: 'Hệ thống',
+    items: [
+      { path: '/connect-api', icon: 'bi-plug-fill', label: 'Kết nối API' },
+    ],
+  },
 ]
 
 export default function Sidebar({ collapsed, mobileOpen, onOverlayClick, onLogout }) {

@@ -10,5 +10,6 @@ export default [
     route('xuat-du-lieu', '../src/pages/XuatDuLieu/XuatDuLieu.jsx'),
     route('nhap-du-lieu-api', '../src/pages/NhapDuLieuAPI/NhapDuLieuAPI.jsx'),
     route('cai-dat', '../src/pages/CaiDat/CaiDat.jsx'),
+    route('connect-api', '../src/pages/KetNoiAPI/KetNoiAPI.jsx'),
   ]),
 ]

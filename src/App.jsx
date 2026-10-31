@@ -9,6 +9,7 @@ import XuatDuLieu from './pages/XuatDuLieu/XuatDuLieu.jsx'
 import NhapDuLieuAPI from './pages/NhapDuLieuAPI/NhapDuLieuAPI.jsx'
 import TaoHoSo from './pages/HoSoKSK/TaoHoSo.jsx'
 import CaiDat from './pages/CaiDat/CaiDat.jsx'
+import KetNoiAPI from './pages/KetNoiAPI/KetNoiAPI.jsx'
 
 function PrivateRoute({ children }) {
   const { user } = useAuth()
@@ -46,6 +47,7 @@ function AppRoutes() {
         <Route path="xuat-du-lieu" element={<XuatDuLieu />} />
         <Route path="nhap-du-lieu-api" element={<NhapDuLieuAPI />} />
         <Route path="cai-dat" element={<CaiDat />} />
+        <Route path="connect-api" element={<KetNoiAPI />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
