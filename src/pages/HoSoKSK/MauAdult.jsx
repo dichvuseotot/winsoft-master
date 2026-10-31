@@ -765,12 +765,12 @@ function NK({ label, fk, form, setForm, phanLoaiSucKhoeOptions, ckdtKey }) {
           ))}
         </select>
       </div>
-      <SignatureBox id={fk} onChange={ckdtKey ? (v) => setForm((p) => ({ ...p, [ckdtKey]: v })) : undefined} />
+      <SignatureBox id={fk} value={ckdtKey ? form[ckdtKey] : undefined} onChange={ckdtKey ? (v) => setForm((p) => ({ ...p, [ckdtKey]: v })) : undefined} />
     </div>
   );
 }
 
-function SimpleExam({ secLabel, resultLabel, fk, form, setForm, phanLoaiSucKhoeOptions }) {
+function SimpleExam({ secLabel, resultLabel, fk, form, setForm, phanLoaiSucKhoeOptions, ckdtKey }) {
   const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
   return (
     <div style={{ marginTop: "1.25rem" }}>
@@ -790,7 +790,7 @@ function SimpleExam({ secLabel, resultLabel, fk, form, setForm, phanLoaiSucKhoeO
             </select>
           </div>
         </div>
-        <SignatureBox id={fk} />
+        <SignatureBox id={fk} value={ckdtKey ? form[ckdtKey] : undefined} onChange={ckdtKey ? (v) => setForm((p) => ({ ...p, [ckdtKey]: v })) : undefined} />
       </div>
     </div>
   );
@@ -847,19 +847,20 @@ export function Tab5Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
         </div>
       </div>
       <NK label="a, Tuần hoàn" fk="nk_a" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} ckdtKey="nk_a_ckdt" />
-      <NK label="b, Hô hấp" fk="nk_b" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
-      <NK label="c, Tiêu hóa" fk="nk_c" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
-      <NK label="d, Thận - Tiết niệu - Sinh dục" fk="nk_d" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
-      <NK label="e, Nội tiết" fk="nk_e" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
-      <NK label="f, Cơ - xương - khớp" fk="nk_f" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
-      <NK label="g, Thần kinh" fk="nk_g" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
-      <NK label="h, Tâm thần" fk="nk_h" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
+      <NK label="b, Hô hấp" fk="nk_b" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} ckdtKey="nk_b_ckdt" />
+      <NK label="c, Tiêu hóa" fk="nk_c" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} ckdtKey="nk_c_ckdt" />
+      <NK label="d, Thận - Tiết niệu - Sinh dục" fk="nk_d" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} ckdtKey="nk_d_ckdt" />
+      <NK label="e, Nội tiết" fk="nk_e" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} ckdtKey="nk_e_ckdt" />
+      <NK label="f, Cơ - xương - khớp" fk="nk_f" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} ckdtKey="nk_f_ckdt" />
+      <NK label="g, Thần kinh" fk="nk_g" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} ckdtKey="nk_g_ckdt" />
+      <NK label="h, Tâm thần" fk="nk_h" form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} ckdtKey="nk_h_ckdt" />
 
       <SimpleExam
         secLabel="2. Ngoại khoa"
         resultLabel="Kết quả khám ngoại khoa"
         fk="ngk"
         form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions}
+        ckdtKey="ngk_ckdt"
       />
 
       <SimpleExam
@@ -867,6 +868,7 @@ export function Tab5Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
         resultLabel="Kết quả khám da liễu"
         fk="dl"
         form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions}
+        ckdtKey="dl_ckdt"
       />
 
       <SimpleExam
@@ -874,6 +876,7 @@ export function Tab5Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
         resultLabel="Kết quả khám sản phụ khoa"
         fk="spk"
         form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions}
+        ckdtKey="spk_ckdt"
       />
 
       <div style={{ marginTop: "1.25rem" }}>
@@ -951,7 +954,7 @@ export function Tab5Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
               <FieldGroup label="Phân loại">{plSelect("mat_pl")}</FieldGroup>
             </div>
           </div>
-          <SignatureBox id="mat" />
+          <SignatureBox id="mat" value={form.mat_ckdt} onChange={(v) => setForm((p) => ({ ...p, mat_ckdt: v }))} />
         </div>
       </div>
 
@@ -1050,7 +1053,7 @@ export function Tab5Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
               <FieldGroup label="Phân loại">{plSelect("tmh_pl")}</FieldGroup>
             </div>
           </div>
-          <SignatureBox id="tmh" />
+          <SignatureBox id="tmh" value={form.tmh_ckdt} onChange={(v) => setForm((p) => ({ ...p, tmh_ckdt: v }))} />
         </div>
       </div>
 
@@ -1120,7 +1123,7 @@ export function Tab5Content({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
               <FieldGroup label="Phân loại">{plSelect("rhm_pl")}</FieldGroup>
             </div>
           </div>
-          <SignatureBox id="rhm" />
+          <SignatureBox id="rhm" value={form.rhm_ckdt} onChange={(v) => setForm((p) => ({ ...p, rhm_ckdt: v }))} />
         </div>
       </div>
     </Card>

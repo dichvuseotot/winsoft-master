@@ -657,7 +657,7 @@ export const subLabelStyle = {
   marginBottom: ".75rem",
 };
 
-export function SignatureBox({ id, onChange }) {
+export function SignatureBox({ id, onChange, value }) {
   const canvasRef = useRef(null);
   const [tab, setTab] = useState("sign");
   const [fileName, setFileName] = useState("");
@@ -693,11 +693,14 @@ export function SignatureBox({ id, onChange }) {
   const onUp = () => {
     if (!drawing.current) return;
     drawing.current = false;
+  };
+  const confirm = () => {
     if (onChange && canvasRef.current) {
       onChange(canvasRef.current.toDataURL("image/png"));
     }
   };
   const clear = () => {
+    if (onChange) onChange(null);
     const c = canvasRef.current;
     if (c) c.getContext("2d").clearRect(0, 0, c.width, c.height);
   };
@@ -739,21 +742,20 @@ export function SignatureBox({ id, onChange }) {
 
       {tab === "sign" && (
         <>
-          <canvas
-            ref={canvasRef}
-            width={600}
-            height={110}
-            style={{
-              display: "block",
-              width: "100%",
-              height: 110,
-              cursor: "crosshair",
-            }}
-            onMouseDown={onDown}
-            onMouseMove={onMove}
-            onMouseUp={onUp}
-            onMouseLeave={onUp}
-          />
+          {value ? (
+            <img src={value} style={{ display: "block", width: "100%", height: 110, objectFit: "contain" }} />
+          ) : (
+            <canvas
+              ref={canvasRef}
+              width={600}
+              height={110}
+              style={{ display: "block", width: "100%", height: 110, cursor: "crosshair" }}
+              onMouseDown={onDown}
+              onMouseMove={onMove}
+              onMouseUp={onUp}
+              onMouseLeave={onUp}
+            />
+          )}
           <div
             style={{
               display: "flex",
@@ -780,9 +782,21 @@ export function SignatureBox({ id, onChange }) {
             <div
               style={{ display: "flex", alignItems: "center", gap: ".5rem" }}
             >
-              <span style={{ fontSize: ".72rem", color: "var(--gray-400)" }}>
-                Bấm ra ngoài để hoàn thành
-              </span>
+              <button
+                onClick={confirm}
+                style={{
+                  border: "none",
+                  background: "#2563eb",
+                  color: "#fff",
+                  cursor: "pointer",
+                  fontSize: ".72rem",
+                  fontWeight: 600,
+                  padding: ".2rem .7rem",
+                  borderRadius: 4,
+                }}
+              >
+                Xong ✓
+              </button>
             </div>
           </div>
         </>

@@ -6,7 +6,7 @@ import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Co
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
 import { saveAdultTiepNhan, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
-import { todayVN, daysAgoVN, timeNowVN } from "../../utils/date";
+import { todayVN, timeNowVN } from "../../utils/date";
 
 const TODAY = todayVN();
 
@@ -61,8 +61,7 @@ function PatientPickerModal({ onClose, onSelect, mauPhieu, gioiTinhOptions = [] 
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 20;
   const today = todayVN();
-  const sevenDaysAgo = daysAgoVN(7);
-  const [fromDate, setFromDate] = useState(sevenDaysAgo);
+const [fromDate, setFromDate] = useState(today);
   const [toDate, setToDate] = useState(today);
 
   const thStyle = { padding: ".5rem 1rem", textAlign: "left", fontWeight: 600, color: "var(--gray-500)", whiteSpace: "nowrap", borderBottom: "2px solid var(--gray-200)", fontSize: ".75rem", textTransform: "uppercase", letterSpacing: ".04em", background: "var(--gray-50)" };
@@ -481,27 +480,37 @@ export default function TaoHoSo() {
         nk_a_pl: nk?.NOI_KHOA_TUAN_HOAN_PL ?? prev.nk_a_pl,
         nk_a_ckdt: nk?.CKDT_NOI_KHOA_TUAN_HOAN ?? prev.nk_a_ckdt,
         nk_b: nk?.NOI_KHOA_HO_HAP ?? prev.nk_b,
+        nk_b_ckdt: nk?.CKDT_NOI_KHOA_HO_HAP ?? prev.nk_b_ckdt,
         nk_b_pl: nk?.NOI_KHOA_HO_HAP_PL ?? prev.nk_b_pl,
         nk_c: nk?.NOI_KHOA_TIEU_HOA ?? prev.nk_c,
+        nk_c_ckdt: nk?.CKDT_NOI_KHOA_TIEU_HOA ?? prev.nk_c_ckdt,
         nk_c_pl: nk?.NOI_KHOA_TIEU_HOA_PL ?? prev.nk_c_pl,
         nk_d: nk?.NOI_KHOA_THAN_TN_SD ?? prev.nk_d,
+        nk_d_ckdt: nk?.CKDT_NOI_KHOA_THAN_TN_SD ?? prev.nk_d_ckdt,
         nk_d_pl: nk?.NOI_KHOA_THAN_TN_SD_PL ?? prev.nk_d_pl,
         nk_e: nk?.NOI_KHOA_NOI_TIET ?? prev.nk_e,
+        nk_e_ckdt: nk?.CKDT_NOI_KHOA_NOI_TIET ?? prev.nk_e_ckdt,
         nk_e_pl: nk?.NOI_KHOA_NOI_TIET_PL ?? prev.nk_e_pl,
         nk_f: nk?.NOI_KHOA_CO_XUONG_KHOP ?? prev.nk_f,
+        nk_f_ckdt: nk?.CKDT_NOI_KHOA_CO_XUONG_KHOP ?? prev.nk_f_ckdt,
         nk_f_pl: nk?.NOI_KHOA_CO_XUONG_KHOP_PL ?? prev.nk_f_pl,
         nk_g: nk?.NOI_KHOA_THAN_KINH ?? prev.nk_g,
+        nk_g_ckdt: nk?.CKDT_NOI_KHOA_THAN_KINH ?? prev.nk_g_ckdt,
         nk_g_pl: nk?.NOI_KHOA_THAN_KINH_PL ?? prev.nk_g_pl,
         nk_h: nk?.NOI_KHOA_TAM_THAN ?? prev.nk_h,
+        nk_h_ckdt: nk?.CKDT_NOI_KHOA_TAM_THAN ?? prev.nk_h_ckdt,
         nk_h_pl: nk?.NOI_KHOA_TAM_THAN_PL ?? prev.nk_h_pl,
         // Ngoại khoa
         ngk: ngk?.KET_QUA_KHAM_NGOAI_KHOA ?? prev.ngk,
+        ngk_ckdt: ngk?.CKDT_KHAM_NGOAI_KHOA ?? prev.ngk_ckdt,
         ngk_pl: ngk?.KHAM_NGOAI_KHOA_PL ?? prev.ngk_pl,
         // Da liễu
         dl: dl?.KET_QUA_KHAM_DA_LIEU ?? prev.dl,
+        dl_ckdt: dl?.CKDT_KHAM_DA_LIEU ?? prev.dl_ckdt,
         dl_pl: dl?.KHAM_DA_LIEU_PL ?? prev.dl_pl,
         // Sản phụ khoa
         spk: spk?.KET_QUA_KHAM_SAN_PHU_KHOA ?? prev.spk,
+        spk_ckdt: spk?.CKDT_KHAM_SAN_PHU_KHOA ?? prev.spk_ckdt,
         spk_pl: spk?.KHAM_SAN_PHU_KHOA_PL ?? prev.spk_pl,
         // Mắt
         mat_kk_phai: mat?.KHONG_KINH_MAT_PHAI ?? prev.mat_kk_phai,
@@ -509,6 +518,7 @@ export default function TaoHoSo() {
         mat_ck_phai: mat?.CO_KINH_MAT_PHAI   ?? prev.mat_ck_phai,
         mat_ck_trai: mat?.CO_KINH_MAT_TRAI   ?? prev.mat_ck_trai,
         mat_benh:    mat?.BENH_KHAC_MAT      ?? prev.mat_benh,
+        mat_ckdt:    mat?.CKDT_KHAM_MAT      ?? prev.mat_ckdt,
         mat_pl:      mat?.KHAM_MAT_PL        ?? prev.mat_pl,
         // Tai Mũi Họng
         tmh_tt_trai: tmh?.TAI_TRAI_NOI_THUONG  ?? prev.tmh_tt_trai,
@@ -516,12 +526,14 @@ export default function TaoHoSo() {
         tmh_tt_phai: tmh?.TAI_PHAI_NOI_THUONG  ?? prev.tmh_tt_phai,
         tmh_th_phai: tmh?.TAI_PHAI_NOI_THAM    ?? prev.tmh_th_phai,
         tmh_benh:    tmh?.BENH_TAI_MUI_HONG    ?? prev.tmh_benh,
+        tmh_ckdt:    tmh?.CKDT_KHAM_TAI_MUI_HONG ?? prev.tmh_ckdt,
         tmh_pl:      tmh?.KHAM_TAI_MUI_HONG_PL ?? prev.tmh_pl,
         // Răng Hàm Mặt
         rhm_hamTren: rhm?.HAM_TREN              ?? prev.rhm_hamTren,
         rhm_hamDuoi: rhm?.HAM_DUOI              ?? prev.rhm_hamDuoi,
         rhm_ketQua:  rhm?.BENH_RANG_HAM_MAT     ?? prev.rhm_ketQua,
         rhm_benh:    rhm?.BENH_KHAC_RANG_HAM_MAT ?? prev.rhm_benh,
+        rhm_ckdt:    rhm?.CKDT_KHAM_RANG_HAM_MAT ?? prev.rhm_ckdt,
         rhm_pl:      rhm?.KHAM_RANG_HAM_MAT_PL  ?? prev.rhm_pl,
         ...(clsItems.length > 0 && mapCLSToForm(clsItems)),
         ...(tsb && mapTSBToForm(tsb)),
@@ -562,9 +574,14 @@ export default function TaoHoSo() {
   }, [activeTab]);
 
   useEffect(() => {
-    setForm((prev) => ({ ...prev, phuongXa: "" }));
     if (!form.tinhThanhPho) { setPhuongXaOptions([]); return; }
-    getPhuongXaList(form.tinhThanhPho).then((data) => setPhuongXaOptions(data)).catch(() => {});
+    getPhuongXaList(form.tinhThanhPho).then((data) => {
+      setPhuongXaOptions(data);
+      setForm((prev) => {
+        const exists = data.some((p) => p.MaPhuongXa === prev.phuongXa);
+        return exists ? prev : { ...prev, phuongXa: "" };
+      });
+    }).catch(() => {});
   }, [form.tinhThanhPho]);
 
   const isChild = mauPhieu === 1;
@@ -984,32 +1001,32 @@ export default function TaoHoSo() {
           onSelect={(p) => {
             setForm((prev) => ({
               ...prev,
-              soDinhDanh: p.SO_CCCD || prev.soDinhDanh,
-              hoTen: p.HO_TEN || prev.hoTen,
-              gioiTinh: p.GIOI_TINH ?? prev.gioiTinh,
-              ngaySinh: p.NGAY_SINH ? p.NGAY_SINH.slice(0, 10) : prev.ngaySinh,
-              ngheNghiep: p.MA_NGHE_NGHIEP || prev.ngheNghiep,
-              noiCongTac: p.NOI_LAM_VIEC_HOC_TAP || prev.noiCongTac,
-              dienThoai: p.DIEN_THOAI || prev.dienThoai,
-              tinhThanhPho: p.MATINH_CU_TRU || prev.tinhThanhPho,
-              phuongXa: p.MAXA_CU_TRU || prev.phuongXa,
-              danToc: p.MA_DAN_TOC || prev.danToc,
-              ngayCap: p.NGAYCAP_CCCD ? parseYYYYMMDD(p.NGAYCAP_CCCD) : prev.ngayCap,
-              noiCap: p.NOICAP_CCCD || prev.noiCap,
-              nhomMau: p.NHOM_MAU || prev.nhomMau,
-              sinhNon: p.SINH_NON ?? prev.sinhNon,
-              tuanThaiKhiSinh: p.TUAN_THAI || prev.tuanThaiKhiSinh,
-              soNha: p.DIA_CHI || prev.soNha,
-              hoTenNguoiDiCung: p.HO_TEN_NGUOI_DI_CUNG || prev.hoTenNguoiDiCung,
-              soDinhDanhGiamHo: p.SO_CCCD_NGUOI_DI_CUNG || prev.soDinhDanhGiamHo,
-              moiQuanHe: p.MOI_QUAN_HE_VOI_TRE ?? prev.moiQuanHe,
-              dienThoaiNguoiDiCung: p.DIEN_THOAI_NGUOI_DI_CUNG || prev.dienThoaiNguoiDiCung,
-              lyDoKham: p.LY_DO_VV || prev.lyDoKham,
-              doiTuongKham: p.DOI_TUONG || prev.doiTuongKham,
-              nguonChiTra: p.NGUON_CHI_TRA ?? prev.nguonChiTra,
-              loaiHinhKham: p.MA_LOAI_KCB || prev.loaiHinhKham,
-              ngayKham: p.NGAY_VAO ? p.NGAY_VAO.slice(0, 10) : prev.ngayKham,
-              maLanKham: p.MA_LK || prev.maLanKham,
+              soDinhDanh: p.SO_CCCD || "",
+              hoTen: p.HO_TEN || "",
+              gioiTinh: p.GIOI_TINH ?? "",
+              ngaySinh: p.NGAY_SINH ? p.NGAY_SINH.slice(0, 10) : "",
+              ngheNghiep: p.MA_NGHE_NGHIEP || "",
+              noiCongTac: p.NOI_LAM_VIEC_HOC_TAP || "",
+              dienThoai: p.DIEN_THOAI || "",
+              tinhThanhPho: p.MATINH_CU_TRU || "79",
+              phuongXa: p.MAXA_CU_TRU || "",
+              danToc: p.MA_DAN_TOC || "01",
+              ngayCap: p.NGAYCAP_CCCD ? parseYYYYMMDD(p.NGAYCAP_CCCD) : "",
+              noiCap: p.NOICAP_CCCD || "Cục Cảnh sát quản lý hành chính về trật tự xã hội",
+              nhomMau: p.NHOM_MAU || "",
+              sinhNon: p.SINH_NON ?? "",
+              tuanThaiKhiSinh: p.TUAN_THAI || "",
+              soNha: p.DIA_CHI || "",
+              hoTenNguoiDiCung: p.HO_TEN_NGUOI_DI_CUNG || "",
+              soDinhDanhGiamHo: p.SO_CCCD_NGUOI_DI_CUNG || "",
+              moiQuanHe: p.MOI_QUAN_HE_VOI_TRE ?? "",
+              dienThoaiNguoiDiCung: p.DIEN_THOAI_NGUOI_DI_CUNG || "",
+              lyDoKham: p.LY_DO_VV || "Khám sức khỏe định kỳ",
+              doiTuongKham: p.DOI_TUONG || "",
+              nguonChiTra: p.NGUON_CHI_TRA ?? "",
+              loaiHinhKham: p.MA_LOAI_KCB || "",
+              ngayKham: p.NGAY_VAO ? p.NGAY_VAO.slice(0, 10) : TODAY,
+              maLanKham: p.MA_LK || "",
             }));
             const pid = p.Id ?? p.KSKCD_TiepNhanId ?? null;
             setTiepNhanId(pid);
@@ -1029,73 +1046,79 @@ export default function TaoHoSo() {
               ]).then(([tl, nk, ngk, dl, spk, mat, tmh, rhm, clsItems, tsb, kl]) => {
                 setForm((prev) => ({
                   ...prev,
-                  ...(tl && {
-                    chieuCao: tl.CHIEU_CAO ?? prev.chieuCao,
-                    canNang: tl.CAN_NANG ?? prev.canNang,
-                    mach: tl.MACH ?? prev.mach,
-                    huyetAp: tl.HUYET_AP ?? prev.huyetAp,
-                    phanLoaiTheLuc: tl.KHAM_THE_LUC_PL ?? prev.phanLoaiTheLuc,
-                  }),
-                  ...(nk && {
-                    nk_a: nk.NOI_KHOA_TUAN_HOAN ?? prev.nk_a,
-                    nk_a_pl: nk.NOI_KHOA_TUAN_HOAN_PL ?? prev.nk_a_pl,
-                    nk_a_ckdt: nk.CKDT_NOI_KHOA_TUAN_HOAN ?? prev.nk_a_ckdt,
-                    nk_b: nk.NOI_KHOA_HO_HAP ?? prev.nk_b,
-                    nk_b_pl: nk.NOI_KHOA_HO_HAP_PL ?? prev.nk_b_pl,
-                    nk_c: nk.NOI_KHOA_TIEU_HOA ?? prev.nk_c,
-                    nk_c_pl: nk.NOI_KHOA_TIEU_HOA_PL ?? prev.nk_c_pl,
-                    nk_d: nk.NOI_KHOA_THAN_TN_SD ?? prev.nk_d,
-                    nk_d_pl: nk.NOI_KHOA_THAN_TN_SD_PL ?? prev.nk_d_pl,
-                    nk_e: nk.NOI_KHOA_NOI_TIET ?? prev.nk_e,
-                    nk_e_pl: nk.NOI_KHOA_NOI_TIET_PL ?? prev.nk_e_pl,
-                    nk_f: nk.NOI_KHOA_CO_XUONG_KHOP ?? prev.nk_f,
-                    nk_f_pl: nk.NOI_KHOA_CO_XUONG_KHOP_PL ?? prev.nk_f_pl,
-                    nk_g: nk.NOI_KHOA_THAN_KINH ?? prev.nk_g,
-                    nk_g_pl: nk.NOI_KHOA_THAN_KINH_PL ?? prev.nk_g_pl,
-                    nk_h: nk.NOI_KHOA_TAM_THAN ?? prev.nk_h,
-                    nk_h_pl: nk.NOI_KHOA_TAM_THAN_PL ?? prev.nk_h_pl,
-                  }),
-                  ...(ngk && {
-                    ngk: ngk.KET_QUA_KHAM_NGOAI_KHOA ?? prev.ngk,
-                    ngk_pl: ngk.KHAM_NGOAI_KHOA_PL ?? prev.ngk_pl,
-                  }),
-                  ...(dl && {
-                    dl: dl.KET_QUA_KHAM_DA_LIEU ?? prev.dl,
-                    dl_pl: dl.KHAM_DA_LIEU_PL ?? prev.dl_pl,
-                  }),
-                  ...(spk && {
-                    spk: spk.KET_QUA_KHAM_SAN_PHU_KHOA ?? prev.spk,
-                    spk_pl: spk.KHAM_SAN_PHU_KHOA_PL ?? prev.spk_pl,
-                  }),
-                  ...(mat && {
-                    mat_kk_phai: mat.KHONG_KINH_MAT_PHAI ?? prev.mat_kk_phai,
-                    mat_kk_trai: mat.KHONG_KINH_MAT_TRAI ?? prev.mat_kk_trai,
-                    mat_ck_phai: mat.CO_KINH_MAT_PHAI   ?? prev.mat_ck_phai,
-                    mat_ck_trai: mat.CO_KINH_MAT_TRAI   ?? prev.mat_ck_trai,
-                    mat_benh:    mat.BENH_KHAC_MAT      ?? prev.mat_benh,
-                    mat_pl:      mat.KHAM_MAT_PL        ?? prev.mat_pl,
-                  }),
-                  ...(tmh && {
-                    tmh_tt_trai: tmh.TAI_TRAI_NOI_THUONG  ?? prev.tmh_tt_trai,
-                    tmh_th_trai: tmh.TAI_TRAI_NOI_THAM    ?? prev.tmh_th_trai,
-                    tmh_tt_phai: tmh.TAI_PHAI_NOI_THUONG  ?? prev.tmh_tt_phai,
-                    tmh_th_phai: tmh.TAI_PHAI_NOI_THAM    ?? prev.tmh_th_phai,
-                    tmh_benh:    tmh.BENH_TAI_MUI_HONG    ?? prev.tmh_benh,
-                    tmh_pl:      tmh.KHAM_TAI_MUI_HONG_PL ?? prev.tmh_pl,
-                  }),
-                  ...(rhm && {
-                    rhm_hamTren: rhm.HAM_TREN               ?? prev.rhm_hamTren,
-                    rhm_hamDuoi: rhm.HAM_DUOI               ?? prev.rhm_hamDuoi,
-                    rhm_ketQua:  rhm.BENH_RANG_HAM_MAT      ?? prev.rhm_ketQua,
-                    rhm_benh:    rhm.BENH_KHAC_RANG_HAM_MAT ?? prev.rhm_benh,
-                    rhm_pl:      rhm.KHAM_RANG_HAM_MAT_PL   ?? prev.rhm_pl,
-                  }),
-                  ...(clsItems.length > 0 && mapCLSToForm(clsItems)),
-                  ...(tsb && mapTSBToForm(tsb)),
+                  // Thể lực
+                  chieuCao: tl?.CHIEU_CAO ?? null,
+                  canNang: tl?.CAN_NANG ?? null,
+                  mach: tl?.MACH ?? null,
+                  huyetAp: tl?.HUYET_AP ?? null,
+                  phanLoaiTheLuc: tl?.KHAM_THE_LUC_PL ?? null,
+                  // Nội khoa
+                  nk_a: nk?.NOI_KHOA_TUAN_HOAN ?? null,
+                  nk_a_pl: nk?.NOI_KHOA_TUAN_HOAN_PL ?? null,
+                  nk_a_ckdt: nk?.CKDT_NOI_KHOA_TUAN_HOAN ?? null,
+                  nk_b: nk?.NOI_KHOA_HO_HAP ?? null,
+                  nk_b_ckdt: nk?.CKDT_NOI_KHOA_HO_HAP ?? null,
+                  nk_b_pl: nk?.NOI_KHOA_HO_HAP_PL ?? null,
+                  nk_c: nk?.NOI_KHOA_TIEU_HOA ?? null,
+                  nk_c_ckdt: nk?.CKDT_NOI_KHOA_TIEU_HOA ?? null,
+                  nk_c_pl: nk?.NOI_KHOA_TIEU_HOA_PL ?? null,
+                  nk_d: nk?.NOI_KHOA_THAN_TN_SD ?? null,
+                  nk_d_ckdt: nk?.CKDT_NOI_KHOA_THAN_TN_SD ?? null,
+                  nk_d_pl: nk?.NOI_KHOA_THAN_TN_SD_PL ?? null,
+                  nk_e: nk?.NOI_KHOA_NOI_TIET ?? null,
+                  nk_e_ckdt: nk?.CKDT_NOI_KHOA_NOI_TIET ?? null,
+                  nk_e_pl: nk?.NOI_KHOA_NOI_TIET_PL ?? null,
+                  nk_f: nk?.NOI_KHOA_CO_XUONG_KHOP ?? null,
+                  nk_f_ckdt: nk?.CKDT_NOI_KHOA_CO_XUONG_KHOP ?? null,
+                  nk_f_pl: nk?.NOI_KHOA_CO_XUONG_KHOP_PL ?? null,
+                  nk_g: nk?.NOI_KHOA_THAN_KINH ?? null,
+                  nk_g_ckdt: nk?.CKDT_NOI_KHOA_THAN_KINH ?? null,
+                  nk_g_pl: nk?.NOI_KHOA_THAN_KINH_PL ?? null,
+                  nk_h: nk?.NOI_KHOA_TAM_THAN ?? null,
+                  nk_h_ckdt: nk?.CKDT_NOI_KHOA_TAM_THAN ?? null,
+                  nk_h_pl: nk?.NOI_KHOA_TAM_THAN_PL ?? null,
+                  // Ngoại khoa
+                  ngk: ngk?.KET_QUA_KHAM_NGOAI_KHOA ?? null,
+                  ngk_ckdt: ngk?.CKDT_KHAM_NGOAI_KHOA ?? null,
+                  ngk_pl: ngk?.KHAM_NGOAI_KHOA_PL ?? null,
+                  // Da liễu
+                  dl: dl?.KET_QUA_KHAM_DA_LIEU ?? null,
+                  dl_ckdt: dl?.CKDT_KHAM_DA_LIEU ?? null,
+                  dl_pl: dl?.KHAM_DA_LIEU_PL ?? null,
+                  // Sản phụ khoa
+                  spk: spk?.KET_QUA_KHAM_SAN_PHU_KHOA ?? null,
+                  spk_ckdt: spk?.CKDT_KHAM_SAN_PHU_KHOA ?? null,
+                  spk_pl: spk?.KHAM_SAN_PHU_KHOA_PL ?? null,
+                  // Mắt
+                  mat_kk_phai: mat?.KHONG_KINH_MAT_PHAI ?? null,
+                  mat_kk_trai: mat?.KHONG_KINH_MAT_TRAI ?? null,
+                  mat_ck_phai: mat?.CO_KINH_MAT_PHAI   ?? null,
+                  mat_ck_trai: mat?.CO_KINH_MAT_TRAI   ?? null,
+                  mat_benh:    mat?.BENH_KHAC_MAT      ?? null,
+                  mat_ckdt:    mat?.CKDT_KHAM_MAT      ?? null,
+                  mat_pl:      mat?.KHAM_MAT_PL        ?? null,
+                  // Tai Mũi Họng
+                  tmh_tt_trai: tmh?.TAI_TRAI_NOI_THUONG  ?? null,
+                  tmh_th_trai: tmh?.TAI_TRAI_NOI_THAM    ?? null,
+                  tmh_tt_phai: tmh?.TAI_PHAI_NOI_THUONG  ?? null,
+                  tmh_th_phai: tmh?.TAI_PHAI_NOI_THAM    ?? null,
+                  tmh_benh:    tmh?.BENH_TAI_MUI_HONG    ?? null,
+                  tmh_ckdt:    tmh?.CKDT_KHAM_TAI_MUI_HONG ?? null,
+                  tmh_pl:      tmh?.KHAM_TAI_MUI_HONG_PL ?? null,
+                  // Răng Hàm Mặt
+                  rhm_hamTren: rhm?.HAM_TREN               ?? null,
+                  rhm_hamDuoi: rhm?.HAM_DUOI               ?? null,
+                  rhm_ketQua:  rhm?.BENH_RANG_HAM_MAT      ?? null,
+                  rhm_benh:    rhm?.BENH_KHAC_RANG_HAM_MAT ?? null,
+                  rhm_ckdt:    rhm?.CKDT_KHAM_RANG_HAM_MAT ?? null,
+                  rhm_pl:      rhm?.KHAM_RANG_HAM_MAT_PL   ?? null,
+                  // CLS
+                  ...(clsItems.length > 0 ? mapCLSToForm(clsItems) : { clsDynamic: [] }),
+                  ...(tsb ? mapTSBToForm(tsb) : {}),
                   // Kết luận
-                  kl_icd10:     kl?.KET_LUAN_BENH_FULL ? kl.KET_LUAN_BENH_FULL.split(";").filter(Boolean) : prev.kl_icd10,
-                  kl_tinhTrang: kl?.GHI_RO_VAN_DE_SUC_KHOE ?? prev.kl_tinhTrang,
-                  kl_phanLoai:  kl?.PHAN_LOAI_SK ?? prev.kl_phanLoai,
+                  kl_icd10:     kl?.KET_LUAN_BENH_FULL ? kl.KET_LUAN_BENH_FULL.split(";").filter(Boolean) : [],
+                  kl_tinhTrang: kl?.GHI_RO_VAN_DE_SUC_KHOE ?? null,
+                  kl_phanLoai:  kl?.PHAN_LOAI_SK ?? null,
                 }));
               });
             }

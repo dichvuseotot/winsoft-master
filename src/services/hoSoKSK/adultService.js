@@ -234,25 +234,25 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     CKDT_NOI_KHOA_TUAN_HOAN:    form.nk_a_ckdt || null,
     NOI_KHOA_HO_HAP:             form.nk_b   || null,
     NOI_KHOA_HO_HAP_PL:          form.nk_b_pl ? Number(form.nk_b_pl) : null,
-    CKDT_NOI_KHOA_HO_HAP:        null,
+    CKDT_NOI_KHOA_HO_HAP:        form.nk_b_ckdt || null,
     NOI_KHOA_TIEU_HOA:           form.nk_c   || null,
     NOI_KHOA_TIEU_HOA_PL:        form.nk_c_pl ? Number(form.nk_c_pl) : null,
-    CKDT_NOI_KHOA_TIEU_HOA:      null,
+    CKDT_NOI_KHOA_TIEU_HOA:      form.nk_c_ckdt || null,
     NOI_KHOA_THAN_TN_SD:         form.nk_d   || null,
     NOI_KHOA_THAN_TN_SD_PL:      form.nk_d_pl ? Number(form.nk_d_pl) : null,
-    CKDT_NOI_KHOA_THAN_TN_SD:    null,
+    CKDT_NOI_KHOA_THAN_TN_SD:    form.nk_d_ckdt || null,
     NOI_KHOA_NOI_TIET:           form.nk_e   || null,
     NOI_KHOA_NOI_TIET_PL:        form.nk_e_pl ? Number(form.nk_e_pl) : null,
-    CKDT_NOI_KHOA_NOI_TIET:      null,
+    CKDT_NOI_KHOA_NOI_TIET:      form.nk_e_ckdt || null,
     NOI_KHOA_CO_XUONG_KHOP:      form.nk_f   || null,
     NOI_KHOA_CO_XUONG_KHOP_PL:   form.nk_f_pl ? Number(form.nk_f_pl) : null,
-    CKDT_NOI_KHOA_CO_XUONG_KHOP: null,
+    CKDT_NOI_KHOA_CO_XUONG_KHOP: form.nk_f_ckdt || null,
     NOI_KHOA_THAN_KINH:          form.nk_g   || null,
     NOI_KHOA_THAN_KINH_PL:       form.nk_g_pl ? Number(form.nk_g_pl) : null,
-    CKDT_NOI_KHOA_THAN_KINH:     null,
+    CKDT_NOI_KHOA_THAN_KINH:     form.nk_g_ckdt || null,
     NOI_KHOA_TAM_THAN:           form.nk_h   || null,
     NOI_KHOA_TAM_THAN_PL:        form.nk_h_pl ? Number(form.nk_h_pl) : null,
-    CKDT_NOI_KHOA_TAM_THAN:      null,
+    CKDT_NOI_KHOA_TAM_THAN:      form.nk_h_ckdt || null,
 
     // ── Ngoại khoa ────────────────────────────────────────────────────────
     Id_NgoaiKhoa:                 generateId(),
@@ -260,7 +260,7 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     EmployeeCodeDoctor_NgoaiKhoa: "Nghia",
     KET_QUA_KHAM_NGOAI_KHOA:     form.ngk    || null,
     KHAM_NGOAI_KHOA_PL:          form.ngk_pl ? Number(form.ngk_pl) : null,
-    CKDT_KHAM_NGOAI_KHOA:        null,
+    CKDT_KHAM_NGOAI_KHOA:        form.ngk_ckdt || null,
 
     // ── Da liễu ───────────────────────────────────────────────────────────
     Id_DaLieu:                    generateId(),
@@ -268,7 +268,7 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     EmployeeCodeDoctor_DaLieu:    "Nghia",
     KET_QUA_KHAM_DA_LIEU:        form.dl     || null,
     KHAM_DA_LIEU_PL:             form.dl_pl  ? Number(form.dl_pl) : null,
-    CKDT_KHAM_DA_LIEU:           null,
+    CKDT_KHAM_DA_LIEU:           form.dl_ckdt || null,
 
     // ── Sản phụ khoa ──────────────────────────────────────────────────────
     Id_SPK:                generateId(),
@@ -276,7 +276,7 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     EmployeeCodeDoctor_SPK: "Nghia",
     KET_QUA_KHAM_SAN_PHU_KHOA:  form.spk    || null,
     KHAM_SAN_PHU_KHOA_PL:       form.spk_pl ? Number(form.spk_pl) : null,
-    CKDT_KHAM_SAN_PHU_KHOA:     null,
+    CKDT_KHAM_SAN_PHU_KHOA:     form.spk_ckdt || null,
 
     // ── Răng Hàm Mặt ──────────────────────────────────────────────────────
     Id_RHM:                       generateId(),
@@ -287,7 +287,7 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     BENH_RANG_HAM_MAT:           form.rhm_ketQua   || null,
     BENH_KHAC_RANG_HAM_MAT:     form.rhm_benh     || null,
     KHAM_RANG_HAM_MAT_PL:       form.rhm_pl ? Number(form.rhm_pl) : null,
-    CKDT_KHAM_RANG_HAM_MAT:     null,
+    CKDT_KHAM_RANG_HAM_MAT:     form.rhm_ckdt || null,
 
     // ── Tai Mũi Họng ──────────────────────────────────────────────────────
     Id_TMH:                       generateId(),
@@ -300,7 +300,7 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     BENH_TAI_MUI_HONG:           form.tmh_benh    || null,
     BENH_KHAC_TAI_MUI_HONG:     null,
     KHAM_TAI_MUI_HONG_PL:       form.tmh_pl ? Number(form.tmh_pl) : null,
-    CKDT_KHAM_TAI_MUI_HONG:     null,
+    CKDT_KHAM_TAI_MUI_HONG:     form.tmh_ckdt || null,
 
     // ── Mắt ───────────────────────────────────────────────────────────────
     Id_Mat:                       generateId(),
@@ -316,7 +316,7 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     CO_KINH_MAT_TRAI:           form.mat_ck_trai || null,
     BENH_KHAC_MAT:              form.mat_benh    || null,
     KHAM_MAT_PL:                form.mat_pl ? Number(form.mat_pl) : null,
-    CKDT_KHAM_MAT:              null,
+    CKDT_KHAM_MAT:              form.mat_ckdt || null,
 
     // ── Cận lâm sàng ──────────────────────────────────────────────────────
     CLSList: buildCLSItems(form, resolvedId),
