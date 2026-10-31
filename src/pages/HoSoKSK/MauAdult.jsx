@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
 
-export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], ngheNghiepOptions = [] }) {
+export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], ngheNghiepOptions = [], errors = {} }) {
   const set = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
+  const err = (key) => errors[key] ? "1.5px solid #ef4444" : "1.5px solid var(--gray-200)";
 
   return (
     <>
@@ -17,7 +18,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
         <Grid3>
           <FieldGroup label="Số định danh cá nhân" required>
             <input
-              style={inputStyle}
+              style={{ ...inputStyle, border: err("soDinhDanh") }}
               type="text"
               inputMode="numeric"
               value={form.soDinhDanh}
@@ -32,7 +33,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
 
           <FieldGroup label="Họ tên" required>
             <input
-              style={inputStyle}
+              style={{ ...inputStyle, border: err("hoTen") }}
               type="text"
               value={form.hoTen}
               onChange={set("hoTen")}
@@ -40,7 +41,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
           </FieldGroup>
 
           <FieldGroup label="Giới tính" required>
-            <select style={inputStyle} value={form.gioiTinh} onChange={set("gioiTinh")}>
+            <select style={{ ...inputStyle, border: err("gioiTinh") }} value={form.gioiTinh} onChange={set("gioiTinh")}>
               <option value="">—Chọn—</option>
               {gioiTinhOptions.map((g) => (
                 <option key={g.Id} value={g.Id}>{g.TenGioiTinh}</option>
@@ -50,7 +51,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
 
           <FieldGroup label="Ngày sinh" required>
             <input
-              style={inputStyle}
+              style={{ ...inputStyle, border: err("ngaySinh") }}
               type="date"
               value={form.ngaySinh}
               onChange={set("ngaySinh")}
@@ -81,6 +82,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
               onChange={(val) => set("danToc")({ target: { value: val } })}
               options={danTocOptions.map((d) => ({ value: d.MaDanToc, label: d.TenDanToc }))}
               placeholder="—Chọn dân tộc—"
+              error={errors.danToc}
             />
           </FieldGroup>
                     <FieldGroup label="Điện thoại">
@@ -100,6 +102,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
               onChange={(val) => setForm((prev) => ({ ...prev, ngheNghiep: val }))}
               options={ngheNghiepOptions.map((o) => ({ value: String(o.CareerID), label: o.CareerName }))}
               placeholder="—Chọn nghề nghiệp—"
+              error={errors.ngheNghiep}
             />
           </FieldGroup>
           <FieldGroup label="Nơi công tác hiện tại">
@@ -119,6 +122,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
               onChange={(val) => set("tinhThanhPho")({ target: { value: val } })}
               options={tinhThanhOptions.map((t) => ({ value: t.MaTinh, label: t.TenTinh }))}
               placeholder="—Chọn tỉnh/thành phố—"
+              error={errors.tinhThanhPho}
             />
           </FieldGroup>
 
@@ -128,12 +132,13 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
               onChange={(val) => set("phuongXa")({ target: { value: val } })}
               options={phuongXaOptions.map((p) => ({ value: p.MaPhuongXa, label: p.TenPhuongXa }))}
               placeholder="—Chọn phường/xã—"
+              error={errors.phuongXa}
             />
           </FieldGroup>
 
           <FieldGroup label="Số nhà/thôn/xóm" required>
             <textarea
-              style={{ ...textareaStyle, height: "auto" }}
+              style={{ ...textareaStyle, height: "auto", border: err("soNha") }}
               rows={2}
               value={form.soNha}
               onChange={set("soNha")}
@@ -163,6 +168,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
               onChange={(val) => set("doiTuongKham")({ target: { value: val } })}
               options={doiTuongOptions.map((d) => ({ value: d.Id, label: d.Name }))}
               placeholder="—Chọn đối tượng—"
+              error={errors.doiTuongKham}
             />
           </FieldGroup>
           <FieldGroup label="Nguồn chi trả" required>
@@ -171,6 +177,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
               onChange={(val) => set("nguonChiTra")({ target: { value: val } })}
               options={nguonChiTraOptions.map((n) => ({ value: n.Id, label: n.Name }))}
               placeholder="—Chọn nguồn chi trả—"
+              error={errors.nguonChiTra}
             />
           </FieldGroup>
 
@@ -178,7 +185,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
 
           <FieldGroup label="Lý do khám sức khỏe" required>
             <input
-              style={inputStyle}
+              style={{ ...inputStyle, border: err("lyDoKham") }}
               type="text"
               value={form.lyDoKham || ""}
               onChange={set("lyDoKham")}
@@ -191,6 +198,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
               value={form.loaiHinhKham}
               onChange={(val) => setForm((p) => ({ ...p, loaiHinhKham: val }))}
               placeholder="—Chọn loại hình—"
+              error={errors.loaiHinhKham}
             />
           </FieldGroup>
 
@@ -1449,7 +1457,7 @@ export function Tab6Content({ form, setForm }) {
 }
 
 
-export function Tab7Content({ form, setForm, phanLoaiSucKhoeOptions = [], loadIcd10 }) {
+export function Tab7Content({ form, setForm, phanLoaiSucKhoeOptions = [], loadIcd10, errors = {} }) {
   const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
 
   return (
@@ -1503,7 +1511,7 @@ export function Tab7Content({ form, setForm, phanLoaiSucKhoeOptions = [], loadIc
 
           <FieldGroup label="Chọn phân loại sức khỏe" required>
             <select
-              style={inputStyle}
+              style={{ ...inputStyle, border: errors.kl_phanLoai ? "1.5px solid #ef4444" : undefined }}
               value={form.kl_phanLoai || ""}
               onChange={set("kl_phanLoai")}
             >

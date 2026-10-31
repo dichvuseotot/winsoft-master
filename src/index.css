@@ -50,6 +50,8 @@
 
   --font-display: 'Plus Jakarta Sans', sans-serif;
   --font-body:    'DM Sans', sans-serif;
+
+  --input-bg: #ffffff;
 }
 
 [data-theme="dark"] {
@@ -86,6 +88,8 @@
   --shadow-md:   0 4px 16px rgba(0,0,0,.5);
   --shadow-lg:   0 8px 32px rgba(0,0,0,.6);
   --shadow-card: 0 2px 8px rgba(0,0,0,.35);
+
+  --input-bg: #1c1c1c;
 }
 
 [data-theme="dark"] body {

@@ -10,6 +10,14 @@ import { todayVN, daysAgoVN, timeNowVN } from "../../utils/date";
 
 const TODAY = todayVN();
 
+// Chuyển yyyymmdd → yyyy-mm-dd (dùng cho NGAYCAP_CCCD)
+const parseYYYYMMDD = (v) => {
+  if (!v) return "";
+  const s = String(v).replace(/\D/g, "");
+  if (s.length === 8) return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`;
+  return s;
+};
+
 const TABS = [
   { id: 1, label: "1. Thông tin Hành chính" },
   { id: 2, label: "2. Thông tin lần khám" },
@@ -355,6 +363,7 @@ export default function TaoHoSo() {
   const [patientSearch, setPatientSearch] = useState("");
   const [tiepNhanId, setTiepNhanId] = useState(editId || null);
   const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState({});
   const [gioiTinhOptions, setGioiTinhOptions] = useState([]);
   const [moiQuanHeOptions, setMoiQuanHeOptions] = useState([]);
   const [danTocOptions, setDanTocOptions] = useState([]);
@@ -441,7 +450,7 @@ export default function TaoHoSo() {
         hoTen: p.HO_TEN || prev.hoTen,
         gioiTinh: p.GIOI_TINH ?? prev.gioiTinh,
         ngaySinh: p.NGAY_SINH ? p.NGAY_SINH : prev.ngaySinh,
-        ngayCap: p.NGAYCAP_CCCD ? p.NGAYCAP_CCCD : prev.ngayCap,
+        ngayCap: p.NGAYCAP_CCCD ? parseYYYYMMDD(p.NGAYCAP_CCCD) : prev.ngayCap,
         noiCap: p.NOICAP_CCCD || prev.noiCap,
         danToc: p.MA_DAN_TOC || prev.danToc,
         nhomMau: p.NHOM_MAU || prev.nhomMau,
@@ -721,47 +730,8 @@ export default function TaoHoSo() {
               ))}
             </select>
 
-            {!viewOnly && (
-              <button
-                disabled={saving}
-                onClick={async () => {
-                  setSaving(true);
-                  try {
-                    const result = await saveAdultTiepNhan(form, mauPhieu, tiepNhanId || null);
-                    const savedId = result?.TiepNhanId;
-                    if (savedId) {
-                      setTiepNhanId(savedId);
-                      // Re-fetch CLS để cập nhật _existingId cho clsDynamic, tránh tạo duplicate
-                      const clsItems = await getCLS(savedId).catch(() => []);
-                      if (clsItems.length > 0) {
-                        setForm((prev) => ({ ...prev, ...mapCLSToForm(clsItems) }));
-                      }
-                    }
-                  } catch {
-                    // handled inside service
-                  } finally {
-                    setSaving(false);
-                  }
-                }}
-                style={{
-                  height: "36px",
-                  padding: "0 1.1rem",
-                  background: saving ? "#86efac" : "#16a34a",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "var(--radius-md, 8px)",
-                  fontWeight: 600,
-                  fontSize: ".85rem",
-                  cursor: saving ? "not-allowed" : "pointer",
-                  fontFamily: "var(--font-body)",
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {saving ? "Đang lưu..." : "Lưu"}
-              </button>
-            )}
 
-            {viewOnly ? (
+            {viewOnly && (
               <button
                 onClick={() => window.print()}
                 style={{
@@ -783,95 +753,156 @@ export default function TaoHoSo() {
               >
                 <i className="bi bi-printer-fill" /> In phiếu khám
               </button>
-            ) : (
-              <>
-                <button
-                  onClick={() => setShowPatientPicker(true)}
-                  title="Chọn bệnh nhân"
-                  style={{
-                    height: "36px",
-                    width: "36px",
-                    padding: 0,
-                    background: "var(--primary, #0067AC)",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "var(--radius-md, 8px)",
-                    fontSize: "1rem",
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
-                  <i className="bi bi-person-lines-fill" />
-                </button>
-              </>
             )}
           </div>
         </div>
 
-        <div
-          ref={tabBarRef}
-          style={{
-            display: "flex",
-            flexWrap: "nowrap",
-            gap: ".375rem",
-            overflowX: "auto",
-            padding: ".625rem 1.5rem",
-            paddingBottom: ".375rem",
-            background: "var(--gray-100)",
-            borderBottom: "1px solid var(--gray-100, #f3f4f6)",
-            scrollbarWidth: "thin",
-            scrollbarColor: "var(--gray-400) transparent",
-          }}
-        >
-          {(isChild ? TABS_CHILD : isTeen ? TABS_TEEN : TABS).map((tab) => {
-            const isActive = activeTab === tab.id;
-            return (
+        <div style={{ display: "flex", alignItems: "center", background: "var(--gray-100)", borderBottom: "1px solid var(--gray-100, #f3f4f6)" }}>
+          <div
+            ref={tabBarRef}
+            style={{
+              display: "flex",
+              flexWrap: "nowrap",
+              gap: ".375rem",
+              overflowX: "auto",
+              flex: 1,
+              padding: ".625rem 1.5rem",
+              paddingBottom: ".375rem",
+              scrollbarWidth: "thin",
+              scrollbarColor: "var(--gray-400) transparent",
+            }}
+          >
+            {(isChild ? TABS_CHILD : isTeen ? TABS_TEEN : TABS).map((tab) => {
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  data-tab={tab.id}
+                  onClick={() => scrollToSection(tab.id)}
+                  style={{
+                    flexShrink: 0,
+                    height: "34px",
+                    padding: "0 .875rem",
+                    borderRadius: 99,
+                    border: "none",
+                    cursor: "pointer",
+                    fontFamily: "var(--font-body)",
+                    fontSize: ".8rem",
+                    fontWeight: isActive ? 700 : 500,
+                    background: isActive ? "#2563eb" : "var(--gray-100, #f3f4f6)",
+                    color: isActive ? "#fff" : "var(--gray-700, #374151)",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: ".3rem",
+                    transition: "background .15s, color .15s",
+                  }}
+                >
+                  {tab.icon && <i className={tab.icon} style={{ fontSize: ".85rem" }} />}
+                  {tab.label}
+                  {tab.badge && (
+                    <span
+                      style={{
+                        marginLeft: ".2rem",
+                        fontSize: ".7rem",
+                        padding: ".1em .45em",
+                        borderRadius: 99,
+                        background: isActive ? "rgba(255,255,255,.28)" : "var(--gray-300, #d1d5db)",
+                        color: isActive ? "#fff" : "var(--gray-600, #4b5563)",
+                        fontWeight: 700,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {tab.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {!viewOnly && (
+            <div style={{ flexShrink: 0, padding: ".5rem 1rem .375rem", display: "flex", gap: ".4rem" }}>
               <button
-                key={tab.id}
-                data-tab={tab.id}
-                onClick={() => scrollToSection(tab.id)}
+                onClick={() => setShowPatientPicker(true)}
+                title="Chọn bệnh nhân"
                 style={{
-                  flexShrink: 0,
+                  width: "34px",
                   height: "34px",
-                  padding: "0 .875rem",
-                  borderRadius: 99,
+                  padding: 0,
+                  background: "var(--primary, #0067AC)",
+                  color: "#fff",
                   border: "none",
+                  borderRadius: 8,
+                  fontSize: ".95rem",
                   cursor: "pointer",
-                  fontFamily: "var(--font-body)",
-                  fontSize: ".8rem",
-                  fontWeight: isActive ? 700 : 500,
-                  background: isActive ? "#2563eb" : "var(--gray-100, #f3f4f6)",
-                  color: isActive ? "#fff" : "var(--gray-700, #374151)",
                   display: "flex",
                   alignItems: "center",
-                  gap: ".3rem",
-                  transition: "background .15s, color .15s",
+                  justifyContent: "center",
                 }}
               >
-                {tab.icon && <i className={tab.icon} style={{ fontSize: ".85rem" }} />}
-                {tab.label}
-                {tab.badge && (
-                  <span
-                    style={{
-                      marginLeft: ".2rem",
-                      fontSize: ".7rem",
-                      padding: ".1em .45em",
-                      borderRadius: 99,
-                      background: isActive ? "rgba(255,255,255,.28)" : "var(--gray-300, #d1d5db)",
-                      color: isActive ? "#fff" : "var(--gray-600, #4b5563)",
-                      fontWeight: 700,
-                      lineHeight: 1.4,
-                    }}
-                  >
-                    {tab.badge}
-                  </span>
-                )}
+                <i className="bi bi-person-lines-fill" />
               </button>
-            );
-          })}
+              <button
+                disabled={saving}
+                title={saving ? "Đang lưu..." : "Lưu hồ sơ"}
+                onClick={async () => {
+                  const newErrors = {
+                    soDinhDanh:   !form.soDinhDanh,
+                    hoTen:        !form.hoTen,
+                    gioiTinh:     !form.gioiTinh,
+                    ngaySinh:     !form.ngaySinh,
+                    danToc:       !form.danToc,
+                    ngheNghiep:   !form.ngheNghiep,
+                    tinhThanhPho: !form.tinhThanhPho,
+                    phuongXa:     !form.phuongXa,
+                    soNha:        !form.soNha,
+                    doiTuongKham: !form.doiTuongKham,
+                    nguonChiTra:  !form.nguonChiTra,
+                    lyDoKham:     !form.lyDoKham,
+                    loaiHinhKham: !form.loaiHinhKham,
+                  };
+                  setErrors(newErrors);
+                  if (Object.values(newErrors).some(Boolean)) return;
+                  setSaving(true);
+                  try {
+                    const result = await saveAdultTiepNhan(form, mauPhieu, tiepNhanId || null);
+                    const savedId = result?.TiepNhanId;
+                    if (savedId) {
+                      setTiepNhanId(savedId);
+                      const clsItems = await getCLS(savedId).catch(() => []);
+                      if (clsItems.length > 0) {
+                        setForm((prev) => ({ ...prev, ...mapCLSToForm(clsItems) }));
+                      }
+                    }
+                  } catch {
+                    // handled inside service
+                  } finally {
+                    setSaving(false);
+                  }
+                }}
+                style={{
+                  width: "34px",
+                  height: "34px",
+                  padding: 0,
+                  background: saving ? "#86efac" : "#16a34a",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: 8,
+                  fontSize: ".95rem",
+                  cursor: saving ? "not-allowed" : "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  transition: "background .15s",
+                }}
+              >
+                {saving
+                  ? <i className="bi bi-hourglass-split" style={{ animation: "spin 1s linear infinite" }} />
+                  : <i className="bi bi-floppy-fill" />
+                }
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -893,7 +924,7 @@ export default function TaoHoSo() {
             ? <Tab1ChildContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} moiQuanHeOptions={moiQuanHeOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} loadIcd10={loadIcd10Options} />
             : isTeen
             ? <Tab1TeenContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} />
-            : <Tab1Content form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} ngheNghiepOptions={ngheNghiepOptions} />
+            : <Tab1Content form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} ngheNghiepOptions={ngheNghiepOptions} errors={errors} />
           }
         </div>
         <div ref={(el) => (sectionRefs.current[1] = el)}>
@@ -933,7 +964,7 @@ export default function TaoHoSo() {
         <div ref={(el) => (sectionRefs.current[6] = el)}>
           {isChild
             ? <Tab7ChildContent form={form} setForm={setForm} tiepNhanId={tiepNhanId} />
-            : <Tab7Content form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} loadIcd10={loadIcd10Options} />
+            : <Tab7Content form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} loadIcd10={loadIcd10Options} errors={errors} />
           }
         </div>
         {isChild && (
@@ -945,6 +976,7 @@ export default function TaoHoSo() {
 
       {showPatientPicker && (
         <PatientPickerModal
+
           mauPhieu={mauPhieu}
           gioiTinhOptions={gioiTinhOptions}
           onClose={() => setShowPatientPicker(false)}
@@ -961,6 +993,7 @@ export default function TaoHoSo() {
               tinhThanhPho: p.MATINH_CU_TRU || prev.tinhThanhPho,
               phuongXa: p.MAXA_CU_TRU || prev.phuongXa,
               danToc: p.MA_DAN_TOC || prev.danToc,
+              ngayCap: p.NGAYCAP_CCCD ? parseYYYYMMDD(p.NGAYCAP_CCCD) : prev.ngayCap,
               noiCap: p.NOICAP_CCCD || prev.noiCap,
               nhomMau: p.NHOM_MAU || prev.nhomMau,
               sinhNon: p.SINH_NON ?? prev.sinhNon,

@@ -59,7 +59,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
             <select style={inputStyle} value={form.tuanThaiKhiSinh || ""} onChange={set("tuanThaiKhiSinh")}>
               <option value="">Chọn tuần thai</option>
               {Array.from({ length: 22 }, (_, i) => 22 + i).map((w) => (
-                <option key={w} value={`${w} tuần`}>{w} tuần</option>
+                <option key={w} value={w}>{w} tuần</option>
               ))}
             </select>
           </FieldGroup>

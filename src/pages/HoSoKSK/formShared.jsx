@@ -18,7 +18,7 @@ export const inputStyle = {
   outline: "none",
   boxSizing: "border-box",
   fontFamily: "var(--font-body)",
-  background: "var(--gray-100)",
+  background: "var(--input-bg)",
 };
 
 const { background: _bg, ...inputStyleNoBackground } = inputStyle;
@@ -302,7 +302,8 @@ export function SearchableSelect({
           flexWrap: "wrap",
           gap: ".3rem",
           cursor: "pointer",
-          background: "#fff",
+          background: "var(--input-bg)",
+          color: "var(--gray-800)",
         }}
         onClick={() => setOpen((o) => !o)}
       >
@@ -404,7 +405,7 @@ export function SearchableSelect({
           <div style={{ padding: ".5rem .625rem", background: "var(--gray-200)", borderBottom: "1px solid var(--gray-200)" }}>
             <div style={{
               display: "flex", alignItems: "center", gap: ".5rem",
-              background: "#fff", borderRadius: 6, padding: ".3rem .625rem",
+              background: "var(--input-bg)", borderRadius: 6, padding: ".3rem .625rem",
               border: "1.5px solid var(--gray-300)", outline: "none",
             }}>
               <i className="bi bi-search" style={{ color: "#2563eb", fontSize: ".8rem", flexShrink: 0 }} />
@@ -490,7 +491,7 @@ export function SearchableSelect({
   );
 }
 
-export function SearchableSingleSelect({ value = "", onChange, options = [], placeholder = "—Chọn—", loadOptions }) {
+export function SearchableSingleSelect({ value = "", onChange, options = [], placeholder = "—Chọn—", loadOptions, error }) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const ref = useRef(null);
@@ -552,14 +553,14 @@ export function SearchableSingleSelect({ value = "", onChange, options = [], pla
         onClick={() => setOpen((o) => !o)}
         style={{
           height: 38,
-          border: "1.5px solid var(--gray-200)",
+          border: error ? "1.5px solid #ef4444" : "1.5px solid var(--gray-200)",
           borderRadius: 6,
           padding: "0 .625rem",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
           cursor: "pointer",
-          background: "#fff",
+          background: "var(--input-bg)",
           fontSize: ".875rem",
           color: (selected || (loadOptions && value)) ? "var(--gray-800)" : "var(--gray-400)",
         }}
@@ -580,7 +581,7 @@ export function SearchableSingleSelect({ value = "", onChange, options = [], pla
           <div style={{ padding: ".5rem .625rem", background: "var(--gray-200)", borderBottom: "1px solid var(--gray-200)" }}>
             <div className="dropdown-search-wrapper" style={{
               display: "flex", alignItems: "center", gap: ".5rem",
-              background: "#fff", borderRadius: 6, padding: ".3rem .625rem",
+              background: "var(--input-bg)", borderRadius: 6, padding: ".3rem .625rem",
               border: "1.5px solid var(--gray-300)", outline: "none",
             }}>
               <i className="bi bi-search" style={{ color: "#2563eb", fontSize: ".8rem", flexShrink: 0 }} />

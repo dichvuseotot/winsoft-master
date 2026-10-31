@@ -126,13 +126,13 @@ export async function saveAdultTiepNhan(form, mauPhieu, id = null) {
   }
 }
 
-function clsRecord(tiepNhanId, tenDichVu, tenChiSo, giaTri, donViDo = null, existingId = null, moTa = null, ketLuan = null) {
+function clsRecord(tiepNhanId, tenDichVu, tenChiSo, giaTri, donViDo = null, existingId = null, moTa = null, ketLuan = null, maDichVu = null, maChiSo = null) {
   return {
     ID_CLS:              existingId ?? generateId(),
     KSKCD_TiepNhanId:   tiepNhanId,
-    MA_DICH_VU:         null,
+    MA_DICH_VU:         maDichVu,
     TEN_DICH_VU:        tenDichVu,
-    MA_CHI_SO:          null,
+    MA_CHI_SO:          maChiSo,
     TEN_CHI_SO:         tenChiSo,
     GIA_TRI:            giaTri,
     DON_VI_DO:          donViDo,
@@ -147,18 +147,18 @@ function clsRecord(tiepNhanId, tenDichVu, tenChiSo, giaTri, donViDo = null, exis
 
 function buildCLSItems(form, tiepNhanId) {
   const items = [];
-  if (form.cls_huyetHoc)     items.push(clsRecord(tiepNhanId, "Huyết học",            "Tổng phân tích tế bào máu ngoại vi", form.cls_huyetHoc,     null,     form.cls_huyetHoc_id));
-  if (form.cls_duongMau)     items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",       "Đường máu",                          form.cls_duongMau,     "mmol/L", form.cls_duongMau_id));
-  if (form.cls_ure)          items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",       "Urê",                                form.cls_ure,          "mmol/L", form.cls_ure_id));
-  if (form.cls_creatinin)    items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",       "Creatinin",                          form.cls_creatinin,    "μmol/L", form.cls_creatinin_id));
-  if (form.cls_asat)         items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",       "ASAT",                               form.cls_asat,         "U/L",    form.cls_asat_id));
-  if (form.cls_alat)         items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",       "ALAT",                               form.cls_alat,         "U/L",    form.cls_alat_id));
-  if (form.cls_nuocTieu)     items.push(clsRecord(tiepNhanId, "Xét nghiệm nước tiểu", "Tổng phân tích nước tiểu",           form.cls_nuocTieu,     null,     form.cls_nuocTieu_id));
-  if (form.cls_nuocTieuKhac) items.push(clsRecord(tiepNhanId, "Xét nghiệm nước tiểu", "Khác",                               form.cls_nuocTieuKhac, null,     form.cls_nuocTieuKhac_id));
-  if (form.cls_cdha)         items.push(clsRecord(tiepNhanId, "Chẩn đoán hình ảnh",   "XQ tim phổi thẳng",                  form.cls_cdha,         null,     form.cls_cdha_id));
-  if (form.cls_sieuAm)       items.push(clsRecord(tiepNhanId, "Chẩn đoán hình ảnh",   "Siêu âm",                            form.cls_sieuAm,       null,     form.cls_sieuAm_id));
+  if (form.cls_huyetHoc)     items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",            "Huyết học: tổng phân tích tế bào máu ngoại vi", form.cls_huyetHoc,     null,     form.cls_huyetHoc_id,     null, null, "XN001", "CS001"));
+  if (form.cls_duongMau)     items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",            "Đường máu (mmol/L)",                            form.cls_duongMau,     "mmol/L", form.cls_duongMau_id,     null, null, "XN001", "CS002"));
+  if (form.cls_ure)          items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",            "Urê (mmol/L)",                                  form.cls_ure,          "mmol/L", form.cls_ure_id,          null, null, "XN001", "CS003"));
+  if (form.cls_creatinin)    items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",            "Creatinin (μmol/L)",                            form.cls_creatinin,    "μmol/L", form.cls_creatinin_id,    null, null, "XN001", "CS004"));
+  if (form.cls_asat)         items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",            "ASAT (U/L)",                                    form.cls_asat,         "U/L",    form.cls_asat_id,         null, null, "XN001", "CS005"));
+  if (form.cls_alat)         items.push(clsRecord(tiepNhanId, "Xét nghiệm máu",            "ALAT (U/L)",                                    form.cls_alat,         "U/L",    form.cls_alat_id,         null, null, "XN001", "CS006"));
+  if (form.cls_nuocTieu)     items.push(clsRecord(tiepNhanId, "Xét nghiệm nước tiểu",      "Tổng phân tích nước tiểu (Bằng máy tự động)",   form.cls_nuocTieu,     null,     form.cls_nuocTieu_id,     null, null, "XN002", "CS007"));
+  if (form.cls_nuocTieuKhac) items.push(clsRecord(tiepNhanId, "Xét nghiệm nước tiểu",      "Khác",                                          form.cls_nuocTieuKhac, null,     form.cls_nuocTieuKhac_id, null, null, "XN002", "CS008"));
+  if (form.cls_cdha)         items.push(clsRecord(tiepNhanId, "Chẩn đoán hình ảnh",        "Chẩn đoán hình ảnh (XQ tim phổi thẳng)",        form.cls_cdha,         null,     form.cls_cdha_id,         null, null, "CDHA1", "CS009"));
+  if (form.cls_sieuAm)       items.push(clsRecord(tiepNhanId, "Chẩn đoán hình ảnh",        "Siêu âm",                                       form.cls_sieuAm,       null,     form.cls_sieuAm_id,       null, null, "CDHA1", "CS010"));
   if (form.cls_coKhac === "Có" && form.cls_ketQuaChiTiet)
-    items.push(clsRecord(tiepNhanId, "Cận lâm sàng khác", "Kết quả chi tiết", form.cls_ketQuaChiTiet, null, form.cls_ketQuaChiTiet_id));
+    items.push(clsRecord(tiepNhanId, "Cận lâm sàng khác", "Kết quả chi tiết", form.cls_ketQuaChiTiet, null, form.cls_ketQuaChiTiet_id, null, null, "KHAC1", "CS011"));
   for (const dk of (form.clsDynamic || [])) {
     if (dk.giaTri)
       items.push(clsRecord(tiepNhanId, dk.name, dk.code, dk.giaTri, dk.donViDo || null, dk._existingId ?? null, dk.moTa || null, dk.ketLuan || null));
@@ -185,7 +185,7 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     DIEN_THOAI: form.dienThoai,
     MA_DAN_TOC: form.danToc,
     SO_CCCD: form.soDinhDanh,
-    NGAYCAP_CCCD: form.ngayCap,
+    NGAYCAP_CCCD: form.ngayCap ? form.ngayCap.replace(/-/g, "") : null,
     NOICAP_CCCD: form.noiCap,
     TUAN_THAI: null,
     SINH_NON: null,
