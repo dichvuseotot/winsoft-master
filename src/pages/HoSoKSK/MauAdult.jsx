@@ -1150,17 +1150,20 @@ export function Tab6Content({ form, setForm }) {
   const addDKItem = () => {
     const item = CLS_DINH_KY_DATA.find((d) => d.code === clsDKSelected);
     if (!item) return;
-    setForm((prev) => ({
-      ...prev,
-      clsDynamic: [...(prev.clsDynamic || []), {
-        _key: `${item.code}_${Date.now()}`,
-        ...item,
-        donViDo: item.unit,
-        giaTri: "",
-        moTa: "",
-        ketLuan: "",
-      }],
-    }));
+    setForm((prev) => {
+      if ((prev.clsDynamic || []).some((i) => i.code === item.code)) return prev;
+      return {
+        ...prev,
+        clsDynamic: [...(prev.clsDynamic || []), {
+          _key: `${item.code}_${Date.now()}`,
+          ...item,
+          donViDo: item.unit,
+          giaTri: "",
+          moTa: "",
+          ketLuan: "",
+        }],
+      };
+    });
     setClsDKSelected("");
   };
 
@@ -1171,7 +1174,10 @@ export function Tab6Content({ form, setForm }) {
     }));
 
   const removeDKItem = (key) =>
-    setForm((prev) => ({ ...prev, clsDynamic: (prev.clsDynamic || []).filter((i) => i._key !== key) }));
+    setForm((prev) => ({
+      ...prev,
+      clsDynamic: (prev.clsDynamic || []).map((i) => i._key === key ? { ...i, _toDelete: true } : i),
+    }));
 
   const inp = (key, placeholder = "Nhập kết quả...") => (
     <input
@@ -1395,7 +1401,7 @@ export function Tab6Content({ form, setForm }) {
 
         {/* Grouped dynamic items */}
         {(() => {
-          const items = form.clsDynamic || [];
+          const items = (form.clsDynamic || []).filter((i) => !i._toDelete);
           if (!items.length) return null;
           const g1List = [...new Set(items.map((i) => i.g1))];
           return g1List.map((g1) => {

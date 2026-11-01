@@ -7,6 +7,7 @@ import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent,
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
 import { saveAdultTiepNhan, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
 import { todayVN, timeNowVN } from "../../utils/date";
+import { api } from "../../services/api";
 
 const TODAY = todayVN();
 
@@ -883,6 +884,8 @@ export default function TaoHoSo() {
                   if (Object.values(newErrors).some(Boolean)) return;
                   setSaving(true);
                   try {
+                    const toDelete = (form.clsDynamic || []).filter((i) => i._toDelete && i._existingId);
+                    await Promise.all(toDelete.map((i) => api.post("/delete-kham-can-lam-sang", { Id: String(i._existingId) }).catch(() => {})));
                     const result = await saveAdultTiepNhan(form, mauPhieu, tiepNhanId || null);
                     const savedId = result?.TiepNhanId;
                     if (savedId) {
