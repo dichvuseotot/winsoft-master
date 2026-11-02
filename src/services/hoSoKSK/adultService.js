@@ -121,7 +121,7 @@ function buildCLSItems(form, tiepNhanId) {
   if (form.cls_coKhac === "Có" && form.cls_ketQuaChiTiet)
     items.push(clsRecord(tiepNhanId, "Cận lâm sàng khác", "Kết quả chi tiết", form.cls_ketQuaChiTiet, null, form.cls_ketQuaChiTiet_id, null, null, "KHAC1", "CS011"));
   for (const dk of (form.clsDynamic || [])) {
-    if (dk.giaTri)
+    if (dk.giaTri && !dk._toDelete)
       items.push(clsRecord(tiepNhanId, dk.name, dk.code, dk.giaTri, dk.donViDo || null, dk._existingId ?? null, dk.moTa || null, dk.ketLuan || null));
   }
   return items;

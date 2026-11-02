@@ -287,13 +287,12 @@ function mapTSBToForm(tsb) {
 
 function mapCLSToForm(clsItems) {
   const itemId = (i) => i.Id ?? i.ID_CLS ?? null;
-  const find = (chiSo) => clsItems.find((i) => i.TEN_CHI_SO === chiSo);
-  const r = (chiSo) => find(chiSo)?.GIA_TRI ?? null;
-  const id = (chiSo) => itemId(find(chiSo) ?? {});
-  const khac = clsItems.find((i) => i.TEN_DICH_VU === "Cận lâm sàng khác");
+  const byCode = (maChiSo) => clsItems.find((i) => i.MA_CHI_SO === maChiSo);
+  const r = (maChiSo) => byCode(maChiSo)?.GIA_TRI ?? null;
+  const id = (maChiSo) => itemId(byCode(maChiSo) ?? {});
+  const khac = byCode("CS011");
 
   const dkCodes = new Set(CLS_DINH_KY_DATA.map((d) => d.code));
-  // Deduplicate: mỗi code chỉ lấy 1 item (item cuối = mới nhất)
   const seen = new Set();
   const uniqueDkItems = clsItems
     .filter((i) => dkCodes.has(i.TEN_CHI_SO))
@@ -320,29 +319,29 @@ function mapCLSToForm(clsItems) {
     });
 
   return {
-    cls_huyetHoc:          r("Tổng phân tích tế bào máu ngoại vi"),
-    cls_huyetHoc_id:       id("Tổng phân tích tế bào máu ngoại vi"),
-    cls_duongMau:          r("Đường máu"),
-    cls_duongMau_id:       id("Đường máu"),
-    cls_ure:               r("Urê"),
-    cls_ure_id:            id("Urê"),
-    cls_creatinin:         r("Creatinin"),
-    cls_creatinin_id:      id("Creatinin"),
-    cls_asat:              r("ASAT"),
-    cls_asat_id:           id("ASAT"),
-    cls_alat:              r("ALAT"),
-    cls_alat_id:           id("ALAT"),
-    cls_nuocTieu:          r("Tổng phân tích nước tiểu"),
-    cls_nuocTieu_id:       id("Tổng phân tích nước tiểu"),
-    cls_nuocTieuKhac:      r("Khác"),
-    cls_nuocTieuKhac_id:   id("Khác"),
-    cls_cdha:              r("XQ tim phổi thẳng"),
-    cls_cdha_id:           id("XQ tim phổi thẳng"),
-    cls_sieuAm:            r("Siêu âm"),
-    cls_sieuAm_id:         id("Siêu âm"),
+    cls_huyetHoc:          r("CS001"),
+    cls_huyetHoc_id:       id("CS001"),
+    cls_duongMau:          r("CS002"),
+    cls_duongMau_id:       id("CS002"),
+    cls_ure:               r("CS003"),
+    cls_ure_id:            id("CS003"),
+    cls_creatinin:         r("CS004"),
+    cls_creatinin_id:      id("CS004"),
+    cls_asat:              r("CS005"),
+    cls_asat_id:           id("CS005"),
+    cls_alat:              r("CS006"),
+    cls_alat_id:           id("CS006"),
+    cls_nuocTieu:          r("CS007"),
+    cls_nuocTieu_id:       id("CS007"),
+    cls_nuocTieuKhac:      r("CS008"),
+    cls_nuocTieuKhac_id:   id("CS008"),
+    cls_cdha:              r("CS009"),
+    cls_cdha_id:           id("CS009"),
+    cls_sieuAm:            r("CS010"),
+    cls_sieuAm_id:         id("CS010"),
     cls_coKhac:            khac ? "Có" : "",
     cls_ketQuaChiTiet:     khac?.GIA_TRI ?? null,
-    cls_ketQuaChiTiet_id:  khac?.Id ?? null,
+    cls_ketQuaChiTiet_id:  khac ? itemId(khac) : null,
     clsDynamic,
   };
 }
@@ -379,7 +378,7 @@ export default function TaoHoSo() {
   const tabBarRef = useRef(null);
   const isScrollingTo = useRef(false);
 
-  const [form, setForm] = useState({
+  const INITIAL_FORM = {
     soDinhDanh: "",
     hoTen: "",
     gioiTinh: "",
@@ -408,7 +407,8 @@ export default function TaoHoSo() {
     dieuTriICD10: [],
     clsDynamic: [],
     thuocDangSD: "",
-  });
+  };
+  const [form, setForm] = useState(INITIAL_FORM);
 
   useEffect(() => {
     getGioiTinhList().then((data) => setGioiTinhOptions(data)).catch(() => {});
@@ -885,16 +885,12 @@ export default function TaoHoSo() {
                   setSaving(true);
                   try {
                     const toDelete = (form.clsDynamic || []).filter((i) => i._toDelete && i._existingId);
-                    await Promise.all(toDelete.map((i) => api.post("/delete-kham-can-lam-sang", { Id: String(i._existingId) }).catch(() => {})));
-                    const result = await saveAdultTiepNhan(form, mauPhieu, tiepNhanId || null);
-                    const savedId = result?.TiepNhanId;
-                    if (savedId) {
-                      setTiepNhanId(savedId);
-                      const clsItems = await getCLS(savedId).catch(() => []);
-                      if (clsItems.length > 0) {
-                        setForm((prev) => ({ ...prev, ...mapCLSToForm(clsItems) }));
-                      }
-                    }
+                    await Promise.all(toDelete.map((i) => api.delete(`/delete-kham-can-lam-sang?Id=${i._existingId}`).catch(() => {})));
+                    await saveAdultTiepNhan(form, mauPhieu, tiepNhanId || null);
+                    setForm({ ...INITIAL_FORM, ngayKham: todayVN(), gioKham: timeNowVN() });
+                    setTiepNhanId(null);
+                    setErrors({});
+                    window.scrollTo({ top: 0, behavior: "smooth" });
                   } catch {
                     // handled inside service
                   } finally {
