@@ -55,6 +55,11 @@ export async function getCareerList() {
   return res.data ?? [];
 }
 
+export async function getTienSuBenhCategories() {
+  const res = await api.get("/get-list-category-tien-su-benh");
+  return res.data ?? [];
+}
+
 export async function getICD10List({ search = "", page = 1, pageSize = 20 } = {}) {
   const params = new URLSearchParams({ Search: search, Page: page, PageSize: pageSize });
   const res = await api.get(`/get-category-icd10?${params}`);

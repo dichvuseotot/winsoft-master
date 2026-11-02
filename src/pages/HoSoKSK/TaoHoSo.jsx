@@ -5,7 +5,7 @@ import "./TaoHoSo.css";
 import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content, CLS_DINH_KY_DATA } from "./MauAdult";
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
-import { saveAdultTiepNhan, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList } from "../../services";
+import { saveAdultTiepNhan, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList, getTienSuBenhCategories } from "../../services";
 import { todayVN, timeNowVN } from "../../utils/date";
 import { api } from "../../services/api";
 
@@ -65,8 +65,8 @@ function PatientPickerModal({ onClose, onSelect, mauPhieu, gioiTinhOptions = [] 
 const [fromDate, setFromDate] = useState(today);
   const [toDate, setToDate] = useState(today);
 
-  const thStyle = { padding: ".5rem 1rem", textAlign: "left", fontWeight: 600, color: "var(--gray-500)", whiteSpace: "nowrap", borderBottom: "2px solid var(--gray-200)", fontSize: ".75rem", textTransform: "uppercase", letterSpacing: ".04em", background: "var(--gray-50)" };
-  const tdStyle = { padding: ".6rem 1rem", borderBottom: "1px solid var(--gray-100)", color: "var(--gray-600)", whiteSpace: "nowrap", fontSize: ".83rem" };
+  const thStyle = { padding: ".5rem 1rem", textAlign: "left", fontWeight: 600, color: "var(--gray-500)", whiteSpace: "nowrap", borderBottom: "2px solid var(--gray-200)", fontSize: ".75rem", textTransform: "uppercase", letterSpacing: ".04em", background: "var(--gray-100)" };
+  const tdStyle = { padding: ".6rem 1rem", borderBottom: "1px solid var(--gray-200)", color: "var(--gray-700)", whiteSpace: "nowrap", fontSize: ".83rem" };
 
   const fetchPatients = (fd, td, p) => {
     setLoading(true);
@@ -152,14 +152,14 @@ const [fromDate, setFromDate] = useState(today);
 
         {/* Search */}
         <div style={{ padding: ".625rem 1.25rem", borderBottom: "1px solid var(--gray-200)", flexShrink: 0 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: ".5rem", background: "#fff", border: "1px solid var(--gray-200)", borderRadius: "var(--radius-md)", padding: ".4rem .75rem" }}>
+          <div className="modal-search-wrapper" style={{ display: "flex", alignItems: "center", gap: ".5rem", border: "1.5px solid var(--gray-200)", borderRadius: "var(--radius-md)", padding: ".4rem .75rem" }}>
             <i className="bi bi-search" style={{ color: "var(--gray-400)", fontSize: ".85rem" }} />
             <input
               autoFocus
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Tìm theo tên hoặc số định danh..."
-              style={{ border: "none", outline: "none", boxShadow: "none", background: "transparent", fontSize: ".875rem", width: "100%", color: "var(--gray-800)" }}
+              style={{ border: "none", outline: "none", boxShadow: "none", background: "transparent", fontSize: ".875rem", width: "100%", color: "var(--gray-700)" }}
             />
           </div>
         </div>
@@ -198,9 +198,9 @@ const [fromDate, setFromDate] = useState(today);
                       onSelect(detail ?? p);
                       onClose();
                     }}
-                    style={{ cursor: "pointer", background: i % 2 === 0 ? "#fff" : "var(--gray-50)", transition: "background .12s" }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--primary-bg)")}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = i % 2 === 0 ? "#fff" : "var(--gray-50)")}
+                    style={{ cursor: "pointer", background: "var(--gray-100)", transition: "background .12s" }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = "var(--gray-200)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = "var(--gray-100)")}
                   >
                     <td style={{ ...tdStyle, color: "var(--gray-400)", width: 36, textAlign: "center" }}>{(page - 1) * PAGE_SIZE + i + 1}</td>
                     <td style={{ ...tdStyle, color: "var(--gray-900)", fontWeight: 600 }}>{p.HO_TEN}</td>
@@ -250,39 +250,46 @@ const [fromDate, setFromDate] = useState(today);
   );
 }
 
-function mapTSBToForm(tsb) {
-  if (!tsb) return {};
-  const bit = (v) => v === true || v === 1 ? "Có" : "Không";
-  return {
-    gdChung:        tsb.TSGD_MAC_BENH === true || tsb.TSGD_MAC_BENH === 1 ? "Có" : "Không",
-    gdICD10:        tsb.TSGD_MA_BENH_FULL ? tsb.TSGD_MA_BENH_FULL.split(";").filter(Boolean) : [],
-    bt_0:           bit(tsb.TSBT_BENH_TRONG_5_NAM_QUA),
-    bt_1:           bit(tsb.TSBT_BENH_THAN_KINH),
-    bt_2:           bit(tsb.TSBT_BENH_MAT),
-    bt_3:           bit(tsb.TSBT_BENH_TAI),
-    bt_4:           bit(tsb.TSBT_BENH_TIM),
-    bt_5:           bit(tsb.TSBT_PHAU_THUAT_TIM),
-    bt_6:           bit(tsb.TSBT_TANG_HUYET_AP),
-    bt_7:           bit(tsb.TSBT_KHO_THO),
-    bt_8:           bit(tsb.TSBT_BENH_PHOI),
-    bt_9:           bit(tsb.TSBT_BENH_THAN),
-    bt_10:          bit(tsb.TSBT_NGHIEN_RUOU),
-    bt_11:          bit(tsb.TSBT_DAI_THAO_DUONG),
-    bt_12:          bit(tsb.TSBT_BENH_TAM_THAN),
-    bt_13:          bit(tsb.TSBT_MAT_Y_THUC),
-    bt_14:          bit(tsb.TSBT_NGAT),
-    bt_15:          bit(tsb.TSBT_BENH_TIEU_HOA),
-    bt_16:          bit(tsb.TSBT_ROI_LOAN_GIAC_NGU),
-    bt_17:          bit(tsb.TSBT_TAI_BIEN),
-    bt_18:          bit(tsb.TSBT_BENH_COT_SONG),
-    bt_19:          bit(tsb.TSBT_RUOU_THUONG_XUYEN),
-    bt_20:          bit(tsb.TSBT_MA_TUY),
-    bt_21:          bit(tsb.TSBT_BENH_KHAC),
-    benhKhacChiTiet: tsb.TSBT_MA_BENH_KHAC_FULL ? tsb.TSBT_MA_BENH_KHAC_FULL.split(";").filter(Boolean) : [],
-    dangDieuTri:    (tsb.TSBT_DANG_DIEU_TRI_BENH === true || tsb.TSBT_DANG_DIEU_TRI_BENH === 1) ? "Có" : "Không",
-    dieuTriICD10:   tsb.BENH_DANG_DIEU_TRI ? tsb.BENH_DANG_DIEU_TRI.split(";").filter(Boolean) : [],
-    thuocDangSD:    tsb.TSBT_TEN_THUOC_LIEU_LUONG || "",
-  };
+async function resolveIcd10InTSB(cats) {
+  if (!cats || !cats.length) return {};
+  const result = {};
+  for (const cat of cats) {
+    const loai = (cat.LoaiNhap || "").trim();
+    if (!loai.startsWith("MultiSelect")) continue;
+    const codes = (cat.GiaTri || "").split(";").filter(Boolean);
+    if (!codes.length) continue;
+    const labels = await Promise.all(
+      codes.map((code) =>
+        getICD10List({ search: code, pageSize: 5 })
+          .then(({ items }) => items.find((i) => i.startsWith(code + " -") || i.startsWith(code + " ")) || code)
+          .catch(() => code)
+      )
+    );
+    result[cat.Field_AX] = labels;
+  }
+  return result;
+}
+
+function mapTSBToForm(cats) {
+  if (!cats || !cats.length) return {};
+  const result = {};
+  for (const cat of cats) {
+    const key = cat.Field_AX;
+    if (!key) continue;
+    const loai = (cat.LoaiNhap || "").trim();
+    const giaTri = cat.GiaTri || "";
+    if (loai === "Radio" || loai === "Select") {
+      if (!giaTri) continue;
+      const opts = cat.Option ? JSON.parse(cat.Option) : [];
+      const found = opts.find((o) => String(o.id) === giaTri);
+      if (found) result[key] = found.name;
+    } else if (loai.startsWith("MultiSelect")) {
+      result[key] = giaTri ? giaTri.split(";").filter(Boolean) : [];
+    } else {
+      if (giaTri) result[key] = giaTri;
+    }
+  }
+  return result;
 }
 
 function mapCLSToForm(clsItems) {
@@ -374,6 +381,7 @@ export default function TaoHoSo() {
   const [loaiHinhKCBOptions, setLoaiHinhKCBOptions] = useState([]);
   const [mauPhieuOptions, setMauPhieuOptions] = useState([]);
   const [ngheNghiepOptions, setNgheNghiepOptions] = useState([]);
+  const [tienSuCategories, setTienSuCategories] = useState([]);
   const sectionRefs = useRef([]);
   const tabBarRef = useRef(null);
   const isScrollingTo = useRef(false);
@@ -404,9 +412,11 @@ export default function TaoHoSo() {
     gioKham: timeNowVN(),
     gdICD10: [],
     kl_icd10: [],
-    dieuTriICD10: [],
+    TSBT_MA_BENH: [],
+    TSBT_MA_BENH_THAI_SAN: [],
+    TSBT_TEN_THUOC_LIEU_LUONG: "",
+    TSBT_TEN_THUOC_THAI_SAN: "",
     clsDynamic: [],
-    thuocDangSD: "",
   };
   const [form, setForm] = useState(INITIAL_FORM);
 
@@ -421,6 +431,7 @@ export default function TaoHoSo() {
     getLoaiHinhKCBList().then((data) => setLoaiHinhKCBOptions(data)).catch(() => {});
     getLoaiMauKSKList().then((data) => setMauPhieuOptions(data)).catch(() => {});
     getCareerList().then((data) => setNgheNghiepOptions(data)).catch(() => {});
+    getTienSuBenhCategories().then((data) => setTienSuCategories(data)).catch(() => {});
   }, []);
 
   const loadIcd10Options = async (search, page = 1) => {
@@ -543,6 +554,7 @@ export default function TaoHoSo() {
         kl_tinhTrang: kl?.GHI_RO_VAN_DE_SUC_KHOE ?? prev.kl_tinhTrang,
         kl_phanLoai:  kl?.PHAN_LOAI_SK ?? prev.kl_phanLoai,
       }));
+      if (tsb) resolveIcd10InTSB(tsb).then((resolved) => { if (Object.keys(resolved).length) setForm((prev) => ({ ...prev, ...resolved })); });
     });
   }, [editId]);
 
@@ -886,7 +898,9 @@ export default function TaoHoSo() {
                   try {
                     const toDelete = (form.clsDynamic || []).filter((i) => i._toDelete && i._existingId);
                     await Promise.all(toDelete.map((i) => api.delete(`/delete-kham-can-lam-sang?Id=${i._existingId}`).catch(() => {})));
-                    await saveAdultTiepNhan(form, mauPhieu, tiepNhanId || null);
+                    const cats = tienSuCategories.filter((c) => c.td_loaimau_kskid === mauPhieu);
+                    console.log("[save] tienSuCategories.length:", tienSuCategories.length, "| filtered cats:", cats.length, "| mauPhieu:", mauPhieu);
+                    await saveAdultTiepNhan(form, mauPhieu, tiepNhanId || null, cats);
                     setForm({ ...INITIAL_FORM, ngayKham: todayVN(), gioKham: timeNowVN() });
                     setTiepNhanId(null);
                     setErrors({});
@@ -955,7 +969,11 @@ export default function TaoHoSo() {
             ? <Tab3ChildContent form={form} setForm={setForm} />
             : isTeen
             ? <Tab3TeenContent form={form} setForm={setForm} loadIcd10={loadIcd10Options} />
-            : <Tab3Content form={form} setForm={setForm} loadIcd10={loadIcd10Options} />
+            : <Tab3Content form={form} setForm={setForm} loadIcd10={loadIcd10Options}
+                giadinhCats={tienSuCategories.filter((c) => c.td_nhom_kskid === 2 && c.td_loaimau_kskid === mauPhieu)}
+                banthanCats={tienSuCategories.filter((c) => c.td_nhom_kskid === 1 && c.td_loaimau_kskid === mauPhieu).sort((a, b) => a.TT - b.TT)}
+                khacCats={tienSuCategories.filter((c) => c.td_nhom_kskid === 4 && c.td_loaimau_kskid === mauPhieu).sort((a, b) => a.TT - b.TT)}
+              />
           }
         </div>
         <div ref={(el) => (sectionRefs.current[3] = el)}>
@@ -1119,6 +1137,7 @@ export default function TaoHoSo() {
                   kl_tinhTrang: kl?.GHI_RO_VAN_DE_SUC_KHOE ?? null,
                   kl_phanLoai:  kl?.PHAN_LOAI_SK ?? null,
                 }));
+                if (tsb) resolveIcd10InTSB(tsb).then((resolved) => { if (Object.keys(resolved).length) setForm((prev) => ({ ...prev, ...resolved })); });
               });
             }
             setShowPatientPicker(false);

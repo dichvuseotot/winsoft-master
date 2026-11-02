@@ -20,3 +20,22 @@ export async function getThongTinHanhChinhList({ fromDate, toDate, mauPhieu, sea
     totalPages: Number(res.pagination?.TotalPages ?? 1),
   };
 }
+
+export async function exportXmlLienThong({ tuNgay, denNgay } = {}) {
+  const params = new URLSearchParams();
+  if (tuNgay) params.set("TuNgay", tuNgay);
+  if (denNgay) params.set("DenNgay", denNgay);
+  const res = await api.get(`/export-xml-tren-18-tuoi-send-to-portal?${params.toString()}`);
+  return res;
+}
+
+export async function getThongKeDongBo() {
+  const res = await api.get("/thong-ke-dong-bo-ksk");
+  const p = res.pagination ?? {};
+  return {
+    "da-dong-bo":   Number(p.DaDongBo   ?? 0),
+    "chua-dong-bo": Number(p.ChuaDongBo ?? 0),
+    "dong-bo-loi":  Number(p.LoiDongBo  ?? 0),
+    "dang-dong-bo": Number(p.DangDongBo ?? 0),
+  };
+}

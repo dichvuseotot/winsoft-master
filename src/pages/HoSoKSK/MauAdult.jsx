@@ -313,30 +313,6 @@ function RadioKhongCo({ name, value, onChange }) {
   );
 }
 
-const TIEN_SU_BAN_THAN_ITEMS = [
-  "Có bệnh hay bị thương trong 5 năm qua",
-  "Có bệnh thần kinh hay bị thương ở đầu",
-  "Bệnh mắt hoặc giảm thị lực (trừ trường hợp đeo kính thuốc)",
-  "Bệnh ở tai, giảm sức nghe hoặc thăng bằng",
-  "Bệnh ở tim, hoặc nhồi máu cơ tim, các bệnh tim mạch khác",
-  "Phẫu thuật can thiệp tim - mạch (thay van, bắc cầu nối, tạo hình mạch, máy tạo nhịp, đặt stent mạch, ghép tim)",
-  "Tăng huyết áp",
-  "Khó thở",
-  "Bệnh phổi, hen, khí phế thủng, viêm phế quản mạn tính",
-  "Bệnh thận, lọc máu",
-  "Nghiện rượu, bia",
-  "Đái tháo đường hoặc kiểm soát tăng đường huyết",
-  "Bệnh tâm thần",
-  "Mất ý thức, rối loạn ý thức",
-  "Ngất, chóng mặt",
-  "Bệnh tiêu hóa",
-  "Rối loạn giấc ngủ, ngừng thở khi ngủ, ngủ rũ ban ngày, ngáy to",
-  "Tai biến mạch máu não hoặc liệt",
-  "Bệnh hoặc tổn thương cột sống",
-  "SD rượu thường xuyên, liên tục",
-  "SD ma túy và chất gây nghiện",
-  "Bệnh khác",
-];
 
 const tblHeaderStyle = {
   display: "grid",
@@ -351,23 +327,22 @@ const tblHeaderStyle = {
   letterSpacing: ".05em",
 };
 
-function BanThanTable({ items, startIdx, form, setRadio, setForm, loadIcd10 }) {
+function BanThanTable({ items, startIdx, childCats = [], form, setRadio, setForm, loadIcd10 }) {
   return (
-    <div
-      style={{
-        border: "1px solid var(--gray-200)",
-        borderRadius: 8,
-      }}
-    >
+    <div style={{ border: "1px solid var(--gray-200)", borderRadius: 8 }}>
       <div style={{ ...tblHeaderStyle, borderRadius: "8px 8px 0 0" }}>
         <span>STT</span>
         <span>TIỀN SỬ BỆNH LÝ</span>
         <span style={{ textAlign: "right" }}>CHỌN</span>
       </div>
       {items.map((item, i) => {
-        const key = `bt_${startIdx + i}`;
+        const key = item.Field_AX;
+        const val = form[key] || "Không";
+        const opts = item.Option ? JSON.parse(item.Option) : [];
+        const child = childCats.find((c) => c.ParentId === item.td_cauhoiid);
+        const triggerOpt = opts.find((o) => o.name === val);
+        const showChild = child && String(triggerOpt?.id ?? "") === String(child.ParentValue ?? "");
         const isLast = i === items.length - 1;
-        const isBenhKhac = key === "bt_21";
         return (
           <React.Fragment key={key}>
             <div
@@ -375,39 +350,25 @@ function BanThanTable({ items, startIdx, form, setRadio, setForm, loadIcd10 }) {
                 display: "grid",
                 gridTemplateColumns: "36px 1fr 96px",
                 padding: ".5rem .75rem",
-                borderBottom: (!isLast || (isBenhKhac && form.bt_21 === "Có")) ? "1px solid var(--gray-100)" : "none",
+                borderBottom: (!isLast || showChild) ? "1px solid var(--gray-100)" : "none",
                 alignItems: "center",
               }}
             >
-              <span style={{ fontSize: ".78rem", color: "var(--gray-400)" }}>
-                {startIdx + i + 1}
-              </span>
-              <span
-                style={{
-                  fontSize: ".83rem",
-                  color: "var(--gray-800)",
-                  lineHeight: 1.4,
-                }}
-              >
-                {item}
-              </span>
+              <span style={{ fontSize: ".78rem", color: "var(--gray-400)" }}>{startIdx + i + 1}</span>
+              <span style={{ fontSize: ".83rem", color: "var(--gray-800)", lineHeight: 1.4 }}>{item.CauHoi}</span>
               <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <RadioKhongCo
-                  name={key}
-                  value={form[key] || "Không"}
-                  onChange={setRadio(key)}
-                />
+                <RadioKhongCo name={key} value={val} onChange={setRadio(key)} />
               </div>
             </div>
-            {isBenhKhac && form.bt_21 === "Có" && (
-              <div style={{ padding: ".5rem .75rem" }}>
+            {showChild && (
+              <div style={{ padding: ".5rem .75rem", borderBottom: isLast ? "none" : "1px solid var(--gray-100)" }}>
                 <div style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--gray-700)", marginBottom: ".35rem" }}>
-                  Ghi rõ tên bệnh khác
+                  {child.CauHoi}
                 </div>
                 <SearchableSelect
                   loadOptions={loadIcd10}
-                  value={form.benhKhacChiTiet || []}
-                  onChange={(val) => setForm((prev) => ({ ...prev, benhKhacChiTiet: val }))}
+                  value={form[child.Field_AX] || []}
+                  onChange={(v) => setForm((prev) => ({ ...prev, [child.Field_AX]: v }))}
                 />
               </div>
             )}
@@ -418,12 +379,26 @@ function BanThanTable({ items, startIdx, form, setRadio, setForm, loadIcd10 }) {
   );
 }
 
-export function Tab3Content({ form, setForm, loadIcd10 }) {
+export function Tab3Content({ form, setForm, loadIcd10, giadinhCats = [], banthanCats = [], khacCats = [] }) {
   const setRadio = (key) => (val) =>
     setForm((prev) => ({ ...prev, [key]: val }));
 
-  const left = TIEN_SU_BAN_THAN_ITEMS.slice(0, 11);
-  const right = TIEN_SU_BAN_THAN_ITEMS.slice(11);
+  const btParents  = banthanCats.filter((c) => (c.LoaiNhap || "").trim() === "Radio");
+  const btChildren = banthanCats.filter((c) => (c.LoaiNhap || "").trim() !== "Radio");
+  const half = Math.ceil(btParents.length / 2);
+  const left  = btParents.slice(0, half);
+  const right = btParents.slice(half);
+
+  // Gia đình: ParentId=null → cha, ParentId=td_cauhoiid của cha → con
+  const gdParent   = giadinhCats.find((c) => c.ParentId === null);
+  const gdChild    = giadinhCats.find((c) => c.ParentId !== null && c.ParentId === gdParent?.td_cauhoiid);
+  const gdOptions  = gdParent?.Option ? JSON.parse(gdParent.Option) : [{ id: 0, name: "Không" }, { id: 1, name: "Có" }];
+  const gdQuestion = gdParent?.CauHoi || "Có ai trong gia đình mắc một trong các bệnh: truyền nhiễm, tim mạch, đái tháo đường, lao, hen phế quản, ung thư, động kinh, rối loạn tâm thần không?";
+  const gdChildVisible = gdChild && gdParent && (() => {
+    const selectedOpt = gdOptions.find((o) => o.name === (form[gdParent.Field_AX] || "Không"));
+    return String(selectedOpt?.id ?? "") === String(gdChild.ParentValue ?? "");
+  })();
+  const gdChildLoai = (gdChild?.LoaiNhap || "").trim();
 
   return (
     <>
@@ -452,64 +427,56 @@ export function Tab3Content({ form, setForm, loadIcd10 }) {
               lineHeight: 1.5,
             }}
           >
-            Có ai trong gia đình mắc một trong các bệnh: truyền nhiễm, tim mạch,
-            đái tháo đường, lao, hen phế quản, ung thư, động kinh, rối loạn tâm
-            thần không?
+            {gdQuestion}
           </p>
           <div style={{ display: "flex", gap: "1.5rem" }}>
-            {["Không", "Có"].map((val) => (
+            {gdOptions.map((opt) => (
               <label
-                key={val}
+                key={opt.id}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: ".35rem",
                   cursor: "pointer",
                   fontSize: ".85rem",
-                  fontWeight: (form.gdChung || "Không") === val ? 600 : 400,
-                  color: (form.gdChung || "Không") === val ? "var(--primary)" : "var(--gray-700)",
+                  fontWeight: (form[gdParent?.Field_AX] || "Không") === opt.name ? 600 : 400,
+                  color: (form[gdParent?.Field_AX] || "Không") === opt.name ? "var(--primary)" : "var(--gray-700)",
                 }}
               >
                 <input
                   type="radio"
-                  name="gdChung"
-                  value={val}
-                  checked={(form.gdChung || "Không") === val}
-                  onChange={() => setRadio("gdChung")(val)}
+                  name={gdParent?.Field_AX}
+                  value={opt.name}
+                  checked={(form[gdParent?.Field_AX] || "Không") === opt.name}
+                  onChange={() => setRadio(gdParent?.Field_AX)(opt.name)}
                   style={{ accentColor: "#2563eb", width: 15, height: 15 }}
                 />
-                {val}
+                {opt.name}
               </label>
             ))}
           </div>
-          {(form.gdChung || "Không") === "Có" && (
+          {gdChildVisible && (
             <div style={{ marginTop: ".75rem" }}>
-              <div
-                style={{
-                  fontSize: ".8rem",
-                  fontWeight: 600,
-                  color: "var(--gray-700)",
-                  marginBottom: ".35rem",
-                }}
-              >
-                Tiền sử bệnh, tật của gia đình
-                <span
-                  style={{
-                    fontWeight: 400,
-                    color: "var(--gray-400)",
-                    marginLeft: ".3rem",
-                  }}
-                >
-                  (Mã bệnh ICD-10)
-                </span>
+              <div style={{ fontSize: ".8rem", fontWeight: 600, color: "var(--gray-700)", marginBottom: ".35rem" }}>
+                {gdChild.CauHoi}
+                {gdChildLoai.startsWith("MultiSelect") && (
+                  <span style={{ fontWeight: 400, color: "var(--gray-400)", marginLeft: ".3rem" }}>(Mã bệnh ICD-10)</span>
+                )}
               </div>
-              <SearchableSelect
-                loadOptions={loadIcd10}
-                value={form.gdICD10}
-                onChange={(val) =>
-                  setForm((prev) => ({ ...prev, gdICD10: val }))
-                }
-              />
+              {gdChildLoai.startsWith("MultiSelect") && (
+                <SearchableSelect
+                  loadOptions={loadIcd10}
+                  value={form[gdChild?.Field_AX] || []}
+                  onChange={(val) => setForm((prev) => ({ ...prev, [gdChild?.Field_AX]: val }))}
+                />
+              )}
+              {gdChildLoai === "Radio" && (
+                <RadioKhongCo
+                  name={gdChild?.Field_AX}
+                  value={form[gdChild?.Field_AX] || "Không"}
+                  onChange={(val) => setForm((prev) => ({ ...prev, [gdChild?.Field_AX]: val }))}
+                />
+              )}
             </div>
           )}
         </div>
@@ -525,98 +492,86 @@ export function Tab3Content({ form, setForm, loadIcd10 }) {
           <BanThanTable
             items={left}
             startIdx={0}
+            childCats={btChildren}
             form={form}
             setRadio={setRadio}
+            setForm={setForm}
+            loadIcd10={loadIcd10}
           />
-          <div>
-            <BanThanTable
-              items={right}
-              startIdx={11}
-              form={form}
-              setRadio={setRadio}
-              setForm={setForm}
-              loadIcd10={loadIcd10}
-            />
-          </div>
+          <BanThanTable
+            items={right}
+            startIdx={half}
+            childCats={btChildren}
+            form={form}
+            setRadio={setRadio}
+            setForm={setForm}
+            loadIcd10={loadIcd10}
+          />
         </div>
       </Card>
 
-      <Card>
-        <div style={subLabelStyle}>3. Các câu hỏi khác (nếu có):</div>
-        <div style={{ display: "flex", alignItems: "center", gap: "1.25rem" }}>
-          <span style={{ fontSize: ".84rem", color: "var(--gray-700)" }}>
-            a. Hiện tại có đang điều trị bệnh gì không?
-          </span>
-          <RadioKhongCo
-            name="dangDieuTri"
-            value={form.dangDieuTri || "Không"}
-            onChange={setRadio("dangDieuTri")}
-          />
-        </div>
-        {(form.dangDieuTri || "Không") === "Có" && (
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "1rem",
-              marginTop: ".875rem",
-            }}
-          >
-            <div>
-              <div
-                style={{
-                  fontSize: ".8rem",
-                  fontWeight: 600,
-                  color: "var(--gray-700)",
-                  marginBottom: ".35rem",
-                }}
-              >
-                Tên bệnh đang điều trị
-                <span
-                  style={{
-                    fontWeight: 400,
-                    color: "var(--gray-400)",
-                    marginLeft: ".3rem",
-                  }}
-                >
-                  (Mã bệnh ICD-10)
-                </span>
+      {(() => {
+        const isNu = Number(form.gioiTinh) === 2;
+        const NHU_IDS = [50, 51, 52];
+        const visibleKhac = khacCats.filter((c) => isNu || !NHU_IDS.includes(c.td_cauhoiid));
+        const visibleParents = visibleKhac.filter((c) => c.ParentId === null);
+        if (visibleParents.length === 0) return null;
+        return (
+        <Card>
+          <div style={subLabelStyle}>3. Các câu hỏi khác (nếu có):</div>
+          {visibleParents.map((cat, i) => {
+            const key = cat.Field_AX;
+            const opts = cat.Option ? JSON.parse(cat.Option) : [{ id: 0, name: "Không" }, { id: 1, name: "Có" }];
+            const val = form[key] || opts.find((o) => String(o.id) === "0")?.name || "Không";
+            const children = visibleKhac.filter((c) => c.ParentId === cat.td_cauhoiid);
+            const triggerOpt = opts.find((o) => o.name === val);
+            const showChildren = children.length > 0 && String(triggerOpt?.id ?? "0") !== "0";
+            return (
+              <div key={key} style={{ marginBottom: i < visibleParents.length - 1 ? ".875rem" : 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "1.25rem" }}>
+                  <span style={{ fontSize: ".84rem", color: "var(--gray-700)" }}>
+                    {String.fromCharCode(97 + i)}. {cat.CauHoi}
+                  </span>
+                  <RadioKhongCo name={key} value={val} onChange={setRadio(key)} />
+                </div>
+                {showChildren && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: ".875rem" }}>
+                    {children.map((child) => {
+                      const loai = (child.LoaiNhap || "").trim();
+                      return (
+                        <div key={child.Field_AX}>
+                          <div style={{ fontSize: ".8rem", fontWeight: 600, color: "var(--gray-700)", marginBottom: ".35rem" }}>
+                            {child.CauHoi}
+                            {loai.startsWith("MultiSelect") && (
+                              <span style={{ fontWeight: 400, color: "var(--gray-400)", marginLeft: ".3rem" }}>(Mã bệnh ICD-10)</span>
+                            )}
+                          </div>
+                          {loai.startsWith("MultiSelect") ? (
+                            <SearchableSelect
+                              loadOptions={loadIcd10}
+                              value={form[child.Field_AX] || []}
+                              onChange={(v) => setForm((prev) => ({ ...prev, [child.Field_AX]: v }))}
+                            />
+                          ) : (
+                            <input
+                              style={{ ...inputStyle, width: "100%", boxSizing: "border-box" }}
+                              placeholder="Nhập..."
+                              value={form[child.Field_AX] || ""}
+                              onChange={(e) => setForm((prev) => ({ ...prev, [child.Field_AX]: e.target.value }))}
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-              <SearchableSelect
-                loadOptions={loadIcd10}
-                value={form.dieuTriICD10 || []}
-                onChange={(val) =>
-                  setForm((prev) => ({ ...prev, dieuTriICD10: val }))
-                }
-              />
-            </div>
-            <div>
-              <div
-                style={{
-                  fontSize: ".8rem",
-                  fontWeight: 600,
-                  color: "var(--gray-700)",
-                  marginBottom: ".35rem",
-                }}
-              >
-                Thuốc đang SD và liều lượng
-              </div>
-              <input
-                style={{
-                  ...inputStyle,
-                  width: "100%",
-                  boxSizing: "border-box",
-                }}
-                placeholder="Nhập tên thuốc và liều lượng..."
-                value={form.thuocDangSD || ""}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, thuocDangSD: e.target.value }))
-                }
-              />
-            </div>
-          </div>
-        )}
-      </Card>
+            );
+          })}
+        </Card>
+        );
+      })()}
+
     </>
   );
 }

@@ -39,8 +39,8 @@ export async function getKhamRHM(tiepNhanId) {
 }
 
 export async function getTienSuBenh(tiepNhanId) {
-  const res = await api.get(`/get-tien-su-benh?KSKCD_TiepNhanId=${tiepNhanId}`);
-  return (res.data ?? [])[0] ?? null;
+  const res = await api.get(`/get-list-category-tien-su-benh?KSKCD_TiepNhanId=${tiepNhanId}`);
+  return res.data ?? [];
 }
 
 export async function getKhamTheLuc(tiepNhanId) {
@@ -58,10 +58,10 @@ export async function getCLS(tiepNhanId) {
   return res.data ?? [];
 }
 
-export async function saveAdultTiepNhan(form, mauPhieu, id = null) {
+export async function saveAdultTiepNhan(form, mauPhieu, id = null, tienSuCats = []) {
   try {
     const resolvedId = id ?? generateId();
-    const payload = toPayload(form, mauPhieu, resolvedId, id);
+    const payload = toPayload(form, mauPhieu, resolvedId, tienSuCats);
     console.log(`[saveAdultTiepNhan] TYPE: ${id ? "UPDATE" : "ADD"} | id:`, id);
     console.log("[saveAdultTiepNhan] payload:", payload);
     const result = await api.post("/add-update-tiep-nhan", payload);
@@ -69,7 +69,7 @@ export async function saveAdultTiepNhan(form, mauPhieu, id = null) {
     await Swal.fire({
       icon: "success",
       title: "Lưu thành công",
-      text: "Thông tin hành chính đã được lưu.",
+      text: "Thông tin đã được lưu.",
       confirmButtonText: "OK",
       confirmButtonColor: "#16a34a",
     });
@@ -137,7 +137,30 @@ function generateId() {
   return `${yyyymmdd}${random}`;
 }
 
-function toPayload(form, mauPhieu, resolvedId, originalId) {
+function buildGiaTri(cat, form) {
+  const val = form[cat.Field_AX];
+  const loai = (cat.LoaiNhap || "").trim();
+  if (loai === "Radio") {
+    const opts = cat.Option ? JSON.parse(cat.Option) : [];
+    const found = opts.find((o) => o.name === val);
+    return found !== undefined ? String(found.id) : (val === "Có" ? "1" : "0");
+  }
+  if (loai.startsWith("MultiSelect")) {
+    return (val || []).map((s) => s.split(" - ")[0]).join(";");
+  }
+  return val ?? "";
+}
+
+function buildTienSuBenhList(tienSuCats, form, tiepNhanId) {
+  return tienSuCats.map((cat) => ({
+    Id_TienSuBenh:      generateId(),
+    KSKCD_TiepNhanId: tiepNhanId,
+    td_cauhoiid:      cat.td_cauhoiid,
+    GiaTri:           buildGiaTri(cat, form),
+  }));
+}
+
+function toPayload(form, mauPhieu, resolvedId, tienSuCats = []) {
   return {
     Id: resolvedId,
     HO_TEN: form.hoTen,
@@ -167,49 +190,10 @@ function toPayload(form, mauPhieu, resolvedId, originalId) {
     NGUON_CHI_TRA: Number(form.nguonChiTra),
     MA_LOAI_KCB: form.loaiHinhKham,
     NGAY_VAO: form.ngayKham,
-    TYPE: originalId ? "UPDATE" : "ADD",
+    TYPE: mauPhieu === 1 ? "ChildUnder" : mauPhieu === 2 ? "Minor" : "Adult",
 
-    // ── Tiền sử bệnh gia đình ─────────────────────────────────────────────
-    Id_TienSuBenh:                generateId(),
-    TSGD_MAC_BENH:                form.gdChung === "Có" ? 1 : 0,
-    TSGD_MA_BENH:                 (form.gdICD10 || []).map((s) => s.split(" - ")[0]).join(";") || null,
-    TSGD_MA_BENH_FULL:            (form.gdICD10 || []).join(";") || null,
-    EmployeeCode_TienSuBenh:      "1",
-    EmployeeCodeDoctor_TienSuBenh: "Nghia",
-    DepartmentCode:               null,
-
-    // ── Tiền sử bệnh bản thân ─────────────────────────────────────────────
-    TSBT_BENH_TRONG_5_NAM_QUA:   form.bt_0  === "Có" ? 1 : 0,
-    TSBT_BENH_THAN_KINH:         form.bt_1  === "Có" ? 1 : 0,
-    TSBT_BENH_MAT:               form.bt_2  === "Có" ? 1 : 0,
-    TSBT_BENH_TAI:               form.bt_3  === "Có" ? 1 : 0,
-    TSBT_BENH_TIM:               form.bt_4  === "Có" ? 1 : 0,
-    TSBT_PHAU_THUAT_TIM:         form.bt_5  === "Có" ? 1 : 0,
-    TSBT_TANG_HUYET_AP:          form.bt_6  === "Có" ? 1 : 0,
-    TSBT_KHO_THO:                form.bt_7  === "Có" ? 1 : 0,
-    TSBT_BENH_PHOI:              form.bt_8  === "Có" ? 1 : 0,
-    TSBT_BENH_THAN:              form.bt_9  === "Có" ? 1 : 0,
-    TSBT_NGHIEN_RUOU:            form.bt_10 === "Có" ? 1 : 0,
-    TSBT_DAI_THAO_DUONG:         form.bt_11 === "Có" ? 1 : 0,
-    TSBT_BENH_TAM_THAN:          form.bt_12 === "Có" ? 1 : 0,
-    TSBT_MAT_Y_THUC:             form.bt_13 === "Có" ? 1 : 0,
-    TSBT_NGAT:                   form.bt_14 === "Có" ? 1 : 0,
-    TSBT_BENH_TIEU_HOA:          form.bt_15 === "Có" ? 1 : 0,
-    TSBT_ROI_LOAN_GIAC_NGU:      form.bt_16 === "Có" ? 1 : 0,
-    TSBT_TAI_BIEN:               form.bt_17 === "Có" ? 1 : 0,
-    TSBT_BENH_COT_SONG:          form.bt_18 === "Có" ? 1 : 0,
-    TSBT_RUOU_THUONG_XUYEN:      form.bt_19 === "Có" ? 1 : 0,
-    TSBT_MA_TUY:                 form.bt_20 === "Có" ? 1 : 0,
-    TSBT_BENH_KHAC:              form.bt_21 === "Có" ? 1 : 0,
-    TSBT_MA_BENH_KHAC:           (form.benhKhacChiTiet || []).map((s) => s.split(" - ")[0]).join(";") || null,
-    TSBT_MA_BENH_KHAC_FULL:      (form.benhKhacChiTiet || []).join(";") || null,
-    TSBT_DANG_DIEU_TRI_BENH:     form.dangDieuTri === "Có" ? 1 : 0,
-    BENH_DANG_DIEU_TRI:          (form.dieuTriICD10 || []).join(";") || null,
-    TSBT_TEN_THUOC_LIEU_LUONG:   form.thuocDangSD || null,
-    TSBT_THAI_SAN:               0,
-    TSBT_MA_BENH_THAI_SAN:       null,
-    TSBT_MA_BENH_THAI_SAN_FULL:  null,
-    TSBT_TEN_THUOC_THAI_SAN:     null,
+    // ── Tiền sử bệnh ─────────────────────────────────────────────────────
+    TienSuBenhList: buildTienSuBenhList(tienSuCats, form, resolvedId),
 
     // ── Khám thể lực ──────────────────────────────────────────────────────
     Id_TheLuc: generateId(),

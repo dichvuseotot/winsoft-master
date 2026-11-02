@@ -1,16 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
+import Swal from 'sweetalert2'
+import { getThongKeDongBo, getThongTinHanhChinhList, exportXmlLienThong } from '../../services/hoSoKSK'
+import { getLoaiMauKSKList } from '../../services/categoryService'
 
 const TODAY = new Date().toISOString().slice(0, 10)
 
-const MAU_PHIEU_OPTIONS = [
-  { value: '',  label: '-- Tất cả --' },
-  { value: 1,   label: 'KSK ≥ 18 tuổi' },
-  { value: 2,   label: 'KSK 6 đến dưới 18 tuổi' },
-  { value: 3,   label: 'KSK dưới 6 tuổi' },
-]
-
-const MAU_PHIEU_LABEL = { 1: 'KSK ≥ 18 tuổi', 2: 'KSK 6-18 tuổi', 3: 'KSK < 6 tuổi' }
 
 const TRANG_THAI_LIEN_THONG = [
   { key: 'da-dong-bo',   label: 'Đã đồng bộ',           sub: 'Đã tiếp nhận',  bg: '#f0fdf4', border: '#86efac', iconBg: '#16a34a', icon: 'bi-check-circle-fill',        textColor: '#15803d' },
@@ -37,11 +32,35 @@ export default function HoSoKSK() {
   const [perPage,     setPerPage]   = useState(20)
   const [page,        setPage]      = useState(1)
   const [selected,    setSelected]  = useState([])
-  const [data]                      = useState([])
-  const [total]                     = useState(0)
-  const [totalPages]                = useState(1)
-  const [loading]                   = useState(false)
-  const [, setApplied]              = useState({ fromDate: TODAY, toDate: TODAY, mauPhieu: undefined, search: '' })
+  const [data,        setData]      = useState([])
+  const [total,       setTotal]     = useState(0)
+  const [totalPages,  setTotalPages]= useState(1)
+  const [loading,     setLoading]   = useState(false)
+  const [applied,     setApplied]   = useState({ fromDate: TODAY, toDate: TODAY, mauPhieu: undefined, search: '' })
+  const [dongBoStats, setDongBoStats] = useState({ 'da-dong-bo': 0, 'chua-dong-bo': 0, 'dong-bo-loi': 0, 'dang-dong-bo': 0 })
+  const [mauPhieuOptions, setMauPhieuOptions] = useState([])
+  const [pushing, setPushing] = useState(false)
+
+  useEffect(() => {
+    getThongKeDongBo().then(setDongBoStats).catch(() => {})
+    getLoaiMauKSKList().then(setMauPhieuOptions).catch(() => {})
+  }, [])
+
+  useEffect(() => {
+    setLoading(true)
+    getThongTinHanhChinhList({
+      fromDate: applied.fromDate,
+      toDate: applied.toDate,
+      mauPhieu: applied.mauPhieu,
+      search: applied.search,
+      page,
+      pageSize: perPage,
+    }).then(({ items, total: t, totalPages: tp }) => {
+      setData(items)
+      setTotal(t)
+      setTotalPages(tp)
+    }).catch(() => {}).finally(() => setLoading(false))
+  }, [applied, page, perPage])
 
   const handleFilter = () => {
     setApplied({ fromDate: fTu, toDate: fDen, mauPhieu: fMauPhieu || undefined, search: fHoTen || fCCCD || '' })
@@ -55,6 +74,28 @@ export default function HoSoKSK() {
 
   const goToPage = (p) => { setPage(p) }
 
+  const handlePushLienThong = async () => {
+    if (pushing) return
+    setPushing(true)
+    try {
+      const res = await exportXmlLienThong({ tuNgay: applied.fromDate, denNgay: applied.toDate })
+      const total = res.total ?? 0
+      const successCount = res.successCount ?? 0
+      const errorCount = res.errorCount ?? 0
+      Swal.fire({
+        icon: errorCount > 0 ? 'warning' : 'success',
+        title: 'Đẩy liên thông hoàn tất',
+        html: `Tổng: <b>${total}</b> &nbsp;|&nbsp; Thành công: <b style="color:#16a34a">${successCount}</b> &nbsp;|&nbsp; Lỗi: <b style="color:#dc2626">${errorCount}</b>`,
+        confirmButtonText: 'Đóng',
+      })
+      getThongKeDongBo().then(setDongBoStats).catch(() => {})
+    } catch {
+      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể đẩy liên thông. Vui lòng thử lại.' })
+    } finally {
+      setPushing(false)
+    }
+  }
+
   const toTrangThai = (r) => r.IsSynchronize === 1 ? 'da-dong-bo' : 'chua-dong-bo'
 
   const filtered = data.filter(r => {
@@ -67,9 +108,9 @@ export default function HoSoKSK() {
   const toggleAll  = () => setSelected(allChecked ? [] : displayed.map(r => r.Id))
   const toggleOne  = (id) => setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])
 
-  const counts = {
-    'da-dong-bo':   data.filter(r => toTrangThai(r) === 'da-dong-bo').length,
-    'chua-dong-bo': data.filter(r => toTrangThai(r) === 'chua-dong-bo').length,
+  const counts = dongBoStats ?? {
+    'da-dong-bo':   0,
+    'chua-dong-bo': 0,
     'dong-bo-loi':  0,
     'dang-dong-bo': 0,
   }
@@ -148,7 +189,8 @@ export default function HoSoKSK() {
           <div>
             <label style={labelStyle}>Mẫu phiếu</label>
             <select style={selectStyle} value={fMauPhieu} onChange={e => setFMauPhieu(e.target.value)}>
-              {MAU_PHIEU_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              <option value=''>-- Tất cả --</option>
+              {mauPhieuOptions.map(o => <option key={o.Id} value={o.Id}>{o.Name}</option>)}
             </select>
           </div>
         </div>
@@ -172,8 +214,9 @@ export default function HoSoKSK() {
               {[10, 20, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
-          <button style={{ height: 34, padding: '0 .875rem', borderRadius: 'var(--radius-sm)', border: 'none', background: '#2563eb', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.35rem' }}>
-            <i className="bi bi-cloud-arrow-up-fill" /> Đẩy liên thông đã chọn
+          <button onClick={handlePushLienThong} disabled={pushing}
+            style={{ height: 34, padding: '0 .875rem', borderRadius: 'var(--radius-sm)', border: 'none', background: pushing ? 'var(--gray-300)' : '#2563eb', color: pushing ? 'var(--gray-500)' : '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.78rem', cursor: pushing ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '.35rem', transition: 'all .15s' }}>
+            <i className={`bi ${pushing ? 'bi-arrow-clockwise' : 'bi-cloud-arrow-up-fill'}`} /> {pushing ? 'Đang đẩy...' : 'Đẩy liên thông đã chọn'}
           </button>
           <button style={{ height: 34, padding: '0 .875rem', borderRadius: 'var(--radius-sm)', border: 'none', background: '#0891b2', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.35rem' }}>
             <i className="bi bi-file-earmark-excel-fill" /> Xuất Excel dữ liệu
@@ -224,7 +267,7 @@ export default function HoSoKSK() {
                     </td>
                     <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', fontWeight: 600, color: 'var(--gray-800)' }}>{r.HO_TEN}</td>
                     <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-600)', fontFamily: 'monospace' }}>{r.SO_CCCD}</td>
-                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-700)' }}>{MAU_PHIEU_LABEL[r.td_loaimau_kskid] ?? r.td_loaimau_kskid}</td>
+                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-700)' }}>{mauPhieuOptions.find(o => o.Id === r.td_loaimau_kskid)?.Name ?? r.td_loaimau_kskid}</td>
                     <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-600)', whiteSpace: 'nowrap' }}>{r.NGAY_VAO}</td>
                     <td style={{ padding: '.6rem .875rem' }}>
                       <span style={{ background: st.bg, color: st.color, fontSize: '.75rem', fontWeight: 700, padding: '.2em .65em', borderRadius: 99, whiteSpace: 'nowrap' }}>{st.label}</span>
