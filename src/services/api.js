@@ -1,24 +1,22 @@
-const BASE_URL = import.meta.env.VITE_API_BASE_URL;
+import axios from "axios";
 
-async function request(method, path, body) {
-  const res = await fetch(`${BASE_URL}${path}`, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: body !== undefined ? JSON.stringify(body) : undefined,
-  });
+const instance = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  headers: { "Content-Type": "application/json" },
+});
 
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({}));
-    throw new Error(err.message || `HTTP ${res.status}`);
+instance.interceptors.response.use(
+  (res) => res.data,
+  (err) => {
+    const message = err.response?.data?.message || err.message || "Đã xảy ra lỗi";
+    throw new Error(message);
   }
-
-  return res.status === 204 ? null : res.json();
-}
+);
 
 export const api = {
-  get: (path) => request("GET", path),
-  post: (path, body) => request("POST", path, body),
-  put: (path, body) => request("PUT", path, body),
-  patch: (path, body) => request("PATCH", path, body),
-  delete: (path) => request("DELETE", path),
+  get:    (path)        => instance.get(path),
+  post:   (path, body)  => instance.post(path, body),
+  put:    (path, body)  => instance.put(path, body),
+  patch:  (path, body)  => instance.patch(path, body),
+  delete: (path)        => instance.delete(path),
 };

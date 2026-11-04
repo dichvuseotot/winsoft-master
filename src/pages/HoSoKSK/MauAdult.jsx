@@ -389,7 +389,6 @@ export function Tab3Content({ form, setForm, loadIcd10, giadinhCats = [], bantha
   const left  = btParents.slice(0, half);
   const right = btParents.slice(half);
 
-  // Gia đình: ParentId=null → cha, ParentId=td_cauhoiid của cha → con
   const gdParent   = giadinhCats.find((c) => c.ParentId === null);
   const gdChild    = giadinhCats.find((c) => c.ParentId !== null && c.ParentId === gdParent?.td_cauhoiid);
   const gdOptions  = gdParent?.Option ? JSON.parse(gdParent.Option) : [{ id: 0, name: "Không" }, { id: 1, name: "Có" }];

@@ -62,9 +62,7 @@ export async function saveAdultTiepNhan(form, mauPhieu, id = null, tienSuCats = 
   try {
     const resolvedId = id ?? generateId();
     const payload = toPayload(form, mauPhieu, resolvedId, tienSuCats);
-    console.log(`[saveAdultTiepNhan] TYPE: ${id ? "UPDATE" : "ADD"} | id:`, id);
-    console.log("[saveAdultTiepNhan] payload:", payload);
-    const result = await api.post("/add-update-tiep-nhan", payload);
+const result = await api.post("/add-update-tiep-nhan", payload);
     const TiepNhanId = result.data?.ID ?? result.ID ?? resolvedId;
     await Swal.fire({
       icon: "success",

@@ -11,7 +11,6 @@ import { api } from "../../services/api";
 
 const TODAY = todayVN();
 
-// Chuyển yyyymmdd → yyyy-mm-dd (dùng cho NGAYCAP_CCCD)
 const parseYYYYMMDD = (v) => {
   if (!v) return "";
   const s = String(v).replace(/\D/g, "");
@@ -547,6 +546,7 @@ export default function TaoHoSo() {
         rhm_benh:    rhm?.BENH_KHAC_RANG_HAM_MAT ?? prev.rhm_benh,
         rhm_ckdt:    rhm?.CKDT_KHAM_RANG_HAM_MAT ?? prev.rhm_ckdt,
         rhm_pl:      rhm?.KHAM_RANG_HAM_MAT_PL  ?? prev.rhm_pl,
+        // CLS
         ...(clsItems.length > 0 && mapCLSToForm(clsItems)),
         ...(tsb && mapTSBToForm(tsb)),
         // Kết luận
@@ -897,16 +897,15 @@ export default function TaoHoSo() {
                   setSaving(true);
                   try {
                     const toDelete = (form.clsDynamic || []).filter((i) => i._toDelete && i._existingId);
-                    await Promise.all(toDelete.map((i) => api.delete(`/delete-kham-can-lam-sang?Id=${i._existingId}`).catch(() => {})));
+                    const toResave = (form.clsDynamic || []).filter((i) => !i._toDelete && i._existingId && i.giaTri);
+                    await Promise.all([...toDelete, ...toResave].map((i) => api.delete(`/delete-kham-can-lam-sang?Id=${i._existingId}`).catch(() => {})));
                     const cats = tienSuCategories.filter((c) => c.td_loaimau_kskid === mauPhieu);
-                    console.log("[save] tienSuCategories.length:", tienSuCategories.length, "| filtered cats:", cats.length, "| mauPhieu:", mauPhieu);
                     await saveAdultTiepNhan(form, mauPhieu, tiepNhanId || null, cats);
                     setForm({ ...INITIAL_FORM, ngayKham: todayVN(), gioKham: timeNowVN() });
                     setTiepNhanId(null);
                     setErrors({});
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   } catch {
-                    // handled inside service
                   } finally {
                     setSaving(false);
                   }
@@ -1063,13 +1062,11 @@ export default function TaoHoSo() {
               ]).then(([tl, nk, ngk, dl, spk, mat, tmh, rhm, clsItems, tsb, kl]) => {
                 setForm((prev) => ({
                   ...prev,
-                  // Thể lực
                   chieuCao: tl?.CHIEU_CAO ?? null,
                   canNang: tl?.CAN_NANG ?? null,
                   mach: tl?.MACH ?? null,
                   huyetAp: tl?.HUYET_AP ?? null,
                   phanLoaiTheLuc: tl?.KHAM_THE_LUC_PL ?? null,
-                  // Nội khoa
                   nk_a: nk?.NOI_KHOA_TUAN_HOAN ?? null,
                   nk_a_pl: nk?.NOI_KHOA_TUAN_HOAN_PL ?? null,
                   nk_a_ckdt: nk?.CKDT_NOI_KHOA_TUAN_HOAN ?? null,
@@ -1094,19 +1091,15 @@ export default function TaoHoSo() {
                   nk_h: nk?.NOI_KHOA_TAM_THAN ?? null,
                   nk_h_ckdt: nk?.CKDT_NOI_KHOA_TAM_THAN ?? null,
                   nk_h_pl: nk?.NOI_KHOA_TAM_THAN_PL ?? null,
-                  // Ngoại khoa
                   ngk: ngk?.KET_QUA_KHAM_NGOAI_KHOA ?? null,
                   ngk_ckdt: ngk?.CKDT_KHAM_NGOAI_KHOA ?? null,
                   ngk_pl: ngk?.KHAM_NGOAI_KHOA_PL ?? null,
-                  // Da liễu
                   dl: dl?.KET_QUA_KHAM_DA_LIEU ?? null,
                   dl_ckdt: dl?.CKDT_KHAM_DA_LIEU ?? null,
                   dl_pl: dl?.KHAM_DA_LIEU_PL ?? null,
-                  // Sản phụ khoa
                   spk: spk?.KET_QUA_KHAM_SAN_PHU_KHOA ?? null,
                   spk_ckdt: spk?.CKDT_KHAM_SAN_PHU_KHOA ?? null,
                   spk_pl: spk?.KHAM_SAN_PHU_KHOA_PL ?? null,
-                  // Mắt
                   mat_kk_phai: mat?.KHONG_KINH_MAT_PHAI ?? null,
                   mat_kk_trai: mat?.KHONG_KINH_MAT_TRAI ?? null,
                   mat_ck_phai: mat?.CO_KINH_MAT_PHAI   ?? null,
@@ -1114,7 +1107,6 @@ export default function TaoHoSo() {
                   mat_benh:    mat?.BENH_KHAC_MAT      ?? null,
                   mat_ckdt:    mat?.CKDT_KHAM_MAT      ?? null,
                   mat_pl:      mat?.KHAM_MAT_PL        ?? null,
-                  // Tai Mũi Họng
                   tmh_tt_trai: tmh?.TAI_TRAI_NOI_THUONG  ?? null,
                   tmh_th_trai: tmh?.TAI_TRAI_NOI_THAM    ?? null,
                   tmh_tt_phai: tmh?.TAI_PHAI_NOI_THUONG  ?? null,
@@ -1122,17 +1114,14 @@ export default function TaoHoSo() {
                   tmh_benh:    tmh?.BENH_TAI_MUI_HONG    ?? null,
                   tmh_ckdt:    tmh?.CKDT_KHAM_TAI_MUI_HONG ?? null,
                   tmh_pl:      tmh?.KHAM_TAI_MUI_HONG_PL ?? null,
-                  // Răng Hàm Mặt
                   rhm_hamTren: rhm?.HAM_TREN               ?? null,
                   rhm_hamDuoi: rhm?.HAM_DUOI               ?? null,
                   rhm_ketQua:  rhm?.BENH_RANG_HAM_MAT      ?? null,
                   rhm_benh:    rhm?.BENH_KHAC_RANG_HAM_MAT ?? null,
                   rhm_ckdt:    rhm?.CKDT_KHAM_RANG_HAM_MAT ?? null,
                   rhm_pl:      rhm?.KHAM_RANG_HAM_MAT_PL   ?? null,
-                  // CLS
                   ...(clsItems.length > 0 ? mapCLSToForm(clsItems) : { clsDynamic: [] }),
                   ...(tsb ? mapTSBToForm(tsb) : {}),
-                  // Kết luận
                   kl_icd10:     kl?.KET_LUAN_BENH_FULL ? kl.KET_LUAN_BENH_FULL.split(";").filter(Boolean) : [],
                   kl_tinhTrang: kl?.GHI_RO_VAN_DE_SUC_KHOE ?? null,
                   kl_phanLoai:  kl?.PHAN_LOAI_SK ?? null,
