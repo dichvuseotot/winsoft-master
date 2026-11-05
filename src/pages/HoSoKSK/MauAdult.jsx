@@ -1327,7 +1327,7 @@ export function Tab6Content({ form, setForm }) {
           >
             Họ tên và chữ ký của Bác sĩ
           </div>
-          <SignatureBox id="cls_sig" />
+          <SignatureBox id="cls_sig" value={form.cls_sig} onChange={(v) => setForm((p) => ({ ...p, cls_sig: v }))} />
         </div>
       </div>
 
@@ -1520,7 +1520,7 @@ export function Tab7Content({ form, setForm, phanLoaiSucKhoeOptions = [], loadIc
             >
               Người kết luận
             </div>
-            <SignatureBox id="kl_bacsi" />
+            <SignatureBox id="kl_bacsi" value={form.kl_bacsi} onChange={(v) => setForm((p) => ({ ...p, kl_bacsi: v }))} />
           </div>
 
           <div>
@@ -1552,7 +1552,7 @@ export function Tab7Content({ form, setForm, phanLoaiSucKhoeOptions = [], loadIc
             >
               Đại diện Cơ sở y tế (Bệnh viện)
             </div>
-            <SignatureBox id="kl_cskcb" />
+            <SignatureBox id="kl_cskcb" value={form.kl_cskcb} onChange={(v) => setForm((p) => ({ ...p, kl_cskcb: v }))} />
           </div>
         </div>
       </div>

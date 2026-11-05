@@ -305,12 +305,21 @@ function toPayload(form, mauPhieu, resolvedId, tienSuCats = []) {
 
     // ── Kết luận ──────────────────────────────────────────────────────────
     Id_KetLuan:              generateId(),
+    BINH_THUONG:             null,
+    NGUY_CO_MAC_LAO:         null,
+    VAN_DE_SUC_KHOE:         null,
     KET_LUAN_BENH:           (form.kl_icd10 || []).map((s) => s.split(" - ")[0]).join(";") || null,
     KET_LUAN_BENH_FULL:      (form.kl_icd10 || []).join(";") || null,
     GHI_RO_VAN_DE_SUC_KHOE: form.kl_tinhTrang || null,
+    HEN_KHAM_LAN_SAU:        null,
+    CHUYEN_CSKCB:            null,
     PHAN_LOAI_SK:            form.kl_phanLoai ? Number(form.kl_phanLoai) : null,
-    EmployeeCode_KL:    "1",
-    EmployeeCodeDoctor_KL: "Nghia",
+    CAC_VAN_DE_SUC_KHOE:     null,
+    CAC_BENH_TAT_NEU_CO:     null,
+    CKS_NGUOI_KET_LUAN:      form.kl_bacsi  || null,
+    CKS_BENH_VIEN:           form.kl_cskcb  || null,
+    EmployeeCode_KL:         "1",
+    EmployeeCodeDoctor_KL:   "Nghia",
     PostingDate:             nowVN(),
   };
 }

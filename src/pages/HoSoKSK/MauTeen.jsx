@@ -1,8 +1,9 @@
 import React, { useState } from "react";
-import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
+import { inputStyle, inputStyleNoBackground, FieldGroup, SectionHeader, Card, Grid3, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
 
-export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [] }) {
+export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], errors = {} }) {
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
+  const err = (key) => errors[key] ? "1.5px solid #ef4444" : "1.5px solid var(--gray-200)";
 
   return (
     <>
@@ -14,13 +15,13 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
         />
         <Grid3>
           <FieldGroup label="Số định danh cá nhân" required>
-            <input style={inputStyle} type="text" value={form.soDinhDanh} onChange={set("soDinhDanh")} placeholder="Nhập đủ 12 số CCCD/ÐĐCN..." />
+            <input style={{ ...inputStyle, border: err("soDinhDanh") }} type="text" value={form.soDinhDanh} onChange={set("soDinhDanh")} placeholder="Nhập đủ 12 số CCCD/ÐĐCN..." />
           </FieldGroup>
           <FieldGroup label="Họ tên" required>
-            <input style={inputStyle} type="text" value={form.hoTen} onChange={set("hoTen")} />
+            <input style={{ ...inputStyle, border: err("hoTen") }} type="text" value={form.hoTen} onChange={set("hoTen")} />
           </FieldGroup>
           <FieldGroup label="Giới tính" required>
-            <select style={inputStyle} value={form.gioiTinh} onChange={set("gioiTinh")}>
+            <select style={{ ...inputStyle, border: err("gioiTinh") }} value={form.gioiTinh} onChange={set("gioiTinh")}>
               <option value="">—Chọn—</option>
               {gioiTinhOptions.map((g) => (
                 <option key={g.Id} value={g.Id}>{g.TenGioiTinh}</option>
@@ -29,7 +30,7 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
           </FieldGroup>
 
           <FieldGroup label="Ngày sinh" required>
-            <input style={inputStyle} type="date" value={form.ngaySinh} onChange={set("ngaySinh")} />
+            <input style={{ ...inputStyle, border: err("ngaySinh") }} type="date" value={form.ngaySinh} onChange={set("ngaySinh")} />
           </FieldGroup>
           <FieldGroup label="Ngày cấp">
             <input style={inputStyle} type="date" value={form.ngayCap} onChange={set("ngayCap")} />
@@ -44,6 +45,7 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
               onChange={(val) => set("danToc")({ target: { value: val } })}
               options={danTocOptions.map((d) => ({ value: d.MaDanToc, label: d.TenDanToc }))}
               placeholder="—Chọn dân tộc—"
+              error={errors.danToc}
             />
           </FieldGroup>
           <FieldGroup label="Đối tượng khám định kỳ" required>
@@ -52,6 +54,7 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
               onChange={(val) => set("doiTuongKham")({ target: { value: val } })}
               options={doiTuongOptions.map((d) => ({ value: d.Id, label: d.Name }))}
               placeholder="—Chọn đối tượng—"
+              error={errors.doiTuongKham}
             />
           </FieldGroup>
           <FieldGroup label="Nguồn chi trả" required>
@@ -60,6 +63,7 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
               onChange={(val) => set("nguonChiTra")({ target: { value: val } })}
               options={nguonChiTraOptions.map((n) => ({ value: n.Id, label: n.Name }))}
               placeholder="—Chọn nguồn chi trả—"
+              error={errors.nguonChiTra}
             />
           </FieldGroup>
 
@@ -85,6 +89,7 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
               onChange={(val) => set("tinhThanhPho")({ target: { value: val } })}
               options={tinhThanhOptions.map((t) => ({ value: t.MaTinh, label: t.TenTinh }))}
               placeholder="—Chọn tỉnh/thành phố—"
+              error={errors.tinhThanhPho}
             />
           </FieldGroup>
 
@@ -94,10 +99,11 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
               onChange={(val) => set("phuongXa")({ target: { value: val } })}
               options={phuongXaOptions.map((p) => ({ value: p.MaPhuongXa, label: p.TenPhuongXa }))}
               placeholder="—Chọn phường/xã—"
+              error={errors.phuongXa}
             />
           </FieldGroup>
           <FieldGroup label="Số nhà/thôn/xóm" required>
-            <input style={inputStyle} type="text" value={form.soNha} onChange={set("soNha")} />
+            <input style={{ ...inputStyle, border: err("soNha") }} type="text" value={form.soNha} onChange={set("soNha")} />
           </FieldGroup>
           <FieldGroup label="Họ và tên bố, mẹ hoặc người giám hộ">
             <input style={inputStyle} type="text" value={form.hoTenNguoiDiCung || ""} onChange={set("hoTenNguoiDiCung")} />
@@ -110,7 +116,7 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
             <input style={inputStyle} type="text" value={form.soDienThoaiGiamHo || ""} onChange={set("soDienThoaiGiamHo")} placeholder="Nhập đúng 10 số điện thoại (0...)" maxLength={10} />
           </FieldGroup>
           <FieldGroup label="Lý do khám sức khỏe" required>
-            <input style={inputStyle} type="text" value={form.lyDoKham} onChange={set("lyDoKham")} />
+            <input style={{ ...inputStyle, border: err("lyDoKham") }} type="text" value={form.lyDoKham} onChange={set("lyDoKham")} />
           </FieldGroup>
         </Grid3>
       </Card>
@@ -164,8 +170,7 @@ export const TEEN_VACCINES = [
   { id: "viemGanB", label: "Viêm gan B" },
 ];
 
-export function Tab3TeenContent({ form, setForm, loadIcd10 }) {
-  const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
+export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], tiemChungCats = [], sanKhoaCats = [], banthanCats = [] }) {
   const radioSet = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
 
   const extraVaccines = form.teen_tc_extra || [];
@@ -179,19 +184,32 @@ export function Tab3TeenContent({ form, setForm, loadIcd10 }) {
   const removeExtraVaccine = (id) =>
     setForm((prev) => ({ ...prev, teen_tc_extra: (prev.teen_tc_extra || []).filter((v) => v.id !== id) }));
 
-  const inlineQRow = (question, radioName, defaultVal) => (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
-      <span style={{ fontSize: ".85rem", color: "var(--gray-700)" }}>{question}</span>
-      <div style={{ display: "flex", gap: "1.25rem", flexShrink: 0 }}>
-        {["Không", "Có"].map((opt) => (
-          <label key={opt} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
-            <input type="radio" name={radioName} checked={(form[radioName] || defaultVal) === opt} onChange={() => radioSet(radioName, opt)} style={{ accentColor: "#2563eb" }} />
-            {opt}
-          </label>
-        ))}
-      </div>
-    </div>
-  );
+  const gdParent  = giadinhCats.find((c) => c.ParentId === null);
+  const gdChild   = giadinhCats.find((c) => c.ParentId !== null && c.ParentId === gdParent?.td_cauhoiid);
+  const gdOptions = gdParent?.Option ? JSON.parse(gdParent.Option) : [{ id: 0, name: "Không" }, { id: 1, name: "Có" }];
+  const gdQuestion = gdParent?.CauHoi || "Có ai trong gia đình mắc bệnh bẩm sinh hoặc bệnh truyền nhiễm không?";
+  const gdSelectedOpt = gdOptions.find((o) => o.name === (form[gdParent?.Field_AX] || "Không"));
+  const gdChildVisible = gdChild && String(gdSelectedOpt?.id ?? "0") !== "0";
+  const gdChildLoai = (gdChild?.LoaiNhap || "").trim();
+
+  const btParent      = banthanCats.find((c) => c.ParentId === null);
+  const btChild       = banthanCats.find((c) => c.ParentId !== null);
+  const btOpts        = btParent?.Option ? JSON.parse(btParent.Option) : [];
+  const btSelectedId  = btOpts.find((o) => o.name === form[btParent?.Field_AX])?.id ?? 0;
+  const btShowChild   = String(btSelectedId) !== "0";
+
+  const skRadio   = sanKhoaCats.find((c) => c.LoaiNhap === "Radio");
+  const skSelect  = sanKhoaCats.find((c) => c.LoaiNhap === "Select");
+  const skMulti   = sanKhoaCats.find((c) => c.LoaiNhap === "MultiSelect");
+  const skRadioOpts   = skRadio?.Option ? JSON.parse(skRadio.Option) : [];
+  const skSelectOpts  = skSelect?.Option ? JSON.parse(skSelect.Option) : [];
+  const skSelectedId  = skRadioOpts.find((o) => o.name === form[skRadio?.Field_AX])?.id ?? 0;
+  const skShowChildren = String(skSelectedId) === "0";
+
+  const TC_EXTRA_FIELDS = ["TIEM_CHUNG_CAC_LOAI_KHAC", "TEN_TIEM_CHUNG_CAC_LOAI_KHAC"];
+  const tcRegularCats  = tiemChungCats.filter((c) => !TC_EXTRA_FIELDS.includes(c.Field_AX));
+  const tcExtraCat     = tiemChungCats.find((c) => c.Field_AX === "TIEM_CHUNG_CAC_LOAI_KHAC");
+  const tcExtraOpts    = tcExtraCat?.Option ? JSON.parse(tcExtraCat.Option) : ["Có", "Không", "Không rõ"];
 
   const tcRadioGroup = (key) => (
     <div style={{ display: "flex", gap: "1.25rem", flexShrink: 0 }}>
@@ -211,12 +229,35 @@ export function Tab3TeenContent({ form, setForm, loadIcd10 }) {
 
         {/* 1. Tiền sử gia đình */}
         <div style={subLabelStyle}>1. Tiền sử gia đình:</div>
-        <div style={{ marginBottom: "1.25rem" }}>
-          {inlineQRow("Có ai trong gia đình mắc bệnh bẩm sinh hoặc bệnh truyền nhiễm không?", "teen_gdBenhBamSinh", "Không")}
-          {(form.teen_gdBenhBamSinh || "Không") === "Có" && (
+        <div style={{ padding: "1rem", background: "var(--gray-50)", border: "1px solid var(--gray-200)", borderRadius: 8, marginBottom: "1.25rem" }}>
+          <p style={{ fontSize: ".84rem", color: "var(--gray-700)", marginBottom: ".75rem", lineHeight: 1.5 }}>{gdQuestion}</p>
+          <div style={{ display: "flex", gap: "1.5rem" }}>
+            {gdOptions.map((opt) => (
+              <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".35rem", cursor: "pointer", fontSize: ".85rem", fontWeight: (form[gdParent?.Field_AX] || "Không") === opt.name ? 600 : 400, color: (form[gdParent?.Field_AX] || "Không") === opt.name ? "var(--primary)" : "var(--gray-700)" }}>
+                <input type="radio" name={gdParent?.Field_AX} value={opt.name} checked={(form[gdParent?.Field_AX] || "Không") === opt.name} onChange={() => radioSet(gdParent?.Field_AX, opt.name)} style={{ accentColor: "#2563eb", width: 15, height: 15 }} />
+                {opt.name}
+              </label>
+            ))}
+          </div>
+          {gdChildVisible && (
             <div style={{ marginTop: ".75rem" }}>
-              <div style={{ fontSize: ".8rem", color: "var(--gray-500)", marginBottom: ".35rem" }}>Tiền sử bệnh, tật gia đình</div>
-              <SearchableSelect loadOptions={loadIcd10} value={form.teen_gdICD10 || []} onChange={(val) => setForm((prev) => ({ ...prev, teen_gdICD10: val }))} />
+              <div style={{ fontSize: ".8rem", fontWeight: 600, color: "var(--gray-700)", marginBottom: ".35rem" }}>
+                {gdChild.CauHoi}
+                {gdChildLoai.startsWith("MultiSelect") && <span style={{ fontWeight: 400, color: "var(--gray-400)", marginLeft: ".3rem" }}>(Mã bệnh ICD-10)</span>}
+              </div>
+              {gdChildLoai.startsWith("MultiSelect") && (
+                <SearchableSelect loadOptions={loadIcd10} value={form[gdChild.Field_AX] || []} onChange={(val) => setForm((prev) => ({ ...prev, [gdChild.Field_AX]: val }))} />
+              )}
+              {gdChildLoai === "Radio" && (
+                <div style={{ display: "flex", gap: "1.5rem" }}>
+                  {["Không", "Có"].map((opt) => (
+                    <label key={opt} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
+                      <input type="radio" name={gdChild.Field_AX} checked={(form[gdChild.Field_AX] || "Không") === opt} onChange={() => radioSet(gdChild.Field_AX, opt)} style={{ accentColor: "#2563eb" }} />
+                      {opt}
+                    </label>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -225,17 +266,35 @@ export function Tab3TeenContent({ form, setForm, loadIcd10 }) {
         <div style={subLabelStyle}>2. Tiền sử bản thân:</div>
 
         {/* a) Sản khoa */}
-        <div style={{ marginBottom: "1.25rem" }}>
-          <div style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--gray-600)", marginBottom: ".5rem" }}>a) Sản khoa:</div>
-          <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
-            {["Bình thường", "Không bình thường"].map((opt) => (
-              <label key={opt} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
-                <input type="radio" name="teen_sanKhoa" checked={(form.teen_sanKhoa || "Bình thường") === opt} onChange={() => radioSet("teen_sanKhoa", opt)} style={{ accentColor: "#2563eb" }} />
-                {opt}
-              </label>
-            ))}
+        {skRadio && (
+          <div style={{ marginBottom: "1.25rem" }}>
+            <div style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--gray-600)", marginBottom: ".5rem" }}>a) {skRadio.CauHoi}:</div>
+            <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
+              {skRadioOpts.slice().reverse().map((opt) => (
+                <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
+                  <input type="radio" name={skRadio.Field_AX} checked={(form[skRadio.Field_AX] || skRadioOpts[0]?.name) === opt.name} onChange={() => radioSet(skRadio.Field_AX, opt.name)} style={{ accentColor: "#2563eb" }} />
+                  {opt.name}
+                </label>
+              ))}
+            </div>
+            {skShowChildren && skSelect && (
+              <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", marginTop: ".5rem", flexWrap: "wrap" }}>
+                {skSelectOpts.map((opt) => (
+                  <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
+                    <input type="radio" name={skSelect.Field_AX} checked={form[skSelect.Field_AX] === opt.name} onChange={() => radioSet(skSelect.Field_AX, opt.name)} style={{ accentColor: "#2563eb" }} />
+                    {opt.name}
+                  </label>
+                ))}
+              </div>
+            )}
+            {skShowChildren && skMulti && (
+              <div style={{ marginTop: ".75rem" }}>
+                <div style={{ fontSize: ".8rem", fontWeight: 600, color: "var(--gray-700)", marginBottom: ".35rem" }}>{skMulti.CauHoi}</div>
+                <SearchableSelect loadOptions={loadIcd10} value={form[skMulti.Field_AX] || []} onChange={(val) => setForm((prev) => ({ ...prev, [skMulti.Field_AX]: val }))} />
+              </div>
+            )}
           </div>
-        </div>
+        )}
 
         {/* b) Tiêm chủng */}
         <div style={{ marginBottom: "1.25rem" }}>
@@ -246,16 +305,12 @@ export function Tab3TeenContent({ form, setForm, loadIcd10 }) {
               <span style={{ fontSize: ".8rem", fontWeight: 700, color: "var(--gray-700)" }}>Loại vắc xin</span>
               <span style={{ fontSize: ".8rem", fontWeight: 700, color: "var(--gray-700)" }}>Tình trạng tiêm/uống vắc xin</span>
             </div>
-            {/* Fixed vaccines */}
-            {TEEN_VACCINES.map((vac) => {
-              const key = `teen_tc_${vac.id}`;
-              return (
-                <div key={key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: ".65rem 1rem", borderBottom: "1px solid var(--gray-100)" }}>
-                  <span style={{ fontSize: ".85rem", color: "var(--gray-700)" }}>{vac.label}</span>
-                  {tcRadioGroup(key)}
-                </div>
-              );
-            })}
+            {tcRegularCats.map((cat) => (
+              <div key={cat.td_cauhoiid} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: ".65rem 1rem", borderBottom: "1px solid var(--gray-100)" }}>
+                <span style={{ fontSize: ".85rem", color: "var(--gray-700)" }}>{cat.CauHoi}</span>
+                {tcRadioGroup(cat.Field_AX)}
+              </div>
+            ))}
             {/* Loại vắc xin khác divider row */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: ".6rem 1rem", background: "var(--gray-50)", borderBottom: extraVaccines.length > 0 ? "1px solid var(--gray-200)" : "none" }}>
               <span style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--gray-600)" }}>Loại vắc xin khác</span>
@@ -275,12 +330,15 @@ export function Tab3TeenContent({ form, setForm, loadIcd10 }) {
                   <div key={vac.id} style={{ display: "grid", gridTemplateColumns: "1fr 260px 60px", padding: ".5rem 1rem", borderBottom: "1px solid var(--gray-100)", alignItems: "center", gap: ".75rem" }}>
                     <input style={{ ...inputStyle, margin: 0 }} type="text" placeholder="Tên vắc xin..." value={vac.label} onChange={(e) => updateExtraVaccine(vac.id, "label", e.target.value)} />
                     <div style={{ display: "flex", gap: "1.25rem", justifyContent: "center" }}>
-                      {["Có", "Không", "Không rõ"].map((opt) => (
-                        <label key={opt} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
-                          <input type="radio" name={`teen_tc_extra_${vac.id}`} checked={vac.status === opt} onChange={() => updateExtraVaccine(vac.id, "status", opt)} style={{ accentColor: "#2563eb" }} />
-                          {opt}
-                        </label>
-                      ))}
+                      {tcExtraOpts.map((opt) => {
+                        const name = typeof opt === "string" ? opt : opt.name;
+                        return (
+                          <label key={name} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
+                            <input type="radio" name={`teen_tc_extra_${vac.id}`} checked={vac.status === name} onChange={() => updateExtraVaccine(vac.id, "status", name)} style={{ accentColor: "#2563eb" }} />
+                            {name}
+                          </label>
+                        );
+                      })}
                     </div>
                     <div style={{ display: "flex", justifyContent: "center" }}>
                       <button type="button" onClick={() => removeExtraVaccine(vac.id)} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ef4444", background: "transparent", color: "#ef4444", cursor: "pointer", fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>−</button>
@@ -293,28 +351,50 @@ export function Tab3TeenContent({ form, setForm, loadIcd10 }) {
         </div>
 
         {/* c) Bệnh bẩm sinh / mãn tính */}
-        <div style={{ marginBottom: "1.25rem" }}>
-          <div style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--gray-600)", marginBottom: ".5rem" }}>c) Tiền sử bệnh/tật (các bệnh bẩm sinh và mãn tính):</div>
-          {inlineQRow("Bản thân có đang mắc các bệnh bẩm sinh và mãn tính không?", "teen_benhBamSinhManTinh", "Không")}
-          {(form.teen_benhBamSinhManTinh || "Không") === "Có" && (
-            <div style={{ marginTop: ".75rem" }}>
-              <div style={{ fontSize: ".8rem", color: "var(--gray-500)", marginBottom: ".35rem" }}>Tên bệnh (Có thể chọn nhiều mẫu)</div>
-              <SearchableSelect loadOptions={loadIcd10} value={form.teen_benhBamSinhICD10 || []} onChange={(val) => setForm((prev) => ({ ...prev, teen_benhBamSinhICD10: val }))} />
+        {btParent && (
+          <div style={{ marginBottom: "1.25rem" }}>
+            <div style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--gray-600)", marginBottom: ".5rem" }}>c) Tiền sử bệnh/tật (các bệnh bẩm sinh và mãn tính):</div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
+              <span style={{ fontSize: ".85rem", color: "var(--gray-700)" }}>{btParent.CauHoi}</span>
+              <div style={{ display: "flex", gap: "1.25rem", flexShrink: 0 }}>
+                {btOpts.map((opt) => (
+                  <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
+                    <input type="radio" name={btParent.Field_AX} checked={(form[btParent.Field_AX] || btOpts[0]?.name) === opt.name} onChange={() => radioSet(btParent.Field_AX, opt.name)} style={{ accentColor: "#2563eb" }} />
+                    {opt.name}
+                  </label>
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+            {btShowChild && btChild && (
+              <div style={{ marginTop: ".75rem" }}>
+                <div style={{ fontSize: ".8rem", color: "var(--gray-500)", marginBottom: ".35rem" }}>{btChild.CauHoi}</div>
+                <SearchableSelect loadOptions={loadIcd10} value={form[btChild.Field_AX] || []} onChange={(val) => setForm((prev) => ({ ...prev, [btChild.Field_AX]: val }))} />
+              </div>
+            )}
+          </div>
+        )}
 
         {/* d) Đang điều trị */}
         <div style={{ marginBottom: "1.25rem" }}>
           <div style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--gray-600)", marginBottom: ".5rem" }}>d) Hiện tại có đang điều trị bệnh gì không?</div>
-          {inlineQRow("Hiện tại có đang điều trị bệnh gì không?", "teen_dangDieuTri", "Không")}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
+            <span style={{ fontSize: ".85rem", color: "var(--gray-700)" }}>Hiện tại có đang điều trị bệnh gì không?</span>
+            <div style={{ display: "flex", gap: "1.25rem", flexShrink: 0 }}>
+              {["Không", "Có"].map((opt) => (
+                <label key={opt} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
+                  <input type="radio" name="teen_dangDieuTri" checked={(form.teen_dangDieuTri || "Không") === opt} onChange={() => radioSet("teen_dangDieuTri", opt)} style={{ accentColor: "#2563eb" }} />
+                  {opt}
+                </label>
+              ))}
+            </div>
+          </div>
           {(form.teen_dangDieuTri || "Không") === "Có" && (
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: ".75rem" }}>
               <FieldGroup label="Bệnh đang điều trị">
-                <input style={inputStyle} type="text" placeholder="" value={form.teen_benhDieuTri || ""} onChange={set("teen_benhDieuTri")} />
+                <input style={inputStyle} type="text" placeholder="" value={form.teen_benhDieuTri || ""} onChange={(e) => setForm((prev) => ({ ...prev, teen_benhDieuTri: e.target.value }))} />
               </FieldGroup>
               <FieldGroup label="Thuốc đang sử dụng">
-                <input style={inputStyle} type="text" placeholder="" value={form.teen_thuocDangSD || ""} onChange={set("teen_thuocDangSD")} />
+                <input style={inputStyle} type="text" placeholder="" value={form.teen_thuocDangSD || ""} onChange={(e) => setForm((prev) => ({ ...prev, teen_thuocDangSD: e.target.value }))} />
               </FieldGroup>
             </div>
           )}
@@ -324,43 +404,24 @@ export function Tab3TeenContent({ form, setForm, loadIcd10 }) {
   );
 }
 
-export function Tab5TeenContent({ form, setForm, phanLoaiSucKhoeOptions = [] }) {
-  const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
-
-  const plSelect = (key) => (
-    <select style={inputStyle} value={form[key] || ""} onChange={set(key)}>
-      <option value="">—Chọn—</option>
-      {phanLoaiSucKhoeOptions.map((o) => (
-        <option key={o.Id} value={o.Id}>{o.TenPhanLoaiSucKhoe}</option>
-      ))}
-    </select>
-  );
-
-  const NhiRow = ({ label, fk }) => (
+function TeenNhiRow({ label, fk, form, setForm }) {
+  return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "1.25rem", padding: "1rem 0", borderBottom: "1px solid var(--gray-100)", alignItems: "start" }}>
       <div>
         <div style={{ fontSize: ".84rem", color: "var(--gray-700)", fontWeight: 500, marginBottom: ".5rem" }}>{label}</div>
-        <input style={inputStyle} type="text" value={form[fk] || ""} onChange={set(fk)} />
+        <input style={inputStyle} type="text" value={form[fk] || ""} onChange={(e) => setForm((p) => ({ ...p, [fk]: e.target.value }))} />
       </div>
-      <SignatureBox id={fk} />
+      <SignatureBox id={fk} value={form[`${fk}_ckdt`]} onChange={(v) => setForm((p) => ({ ...p, [`${fk}_ckdt`]: v }))} />
     </div>
   );
+}
 
-  const ChuyenKhoaRow = ({ secLabel, fk, label }) => (
-    <div style={{ marginTop: "1.25rem" }}>
-      <div style={subLabelStyle}>{secLabel}</div>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "1.25rem", alignItems: "start" }}>
-        <div>
-          <FieldGroup label={label}>
-            <input style={inputStyle} type="text" value={form[fk] || ""} onChange={set(fk)} />
-          </FieldGroup>
-        </div>
-        <SignatureBox id={fk} />
-      </div>
-    </div>
-  );
+const THI_LUC = ["10/10","9/10","8/10","7/10","6/10","5/10","4/10","3/10","2/10","1/10"];
 
-  const THI_LUC = ["10/10","9/10","8/10","7/10","6/10","5/10","4/10","3/10","2/10","1/10"];
+export function Tab5TeenContent({ form, setForm }) {
+  const set = (key) => (e) => setForm((p) => ({ ...p, [key]: e.target.value }));
+  const sectionStyle = { marginTop: "1.5rem", paddingTop: "1.25rem", borderTop: "1px solid var(--gray-100)" };
+  const grid2 = { display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: ".75rem" };
 
   return (
     <Card>
@@ -371,54 +432,104 @@ export function Tab5TeenContent({ form, setForm, phanLoaiSucKhoeOptions = [] }) 
         <div />
         <div style={{ fontSize: ".75rem", fontWeight: 600, color: "var(--gray-700)", textAlign: "center" }}>Họ tên và chữ ký của bác sĩ</div>
       </div>
-      <NhiRow label="a, Tuần hoàn" fk="teen_nk_a" />
-      <NhiRow label="b, Hô hấp" fk="teen_nk_b" />
-      <NhiRow label="c, Tiêu hóa" fk="teen_nk_c" />
-      <NhiRow label="d, Thận - Tiết niệu - Sinh dục" fk="teen_nk_d" />
-      <NhiRow label="e, Nội tiết" fk="teen_nk_e" />
-      <NhiRow label="f, Cơ - xương - khớp" fk="teen_nk_f" />
-      <NhiRow label="g, Thần kinh" fk="teen_nk_g" />
-      <NhiRow label="h, Tâm thần" fk="teen_nk_h" />
+      <TeenNhiRow label="a, Tuần hoàn" fk="teen_nk_a" form={form} setForm={setForm} />
+      <TeenNhiRow label="b, Hô hấp" fk="teen_nk_b" form={form} setForm={setForm} />
+      <TeenNhiRow label="c, Tiêu hóa" fk="teen_nk_c" form={form} setForm={setForm} />
+      <TeenNhiRow label="d, Thận - Tiết niệu - Sinh dục" fk="teen_nk_d" form={form} setForm={setForm} />
+      <TeenNhiRow label="e, Thần kinh" fk="teen_nk_g" form={form} setForm={setForm} />
+      <TeenNhiRow label="f, Tâm thần" fk="teen_nk_h" form={form} setForm={setForm} />
+      <TeenNhiRow label="g, Lâm sàng khác" fk="teen_nk_lsk" form={form} setForm={setForm} />
 
-      <ChuyenKhoaRow secLabel="2. Ngoại khoa" fk="teen_ngk" label="Kết quả khám ngoại khoa" />
-      <ChuyenKhoaRow secLabel="3. Da liễu" fk="teen_dl" label="Kết quả khám da liễu" />
-      <ChuyenKhoaRow secLabel="4. Sản phụ khoa" fk="teen_spk" label="Kết quả khám sản phụ khoa" />
+      {/* ── 2. Khám Chuyên khoa ── */}
+      <div style={{ ...subLabelStyle, marginTop: "1.5rem" }}>2. Khám Chuyên khoa</div>
 
-      <div style={{ marginTop: "1.25rem" }}>
-        <div style={subLabelStyle}>5. Khám mắt</div>
+      {/* 2.1 Mắt */}
+      <div style={sectionStyle}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "1.25rem", alignItems: "start" }}>
           <div>
-            <div style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--gray-700)", marginBottom: ".6rem" }}>Kết quả khám thị lực:</div>
-            <div style={{ display: "grid", gridTemplateColumns: "auto 1fr 1fr", gap: ".5rem 1rem", alignItems: "center", marginBottom: ".5rem" }}>
-              <span />
-              <label style={{ ...labelStyle, marginBottom: 0, textAlign: "center" }}>Trái</label>
-              <label style={{ ...labelStyle, marginBottom: 0, textAlign: "center" }}>Phải</label>
-              <label style={labelStyle}>Thị lực không kính</label>
-              <select style={inputStyle} value={form.teen_mat_khongKinhTrai || ""} onChange={set("teen_mat_khongKinhTrai")}>
-                <option value="">—</option>
-                {THI_LUC.map((o) => <option key={o}>{o}</option>)}
-              </select>
-              <select style={inputStyle} value={form.teen_mat_khongKinhPhai || ""} onChange={set("teen_mat_khongKinhPhai")}>
-                <option value="">—</option>
-                {THI_LUC.map((o) => <option key={o}>{o}</option>)}
-              </select>
-              <label style={labelStyle}>Thị lực có kính</label>
-              <select style={inputStyle} value={form.teen_mat_coKinhTrai || ""} onChange={set("teen_mat_coKinhTrai")}>
-                <option value="">—</option>
-                {THI_LUC.map((o) => <option key={o}>{o}</option>)}
-              </select>
-              <select style={inputStyle} value={form.teen_mat_coKinhPhai || ""} onChange={set("teen_mat_coKinhPhai")}>
-                <option value="">—</option>
-                {THI_LUC.map((o) => <option key={o}>{o}</option>)}
-              </select>
+            <div style={{ ...subLabelStyle, fontSize: ".8rem", marginBottom: ".75rem" }}>2.1. Khám Mắt</div>
+            <div style={grid2}>
+              <FieldGroup label="Kết quả khám thị lực không kính (mắt phải)">
+                <select style={inputStyle} value={form.teen_mat_khongKinhPhai || ""} onChange={set("teen_mat_khongKinhPhai")}>
+                  <option value="">— Chọn —</option>
+                  {THI_LUC.map((o) => <option key={o}>{o}</option>)}
+                </select>
+              </FieldGroup>
+              <FieldGroup label="Kết quả khám thị lực không kính (mắt trái)">
+                <select style={inputStyle} value={form.teen_mat_khongKinhTrai || ""} onChange={set("teen_mat_khongKinhTrai")}>
+                  <option value="">— Chọn —</option>
+                  {THI_LUC.map((o) => <option key={o}>{o}</option>)}
+                </select>
+              </FieldGroup>
+              <FieldGroup label="Kết quả khám thị lực có kính (mắt phải)">
+                <select style={inputStyle} value={form.teen_mat_coKinhPhai || ""} onChange={set("teen_mat_coKinhPhai")}>
+                  <option value="">— Chọn —</option>
+                  {THI_LUC.map((o) => <option key={o}>{o}</option>)}
+                </select>
+              </FieldGroup>
+              <FieldGroup label="Kết quả khám thị lực có kính (mắt trái)">
+                <select style={inputStyle} value={form.teen_mat_coKinhTrai || ""} onChange={set("teen_mat_coKinhTrai")}>
+                  <option value="">— Chọn —</option>
+                  {THI_LUC.map((o) => <option key={o}>{o}</option>)}
+                </select>
+              </FieldGroup>
             </div>
+            <FieldGroup label="Các bệnh về mắt (nếu có)">
+              <input style={inputStyle} type="text" value={form.teen_mat_benh || ""} onChange={set("teen_mat_benh")} />
+            </FieldGroup>
           </div>
-          <SignatureBox id="teen_mat" />
+          <SignatureBox id="teen_mat_ck" value={form.teen_mat_ckdt} onChange={(v) => setForm((p) => ({ ...p, teen_mat_ckdt: v }))} />
         </div>
       </div>
 
-      <ChuyenKhoaRow secLabel="6. Tai mũi họng" fk="teen_tmh" label="Kết quả khám tai mũi họng" />
-      <ChuyenKhoaRow secLabel="7. Răng hàm mặt" fk="teen_rhm" label="Kết quả khám răng hàm mặt" />
+      {/* 2.2 Tai Mũi Họng */}
+      <div style={sectionStyle}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "1.25rem", alignItems: "start" }}>
+          <div>
+            <div style={{ ...subLabelStyle, fontSize: ".8rem", marginBottom: ".75rem" }}>2.2. Khám Tai Mũi Họng</div>
+            <div style={grid2}>
+              <FieldGroup label="Kết quả khám thính lực tai trái (nói thường)">
+                <input style={inputStyle} type="text" value={form.teen_tmh_taiTraiThuong || ""} onChange={set("teen_tmh_taiTraiThuong")} />
+              </FieldGroup>
+              <FieldGroup label="Kết quả khám thính lực tai trái (nói thầm)">
+                <input style={inputStyle} type="text" value={form.teen_tmh_taiTraiTham || ""} onChange={set("teen_tmh_taiTraiTham")} />
+              </FieldGroup>
+              <FieldGroup label="Kết quả khám thính lực tai phải (nói thường)">
+                <input style={inputStyle} type="text" value={form.teen_tmh_taiPhaiThuong || ""} onChange={set("teen_tmh_taiPhaiThuong")} />
+              </FieldGroup>
+              <FieldGroup label="Kết quả khám thính lực tai phải (nói thầm)">
+                <input style={inputStyle} type="text" value={form.teen_tmh_taiPhaiTham || ""} onChange={set("teen_tmh_taiPhaiTham")} />
+              </FieldGroup>
+            </div>
+            <FieldGroup label="Các bệnh về tai mũi họng (nếu có)">
+              <input style={inputStyle} type="text" value={form.teen_tmh_benh || ""} onChange={set("teen_tmh_benh")} />
+            </FieldGroup>
+          </div>
+          <SignatureBox id="teen_tmh_ck" value={form.teen_tmh_ckdt} onChange={(v) => setForm((p) => ({ ...p, teen_tmh_ckdt: v }))} />
+        </div>
+      </div>
+
+      {/* 2.3 Răng Hàm Mặt */}
+      <div style={sectionStyle}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 300px", gap: "1.25rem", alignItems: "start" }}>
+          <div>
+            <div style={{ ...subLabelStyle, fontSize: ".8rem", marginBottom: ".75rem" }}>2.3. Khám Răng Hàm Mặt</div>
+            <div style={grid2}>
+              <FieldGroup label="Kết quả khám hàm trên">
+                <input style={inputStyle} type="text" value={form.teen_rhm_hamTren || ""} onChange={set("teen_rhm_hamTren")} />
+              </FieldGroup>
+              <FieldGroup label="Kết quả khám hàm dưới">
+                <input style={inputStyle} type="text" value={form.teen_rhm_hamDuoi || ""} onChange={set("teen_rhm_hamDuoi")} />
+              </FieldGroup>
+            </div>
+            <FieldGroup label="Các bệnh về răng-hàm-mặt (nếu có)">
+              <input style={inputStyle} type="text" value={form.teen_rhm_benh || ""} onChange={set("teen_rhm_benh")} />
+            </FieldGroup>
+          </div>
+          <SignatureBox id="teen_rhm_ck" value={form.teen_rhm_ckdt} onChange={(v) => setForm((p) => ({ ...p, teen_rhm_ckdt: v }))} />
+        </div>
+      </div>
+
     </Card>
   );
 }
