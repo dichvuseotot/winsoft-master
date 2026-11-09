@@ -53,6 +53,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
             <input
               style={{ ...inputStyle, border: err("ngaySinh") }}
               type="date"
+              max="9999-12-31"
               value={form.ngaySinh}
               onChange={set("ngaySinh")}
             />
@@ -62,6 +63,7 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
             <input
               style={inputStyle}
               type="date"
+              max="9999-12-31"
               value={form.ngayCap}
               onChange={set("ngayCap")}
             />
@@ -89,8 +91,9 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
             <input
               style={inputStyle}
               type="text"
+              inputMode="numeric"
               value={form.dienThoai}
-              onChange={set("dienThoai")}
+              onChange={(e) => setForm((prev) => ({ ...prev, dienThoai: e.target.value.replace(/\D/g, "").slice(0, 10) }))}
               placeholder="Nhập đúng 10 số điện thoại (0...)"
               maxLength={10}
             />

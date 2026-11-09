@@ -15,7 +15,7 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
         />
         <Grid3>
           <FieldGroup label="Số định danh cá nhân" required>
-            <input style={{ ...inputStyle, border: err("soDinhDanh") }} type="text" value={form.soDinhDanh} onChange={set("soDinhDanh")} placeholder="Nhập đủ 12 số CCCD/ÐĐCN..." />
+            <input style={{ ...inputStyle, border: err("soDinhDanh") }} type="text" inputMode="numeric" maxLength={12} value={form.soDinhDanh} onChange={(e) => setForm((p) => ({ ...p, soDinhDanh: e.target.value.replace(/\D/g, "").slice(0, 12) }))} placeholder="Nhập đủ 12 số CCCD/ÐĐCN..." />
           </FieldGroup>
           <FieldGroup label="Họ tên" required>
             <input style={{ ...inputStyle, border: err("hoTen") }} type="text" value={form.hoTen} onChange={set("hoTen")} />
@@ -30,10 +30,10 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
           </FieldGroup>
 
           <FieldGroup label="Ngày sinh" required>
-            <input style={{ ...inputStyle, border: err("ngaySinh") }} type="date" value={form.ngaySinh} onChange={set("ngaySinh")} />
+            <input style={{ ...inputStyle, border: err("ngaySinh") }} type="date" max="9999-12-31" value={form.ngaySinh} onChange={set("ngaySinh")} />
           </FieldGroup>
           <FieldGroup label="Ngày cấp">
-            <input style={inputStyle} type="date" value={form.ngayCap} onChange={set("ngayCap")} />
+            <input style={inputStyle} type="date" max="9999-12-31" value={form.ngayCap} onChange={set("ngayCap")} />
           </FieldGroup>
           <FieldGroup label="Nơi cấp">
             <input style={inputStyle} type="text" value={form.noiCap} onChange={set("noiCap")} />
@@ -81,7 +81,7 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
             </select>
           </FieldGroup>
           <FieldGroup label="Điện thoại">
-            <input style={inputStyle} type="text" value={form.dienThoai} onChange={set("dienThoai")} placeholder="Nhập đúng 10 số điện thoại (0...)" maxLength={10} />
+            <input style={inputStyle} type="text" inputMode="numeric" maxLength={10} value={form.dienThoai} onChange={(e) => setForm((p) => ({ ...p, dienThoai: e.target.value.replace(/\D/g, "").slice(0, 10) }))} placeholder="Nhập đúng 10 số điện thoại (0...)" />
           </FieldGroup>
           <FieldGroup label="Tỉnh/Thành phố" required>
             <SearchableSingleSelect
@@ -110,10 +110,10 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
           </FieldGroup>
 
           <FieldGroup label="Mã định danh (CCCD) của bố, mẹ hoặc người giám hộ">
-            <input style={inputStyle} type="text" value={form.soDinhDanhGiamHo || ""} onChange={set("soDinhDanhGiamHo")} placeholder="Nhập đủ 12 số CCCD/ÐĐCN..." />
+            <input style={inputStyle} type="text" inputMode="numeric" maxLength={12} value={form.soDinhDanhGiamHo || ""} onChange={(e) => setForm((p) => ({ ...p, soDinhDanhGiamHo: e.target.value.replace(/\D/g, "").slice(0, 12) }))} placeholder="Nhập đủ 12 số CCCD/ÐĐCN..." />
           </FieldGroup>
           <FieldGroup label="Điện thoại">
-            <input style={inputStyle} type="text" value={form.soDienThoaiGiamHo || ""} onChange={set("soDienThoaiGiamHo")} placeholder="Nhập đúng 10 số điện thoại (0...)" maxLength={10} />
+            <input style={inputStyle} type="text" inputMode="numeric" maxLength={10} value={form.soDienThoaiGiamHo || ""} onChange={(e) => setForm((p) => ({ ...p, soDienThoaiGiamHo: e.target.value.replace(/\D/g, "").slice(0, 10) }))} placeholder="Nhập đúng 10 số điện thoại (0...)" />
           </FieldGroup>
           <FieldGroup label="Lý do khám sức khỏe" required>
             <input style={{ ...inputStyle, border: err("lyDoKham") }} type="text" value={form.lyDoKham} onChange={set("lyDoKham")} />
@@ -161,21 +161,17 @@ export function Tab2TeenContent({ form, setForm, loaiHinhKCBOptions = [] }) {
   );
 }
 
-export const TEEN_VACCINES = [
-  { id: "bcg", label: "BCG" },
-  { id: "bachHauHoGaUonVan", label: "Bạch hầu-Ho gà-Uốn ván" },
-  { id: "soi", label: "Sởi" },
-  { id: "baiLiet", label: "Bại liệt" },
-  { id: "viemNaoNhatBan", label: "Viêm não Nhật Bản B" },
-  { id: "viemGanB", label: "Viêm gan B" },
-];
 
-export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], tiemChungCats = [], sanKhoaCats = [], banthanCats = [] }) {
+export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], tiemChungCats = [], sanKhoaCats = [], banthanCats = [], dieuTriCats = [] }) {
   const radioSet = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
+
+  const TC_EXTRA_FIELDS = ["TIEM_CHUNG_CAC_LOAI_KHAC", "TEN_TIEM_CHUNG_CAC_LOAI_KHAC"];
+  const tcExtraCat  = tiemChungCats.find((c) => c.Field_AX === "TIEM_CHUNG_CAC_LOAI_KHAC");
+  const tcExtraOpts = tcExtraCat?.Option ? JSON.parse(tcExtraCat.Option) : [];
 
   const extraVaccines = form.teen_tc_extra || [];
   const addExtraVaccine = () =>
-    setForm((prev) => ({ ...prev, teen_tc_extra: [...(prev.teen_tc_extra || []), { id: Date.now(), label: "", status: "Không rõ" }] }));
+    setForm((prev) => ({ ...prev, teen_tc_extra: [...(prev.teen_tc_extra || []), { id: Date.now(), label: "", status: String(tcExtraOpts[0]?.id ?? "") }] }));
   const updateExtraVaccine = (id, field, val) =>
     setForm((prev) => ({
       ...prev,
@@ -188,14 +184,14 @@ export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], ti
   const gdChild   = giadinhCats.find((c) => c.ParentId !== null && c.ParentId === gdParent?.td_cauhoiid);
   const gdOptions = gdParent?.Option ? JSON.parse(gdParent.Option) : [{ id: 0, name: "Không" }, { id: 1, name: "Có" }];
   const gdQuestion = gdParent?.CauHoi || "Có ai trong gia đình mắc bệnh bẩm sinh hoặc bệnh truyền nhiễm không?";
-  const gdSelectedOpt = gdOptions.find((o) => o.name === (form[gdParent?.Field_AX] || "Không"));
-  const gdChildVisible = gdChild && String(gdSelectedOpt?.id ?? "0") !== "0";
+  const gdSelectedId = String(form[gdParent?.Field_AX] ?? gdOptions[0]?.id ?? "0");
+  const gdChildVisible = gdChild && gdSelectedId !== "0";
   const gdChildLoai = (gdChild?.LoaiNhap || "").trim();
 
   const btParent      = banthanCats.find((c) => c.ParentId === null);
   const btChild       = banthanCats.find((c) => c.ParentId !== null);
   const btOpts        = btParent?.Option ? JSON.parse(btParent.Option) : [];
-  const btSelectedId  = btOpts.find((o) => o.name === form[btParent?.Field_AX])?.id ?? 0;
+  const btSelectedId  = form[btParent?.Field_AX] ?? String(btOpts[0]?.id ?? "0");
   const btShowChild   = String(btSelectedId) !== "0";
 
   const skRadio   = sanKhoaCats.find((c) => c.LoaiNhap === "Radio");
@@ -203,24 +199,26 @@ export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], ti
   const skMulti   = sanKhoaCats.find((c) => c.LoaiNhap === "MultiSelect");
   const skRadioOpts   = skRadio?.Option ? JSON.parse(skRadio.Option) : [];
   const skSelectOpts  = skSelect?.Option ? JSON.parse(skSelect.Option) : [];
-  const skSelectedId  = skRadioOpts.find((o) => o.name === form[skRadio?.Field_AX])?.id ?? 0;
+  const skDefaultId    = skRadioOpts.find((o) => o.name === "Có")?.id ?? 1;
+  const skSelectedId   = form[skRadio?.Field_AX] ?? String(skDefaultId);
   const skShowChildren = String(skSelectedId) === "0";
 
-  const TC_EXTRA_FIELDS = ["TIEM_CHUNG_CAC_LOAI_KHAC", "TEN_TIEM_CHUNG_CAC_LOAI_KHAC"];
   const tcRegularCats  = tiemChungCats.filter((c) => !TC_EXTRA_FIELDS.includes(c.Field_AX));
-  const tcExtraCat     = tiemChungCats.find((c) => c.Field_AX === "TIEM_CHUNG_CAC_LOAI_KHAC");
-  const tcExtraOpts    = tcExtraCat?.Option ? JSON.parse(tcExtraCat.Option) : ["Có", "Không", "Không rõ"];
 
-  const tcRadioGroup = (key) => (
-    <div style={{ display: "flex", gap: "1.25rem", flexShrink: 0 }}>
-      {["Có", "Không", "Không rõ"].map((opt) => (
-        <label key={opt} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
-          <input type="radio" name={key} checked={(form[key] ?? "Không rõ") === opt} onChange={() => radioSet(key, opt)} style={{ accentColor: "#2563eb" }} />
-          {opt}
-        </label>
-      ))}
-    </div>
-  );
+  const tcRadioGroup = (cat) => {
+    const opts = cat.Option ? JSON.parse(cat.Option) : [];
+    const key = cat.Field_AX;
+    return (
+      <div style={{ display: "flex", gap: "1.25rem", flexShrink: 0 }}>
+        {opts.map((opt) => (
+          <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
+            <input type="radio" name={key} checked={form[key] === String(opt.id)} onChange={() => radioSet(key, String(opt.id))} style={{ accentColor: "#2563eb" }} />
+            {opt.name}
+          </label>
+        ))}
+      </div>
+    );
+  };
 
   return (
     <>
@@ -233,8 +231,8 @@ export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], ti
           <p style={{ fontSize: ".84rem", color: "var(--gray-700)", marginBottom: ".75rem", lineHeight: 1.5 }}>{gdQuestion}</p>
           <div style={{ display: "flex", gap: "1.5rem" }}>
             {gdOptions.map((opt) => (
-              <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".35rem", cursor: "pointer", fontSize: ".85rem", fontWeight: (form[gdParent?.Field_AX] || "Không") === opt.name ? 600 : 400, color: (form[gdParent?.Field_AX] || "Không") === opt.name ? "var(--primary)" : "var(--gray-700)" }}>
-                <input type="radio" name={gdParent?.Field_AX} value={opt.name} checked={(form[gdParent?.Field_AX] || "Không") === opt.name} onChange={() => radioSet(gdParent?.Field_AX, opt.name)} style={{ accentColor: "#2563eb", width: 15, height: 15 }} />
+              <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".35rem", cursor: "pointer", fontSize: ".85rem", fontWeight: gdSelectedId === String(opt.id) ? 600 : 400, color: gdSelectedId === String(opt.id) ? "var(--primary)" : "var(--gray-700)" }}>
+                <input type="radio" name={gdParent?.Field_AX} value={String(opt.id)} checked={gdSelectedId === String(opt.id)} onChange={() => radioSet(gdParent?.Field_AX, String(opt.id))} style={{ accentColor: "#2563eb", width: 15, height: 15 }} />
                 {opt.name}
               </label>
             ))}
@@ -248,16 +246,20 @@ export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], ti
               {gdChildLoai.startsWith("MultiSelect") && (
                 <SearchableSelect loadOptions={loadIcd10} value={form[gdChild.Field_AX] || []} onChange={(val) => setForm((prev) => ({ ...prev, [gdChild.Field_AX]: val }))} />
               )}
-              {gdChildLoai === "Radio" && (
-                <div style={{ display: "flex", gap: "1.5rem" }}>
-                  {["Không", "Có"].map((opt) => (
-                    <label key={opt} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
-                      <input type="radio" name={gdChild.Field_AX} checked={(form[gdChild.Field_AX] || "Không") === opt} onChange={() => radioSet(gdChild.Field_AX, opt)} style={{ accentColor: "#2563eb" }} />
-                      {opt}
-                    </label>
-                  ))}
-                </div>
-              )}
+              {gdChildLoai === "Radio" && (() => {
+                const gdChildOpts = gdChild.Option ? JSON.parse(gdChild.Option) : [];
+                const gdChildVal = String(form[gdChild.Field_AX] ?? gdChildOpts[0]?.id ?? "0");
+                return (
+                  <div style={{ display: "flex", gap: "1.5rem" }}>
+                    {gdChildOpts.map((opt) => (
+                      <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
+                        <input type="radio" name={gdChild.Field_AX} checked={gdChildVal === String(opt.id)} onChange={() => radioSet(gdChild.Field_AX, String(opt.id))} style={{ accentColor: "#2563eb" }} />
+                        {opt.name}
+                      </label>
+                    ))}
+                  </div>
+                );
+              })()}
             </div>
           )}
         </div>
@@ -272,7 +274,7 @@ export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], ti
             <div style={{ display: "flex", gap: "1.5rem", alignItems: "center" }}>
               {skRadioOpts.slice().reverse().map((opt) => (
                 <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
-                  <input type="radio" name={skRadio.Field_AX} checked={(form[skRadio.Field_AX] || skRadioOpts[0]?.name) === opt.name} onChange={() => radioSet(skRadio.Field_AX, opt.name)} style={{ accentColor: "#2563eb" }} />
+                  <input type="radio" name={skRadio.Field_AX} checked={String(skSelectedId) === String(opt.id)} onChange={() => radioSet(skRadio.Field_AX, String(opt.id))} style={{ accentColor: "#2563eb" }} />
                   {opt.name}
                 </label>
               ))}
@@ -281,7 +283,7 @@ export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], ti
               <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", marginTop: ".5rem", flexWrap: "wrap" }}>
                 {skSelectOpts.map((opt) => (
                   <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
-                    <input type="radio" name={skSelect.Field_AX} checked={form[skSelect.Field_AX] === opt.name} onChange={() => radioSet(skSelect.Field_AX, opt.name)} style={{ accentColor: "#2563eb" }} />
+                    <input type="radio" name={skSelect.Field_AX} checked={form[skSelect.Field_AX] === String(opt.id)} onChange={() => radioSet(skSelect.Field_AX, String(opt.id))} style={{ accentColor: "#2563eb" }} />
                     {opt.name}
                   </label>
                 ))}
@@ -308,7 +310,7 @@ export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], ti
             {tcRegularCats.map((cat) => (
               <div key={cat.td_cauhoiid} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: ".65rem 1rem", borderBottom: "1px solid var(--gray-100)" }}>
                 <span style={{ fontSize: ".85rem", color: "var(--gray-700)" }}>{cat.CauHoi}</span>
-                {tcRadioGroup(cat.Field_AX)}
+                {tcRadioGroup(cat)}
               </div>
             ))}
             {/* Loại vắc xin khác divider row */}
@@ -330,15 +332,12 @@ export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], ti
                   <div key={vac.id} style={{ display: "grid", gridTemplateColumns: "1fr 260px 60px", padding: ".5rem 1rem", borderBottom: "1px solid var(--gray-100)", alignItems: "center", gap: ".75rem" }}>
                     <input style={{ ...inputStyle, margin: 0 }} type="text" placeholder="Tên vắc xin..." value={vac.label} onChange={(e) => updateExtraVaccine(vac.id, "label", e.target.value)} />
                     <div style={{ display: "flex", gap: "1.25rem", justifyContent: "center" }}>
-                      {tcExtraOpts.map((opt) => {
-                        const name = typeof opt === "string" ? opt : opt.name;
-                        return (
-                          <label key={name} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
-                            <input type="radio" name={`teen_tc_extra_${vac.id}`} checked={vac.status === name} onChange={() => updateExtraVaccine(vac.id, "status", name)} style={{ accentColor: "#2563eb" }} />
-                            {name}
-                          </label>
-                        );
-                      })}
+                      {tcExtraOpts.map((opt) => (
+                        <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
+                          <input type="radio" name={`teen_tc_extra_${vac.id}`} checked={vac.status === String(opt.id)} onChange={() => updateExtraVaccine(vac.id, "status", String(opt.id))} style={{ accentColor: "#2563eb" }} />
+                          {opt.name}
+                        </label>
+                      ))}
                     </div>
                     <div style={{ display: "flex", justifyContent: "center" }}>
                       <button type="button" onClick={() => removeExtraVaccine(vac.id)} style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ef4444", background: "transparent", color: "#ef4444", cursor: "pointer", fontSize: "1.1rem", display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>−</button>
@@ -359,7 +358,7 @@ export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], ti
               <div style={{ display: "flex", gap: "1.25rem", flexShrink: 0 }}>
                 {btOpts.map((opt) => (
                   <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
-                    <input type="radio" name={btParent.Field_AX} checked={(form[btParent.Field_AX] || btOpts[0]?.name) === opt.name} onChange={() => radioSet(btParent.Field_AX, opt.name)} style={{ accentColor: "#2563eb" }} />
+                    <input type="radio" name={btParent.Field_AX} checked={String(btSelectedId) === String(opt.id)} onChange={() => radioSet(btParent.Field_AX, String(opt.id))} style={{ accentColor: "#2563eb" }} />
                     {opt.name}
                   </label>
                 ))}
@@ -375,30 +374,38 @@ export function Tab3TeenContent({ form, setForm, loadIcd10, giadinhCats = [], ti
         )}
 
         {/* d) Đang điều trị */}
-        <div style={{ marginBottom: "1.25rem" }}>
-          <div style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--gray-600)", marginBottom: ".5rem" }}>d) Hiện tại có đang điều trị bệnh gì không?</div>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
-            <span style={{ fontSize: ".85rem", color: "var(--gray-700)" }}>Hiện tại có đang điều trị bệnh gì không?</span>
-            <div style={{ display: "flex", gap: "1.25rem", flexShrink: 0 }}>
-              {["Không", "Có"].map((opt) => (
-                <label key={opt} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
-                  <input type="radio" name="teen_dangDieuTri" checked={(form.teen_dangDieuTri || "Không") === opt} onChange={() => radioSet("teen_dangDieuTri", opt)} style={{ accentColor: "#2563eb" }} />
-                  {opt}
-                </label>
-              ))}
+        {(() => {
+          const dtParent = dieuTriCats.find((c) => c.ParentId === null);
+          if (!dtParent) return null;
+          const dtOpts = dtParent.Option ? (() => { try { return JSON.parse(dtParent.Option); } catch { return []; } })() : [];
+          const dtChildren = dieuTriCats.filter((c) => c.ParentId === dtParent.td_cauhoiid).sort((a, b) => a.TT - b.TT);
+          const dtVal = String(form[dtParent.Field_AX] ?? "0");
+          const dtShowChildren = dtVal === String(dtParent.ParentValue || dtChildren[0]?.ParentValue || "1");
+          return (
+            <div style={{ marginBottom: "1.25rem" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "1rem" }}>
+                <div style={{ fontSize: ".82rem", fontWeight: 600, color: "var(--gray-600)", marginBottom: ".5rem" }}>d) {dtParent.CauHoi}</div>
+                <div style={{ display: "flex", gap: "1.25rem", flexShrink: 0 }}>
+                  {dtOpts.map((opt) => (
+                    <label key={opt.id} style={{ display: "flex", alignItems: "center", gap: ".3rem", cursor: "pointer", fontSize: ".85rem" }}>
+                      <input type="radio" name={dtParent.Field_AX} checked={dtVal === String(opt.id)} onChange={() => radioSet(dtParent.Field_AX, String(opt.id))} style={{ accentColor: "#2563eb" }} />
+                      {opt.name}
+                    </label>
+                  ))}
+                </div>
+              </div>
+              {dtShowChildren && dtChildren.length > 0 && (
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: ".75rem" }}>
+                  {dtChildren.map((child) => (
+                    <FieldGroup key={child.td_cauhoiid} label={child.CauHoi}>
+                      <input style={inputStyle} type="text" value={form[child.Field_AX] || ""} onChange={(e) => setForm((prev) => ({ ...prev, [child.Field_AX]: e.target.value }))} />
+                    </FieldGroup>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-          {(form.teen_dangDieuTri || "Không") === "Có" && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: ".75rem" }}>
-              <FieldGroup label="Bệnh đang điều trị">
-                <input style={inputStyle} type="text" placeholder="" value={form.teen_benhDieuTri || ""} onChange={(e) => setForm((prev) => ({ ...prev, teen_benhDieuTri: e.target.value }))} />
-              </FieldGroup>
-              <FieldGroup label="Thuốc đang sử dụng">
-                <input style={inputStyle} type="text" placeholder="" value={form.teen_thuocDangSD || ""} onChange={(e) => setForm((prev) => ({ ...prev, teen_thuocDangSD: e.target.value }))} />
-              </FieldGroup>
-            </div>
-          )}
-        </div>
+          );
+        })()}
       </Card>
     </>
   );

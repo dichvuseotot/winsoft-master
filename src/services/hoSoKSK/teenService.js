@@ -52,7 +52,37 @@ function buildCLSItems(form, tiepNhanId) {
   return items;
 }
 
-function toTeenPayload(form, mauPhieu, resolvedId) {
+function buildGiaTri(cat, form) {
+  const extra = form.teen_tc_extra || [];
+  if (cat.Field_AX === "TIEM_CHUNG_CAC_LOAI_KHAC")
+    return extra.map((v) => v.status).join(";");
+  if (cat.Field_AX === "TEN_TIEM_CHUNG_CAC_LOAI_KHAC")
+    return extra.map((v) => v.label).join(";");
+
+  const val = form[cat.Field_AX];
+  const loai = (cat.LoaiNhap || "").trim();
+  if (loai === "Radio") {
+    if (val == null || val === "") return "";
+    const opts = cat.Option ? JSON.parse(cat.Option) : [];
+    const found = opts.find((o) => String(o.id) === String(val) || o.name === val);
+    return found !== undefined ? String(found.id) : "";
+  }
+  if (loai.startsWith("MultiSelect")) {
+    return (val || []).map((s) => s.split(" - ")[0]).join(";");
+  }
+  return val ?? "";
+}
+
+function buildTienSuBenhList(tienSuCats, form, tiepNhanId) {
+  return tienSuCats.map((cat) => ({
+    Id_TienSuBenh:    generateId(),
+    KSKCD_TiepNhanId: tiepNhanId,
+    td_cauhoiid:      cat.td_cauhoiid,
+    GiaTri:           buildGiaTri(cat, form),
+  }));
+}
+
+function toTeenPayload(form, mauPhieu, resolvedId, tienSuCats = []) {
   return {
     // ── Thông tin hành chính ───────────────────────────────────────────────
     Id: resolvedId,
@@ -85,6 +115,9 @@ function toTeenPayload(form, mauPhieu, resolvedId) {
     NGAY_VAO: form.ngayKham,
     TYPE: "Minor",
 
+    // ── Tiền sử bệnh ──────────────────────────────────────────────────────
+    TienSuBenhList: buildTienSuBenhList(tienSuCats, form, resolvedId),
+
     // ── Khám thể lực ──────────────────────────────────────────────────────
     Id_TheLuc: generateId(),
     KSKCD_TiepNhanId: resolvedId,
@@ -103,20 +136,20 @@ function toTeenPayload(form, mauPhieu, resolvedId) {
     Id_NhiKhoa: generateId(),
     EmployeeCode_NhiKhoa: "1",
     EmployeeCodeDoctor_NhiKhoa: "Nghia",
-    NHI_KHOA_TUAN_HOAN:          form.teen_nk_a   || null,
-    CKDT_NHI_KHOA_TUAN_HOAN:     null,
-    NHI_KHOA_HO_HAP:              form.teen_nk_b   || null,
-    CKDT_NHI_KHOA_HO_HAP:         null,
-    NHI_KHOA_TIEU_HOA:            form.teen_nk_c   || null,
-    CKDT_NHI_KHOA_TIEU_HOA:       null,
-    NHI_KHOA_THAN_TN_SD:          form.teen_nk_d   || null,
-    CKDT_NHI_KHOA_THAN_TN_SD:     null,
-    NHI_KHOA_THAN_KINH:           form.teen_nk_g   || null,
-    CKDT_NHI_KHOA_THAN_KINH:      null,
-    NHI_KHOA_TAM_THAN:            form.teen_nk_h   || null,
-    CKDT_NHI_KHOA_TAM_THAN:       null,
-    NHI_KHOA_LAM_SANG_KHAC:       form.teen_nk_lsk || null,
-    CKDT_NHI_KHOA_LAM_SANG_KHAC:  null,
+    NHI_KHOA_TUAN_HOAN:          form.teen_nk_a       || null,
+    CKDT_NHI_KHOA_TUAN_HOAN:     form.teen_nk_a_ckdt  || null,
+    NHI_KHOA_HO_HAP:              form.teen_nk_b       || null,
+    CKDT_NHI_KHOA_HO_HAP:         form.teen_nk_b_ckdt  || null,
+    NHI_KHOA_TIEU_HOA:            form.teen_nk_c       || null,
+    CKDT_NHI_KHOA_TIEU_HOA:       form.teen_nk_c_ckdt  || null,
+    NHI_KHOA_THAN_TN_SD:          form.teen_nk_d       || null,
+    CKDT_NHI_KHOA_THAN_TN_SD:     form.teen_nk_d_ckdt  || null,
+    NHI_KHOA_THAN_KINH:           form.teen_nk_g       || null,
+    CKDT_NHI_KHOA_THAN_KINH:      form.teen_nk_g_ckdt  || null,
+    NHI_KHOA_TAM_THAN:            form.teen_nk_h       || null,
+    CKDT_NHI_KHOA_TAM_THAN:       form.teen_nk_h_ckdt  || null,
+    NHI_KHOA_LAM_SANG_KHAC:       form.teen_nk_lsk     || null,
+    CKDT_NHI_KHOA_LAM_SANG_KHAC:  form.teen_nk_lsk_ckdt || null,
 
     // ── Mắt ───────────────────────────────────────────────────────────────
     Id_Mat:                 generateId(),
@@ -210,11 +243,11 @@ export async function getTeenRHM(tiepNhanId) {
   return (res.data ?? [])[0] ?? null;
 }
 
-export async function saveTeenTiepNhan(form, mauPhieu, id = null) {
+export async function saveTeenTiepNhan(form, mauPhieu, id = null, tienSuCats = []) {
   try {
     const resolvedId = id ?? generateId();
-    const payload = toTeenPayload(form, mauPhieu, resolvedId);
-    const result = await api.post("/add-update-tiep-nhan", payload);
+    const payload = toTeenPayload(form, mauPhieu, resolvedId, tienSuCats);
+      const result = await api.post("/add-update-tiep-nhan", payload);
     const TiepNhanId = result?.ID ?? resolvedId;
     await Swal.fire({
       icon: "success",

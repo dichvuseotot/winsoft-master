@@ -5,7 +5,7 @@ import "./TaoHoSo.css";
 import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content, CLS_DINH_KY_DATA } from "./MauAdult";
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
-import { saveAdultTiepNhan, saveTeenTiepNhan, getTeenTheLuc, getTeenNhiKhoa, getTeenMat, getTeenTMH, getTeenRHM, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList, getTienSuBenhCategories } from "../../services";
+import { saveAdultTiepNhan, saveTeenTiepNhan, saveChildTiepNhan, getTeenTheLuc, getTeenNhiKhoa, getTeenMat, getTeenTMH, getTeenRHM, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList, getTienSuBenhCategories } from "../../services";
 import { todayVN, timeNowVN } from "../../utils/date";
 import { api } from "../../services/api";
 
@@ -272,20 +272,31 @@ async function resolveIcd10InTSB(cats) {
 function mapTSBToForm(cats) {
   if (!cats || !cats.length) return {};
   const result = {};
+
+  // Reconstruct extra vaccine array từ 2 field đặc biệt
+  const extraStatusCat = cats.find((c) => c.Field_AX === "TIEM_CHUNG_CAC_LOAI_KHAC");
+  const extraNameCat   = cats.find((c) => c.Field_AX === "TEN_TIEM_CHUNG_CAC_LOAI_KHAC");
+  if (extraStatusCat?.GiaTri || extraNameCat?.GiaTri) {
+    const statuses = (extraStatusCat?.GiaTri || "").split(";").filter(Boolean);
+    const labels   = (extraNameCat?.GiaTri   || "").split(";").filter(Boolean);
+    const len = Math.max(statuses.length, labels.length);
+    result.teen_tc_extra = Array.from({ length: len }, (_, i) => ({
+      id:     Date.now() + i,
+      label:  labels[i]   || "",
+      status: statuses[i] || "",
+    }));
+  }
+
   for (const cat of cats) {
     const key = cat.Field_AX;
     if (!key) continue;
+    if (key === "TIEM_CHUNG_CAC_LOAI_KHAC" || key === "TEN_TIEM_CHUNG_CAC_LOAI_KHAC") continue;
     const loai = (cat.LoaiNhap || "").trim();
     const giaTri = cat.GiaTri || "";
-    if (loai === "Radio" || loai === "Select") {
-      if (!giaTri) continue;
-      const opts = cat.Option ? JSON.parse(cat.Option) : [];
-      const found = opts.find((o) => String(o.id) === giaTri);
-      if (found) result[key] = found.name;
-    } else if (loai.startsWith("MultiSelect")) {
+    if (loai.startsWith("MultiSelect")) {
       result[key] = giaTri ? giaTri.split(";").filter(Boolean) : [];
     } else {
-      if (giaTri) result[key] = giaTri;
+      result[key] = giaTri;
     }
   }
   return result;
@@ -573,7 +584,8 @@ export default function TaoHoSo() {
       getTeenRHM(editId).catch(() => null),
       getCLS(editId).catch(() => []),
       getKetLuan(editId).catch(() => null),
-    ]).then(([p, tl, nk, mat, tmh, rhm, clsItems, kl]) => {
+      getTienSuBenh(editId).catch(() => null),
+    ]).then(([p, tl, nk, mat, tmh, rhm, clsItems, kl, tsb]) => {
       if (!p) return;
       setForm((prev) => ({
         ...prev,
@@ -605,13 +617,20 @@ export default function TaoHoSo() {
         huyetAp:        tl?.HUYET_AP         ?? prev.huyetAp,
         phanLoaiTheLuc: tl?.KHAM_THE_LUC_PL  ?? prev.phanLoaiTheLuc,
         // Nhi khoa
-        teen_nk_a:   nk?.NHI_KHOA_TUAN_HOAN    ?? prev.teen_nk_a,
-        teen_nk_b:   nk?.NHI_KHOA_HO_HAP        ?? prev.teen_nk_b,
-        teen_nk_c:   nk?.NHI_KHOA_TIEU_HOA      ?? prev.teen_nk_c,
-        teen_nk_d:   nk?.NHI_KHOA_THAN_TN_SD    ?? prev.teen_nk_d,
-        teen_nk_g:   nk?.NHI_KHOA_THAN_KINH     ?? prev.teen_nk_g,
-        teen_nk_h:   nk?.NHI_KHOA_TAM_THAN      ?? prev.teen_nk_h,
-        teen_nk_lsk: nk?.NHI_KHOA_LAM_SANG_KHAC ?? prev.teen_nk_lsk,
+        teen_nk_a:       nk?.NHI_KHOA_TUAN_HOAN       ?? prev.teen_nk_a,
+        teen_nk_a_ckdt:  nk?.CKDT_NHI_KHOA_TUAN_HOAN  ?? prev.teen_nk_a_ckdt,
+        teen_nk_b:       nk?.NHI_KHOA_HO_HAP           ?? prev.teen_nk_b,
+        teen_nk_b_ckdt:  nk?.CKDT_NHI_KHOA_HO_HAP      ?? prev.teen_nk_b_ckdt,
+        teen_nk_c:       nk?.NHI_KHOA_TIEU_HOA         ?? prev.teen_nk_c,
+        teen_nk_c_ckdt:  nk?.CKDT_NHI_KHOA_TIEU_HOA    ?? prev.teen_nk_c_ckdt,
+        teen_nk_d:       nk?.NHI_KHOA_THAN_TN_SD       ?? prev.teen_nk_d,
+        teen_nk_d_ckdt:  nk?.CKDT_NHI_KHOA_THAN_TN_SD  ?? prev.teen_nk_d_ckdt,
+        teen_nk_g:       nk?.NHI_KHOA_THAN_KINH        ?? prev.teen_nk_g,
+        teen_nk_g_ckdt:  nk?.CKDT_NHI_KHOA_THAN_KINH   ?? prev.teen_nk_g_ckdt,
+        teen_nk_h:       nk?.NHI_KHOA_TAM_THAN         ?? prev.teen_nk_h,
+        teen_nk_h_ckdt:  nk?.CKDT_NHI_KHOA_TAM_THAN    ?? prev.teen_nk_h_ckdt,
+        teen_nk_lsk:     nk?.NHI_KHOA_LAM_SANG_KHAC    ?? prev.teen_nk_lsk,
+        teen_nk_lsk_ckdt: nk?.CKDT_NHI_KHOA_LAM_SANG_KHAC ?? prev.teen_nk_lsk_ckdt,
         // Mắt
         teen_mat_khongKinhPhai: mat?.KHONG_KINH_MAT_PHAI ?? prev.teen_mat_khongKinhPhai,
         teen_mat_khongKinhTrai: mat?.KHONG_KINH_MAT_TRAI ?? prev.teen_mat_khongKinhTrai,
@@ -633,6 +652,8 @@ export default function TaoHoSo() {
         teen_rhm_ckdt:    rhm?.CKDT_KHAM_RANG_HAM_MAT ?? prev.teen_rhm_ckdt,
         // CLS
         ...(clsItems.length > 0 && mapCLSToForm(clsItems)),
+        // Tiền sử bệnh
+        ...(tsb && mapTSBToForm(tsb)),
         // Kết luận
         kl_icd10:     kl?.KET_LUAN_BENH_FULL ? kl.KET_LUAN_BENH_FULL.split(";").filter(Boolean) : prev.kl_icd10,
         kl_tinhTrang: kl?.GHI_RO_VAN_DE_SUC_KHOE ?? prev.kl_tinhTrang,
@@ -640,6 +661,7 @@ export default function TaoHoSo() {
         kl_bacsi:     kl?.CKS_NGUOI_KET_LUAN ?? prev.kl_bacsi,
         kl_cskcb:     kl?.CKS_BENH_VIEN      ?? prev.kl_cskcb,
       }));
+      if (tsb) resolveIcd10InTSB(tsb).then((resolved) => { if (Object.keys(resolved).length) setForm((prev) => ({ ...prev, ...resolved })); });
     });
   }, [editId]);
 
@@ -826,6 +848,8 @@ export default function TaoHoSo() {
                 localStorage.setItem("taoHoSo_mauPhieu", val);
                 setMauPhieu(val);
                 setErrors({});
+                setForm({ ...INITIAL_FORM, ngayKham: todayVN(), gioKham: timeNowVN() });
+                setTiepNhanId(null);
               }}
               style={{
                 height: "36px",
@@ -984,14 +1008,16 @@ export default function TaoHoSo() {
                   if (Object.values(newErrors).some(Boolean)) return;
                   setSaving(true);
                   try {
-                    if (!isTeen) {
+                    if (!isChild) {
                       const toDelete = (form.clsDynamic || []).filter((i) => i._toDelete && i._existingId);
                       const toResave = (form.clsDynamic || []).filter((i) => !i._toDelete && i._existingId && i.giaTri);
                       await Promise.all([...toDelete, ...toResave].map((i) => api.delete(`/delete-kham-can-lam-sang?Id=${i._existingId}`).catch(() => {})));
                     }
                     const cats = tienSuCategories.filter((c) => c.td_loaimau_kskid === mauPhieu);
                     if (isTeen) {
-                      await saveTeenTiepNhan(form, mauPhieu, tiepNhanId || null);
+                      await saveTeenTiepNhan(form, mauPhieu, tiepNhanId || null, tienSuCategories.filter((c) => c.td_loaimau_kskid === 2));
+                    } else if (isChild) {
+                      await saveChildTiepNhan(form, mauPhieu, tiepNhanId || null);
                     } else {
                       await saveAdultTiepNhan(form, mauPhieu, tiepNhanId || null, cats);
                     }
@@ -1046,7 +1072,7 @@ export default function TaoHoSo() {
       >
         <div ref={(el) => (sectionRefs.current[0] = el)}>
           {isChild
-            ? <Tab1ChildContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} moiQuanHeOptions={moiQuanHeOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} loadIcd10={loadIcd10Options} />
+            ? <Tab1ChildContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} moiQuanHeOptions={moiQuanHeOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} loadIcd10={loadIcd10Options} tienSuCats={tienSuCategories.filter((c) => c.td_loaimau_kskid === 1).sort((a, b) => a.TT - b.TT)} />
             : isTeen
             ? <Tab1TeenContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} errors={errors} />
             : <Tab1Content form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} ngheNghiepOptions={ngheNghiepOptions} errors={errors} />
@@ -1060,13 +1086,14 @@ export default function TaoHoSo() {
         </div>
         <div ref={(el) => (sectionRefs.current[2] = el)}>
           {isChild
-            ? <Tab3ChildContent form={form} setForm={setForm} />
+            ? <Tab3ChildContent form={form} setForm={setForm} tiepNhanId={tiepNhanId} />
             : isTeen
             ? <Tab3TeenContent form={form} setForm={setForm} loadIcd10={loadIcd10Options}
                 giadinhCats={tienSuCategories.filter((c) => c.td_nhom_kskid === 2 && c.td_loaimau_kskid === 2)}
                 tiemChungCats={tienSuCategories.filter((c) => c.td_nhom_kskid === 1 && c.td_loaimau_kskid === 2).sort((a, b) => a.TT - b.TT)}
                 sanKhoaCats={tienSuCategories.filter((c) => c.td_nhom_kskid === 3 && c.td_loaimau_kskid === 2).sort((a, b) => a.TT - b.TT)}
                 banthanCats={tienSuCategories.filter((c) => c.td_nhom_kskid === 4 && c.td_loaimau_kskid === 2).sort((a, b) => a.TT - b.TT)}
+                dieuTriCats={tienSuCategories.filter((c) => c.td_nhom_kskid === 5 && c.td_loaimau_kskid === 2).sort((a, b) => a.TT - b.TT)}
               />
             : <Tab3Content form={form} setForm={setForm} loadIcd10={loadIcd10Options}
                 giadinhCats={tienSuCategories.filter((c) => c.td_nhom_kskid === 2 && c.td_loaimau_kskid === mauPhieu)}
@@ -1083,7 +1110,7 @@ export default function TaoHoSo() {
         </div>
         <div ref={(el) => (sectionRefs.current[4] = el)}>
           {isChild
-            ? <Tab5ChildContent form={form} setForm={setForm} />
+            ? <Tab5ChildContent form={form} setForm={setForm} tiepNhanId={tiepNhanId} />
             : isTeen
             ? <Tab5TeenContent form={form} setForm={setForm} />
             : <Tab5Content form={form} setForm={setForm} phanLoaiSucKhoeOptions={phanLoaiSucKhoeOptions} />
@@ -1091,7 +1118,7 @@ export default function TaoHoSo() {
         </div>
         <div ref={(el) => (sectionRefs.current[5] = el)}>
           {isChild
-            ? <Tab6ChildContent form={form} setForm={setForm} />
+            ? <Tab6ChildContent form={form} setForm={setForm} tiepNhanId={tiepNhanId} />
             : <Tab6Content form={form} setForm={setForm} />
           }
         </div>
@@ -1103,7 +1130,7 @@ export default function TaoHoSo() {
         </div>
         {isChild && (
           <div ref={(el) => (sectionRefs.current[7] = el)}>
-            <Tab8ChildContent form={form} setForm={setForm} />
+            <Tab8ChildContent form={form} setForm={setForm} loadIcd10={loadIcd10Options} />
           </div>
         )}
       </div>
@@ -1115,8 +1142,8 @@ export default function TaoHoSo() {
           gioiTinhOptions={gioiTinhOptions}
           onClose={() => setShowPatientPicker(false)}
           onSelect={(p) => {
-            setForm((prev) => ({
-              ...prev,
+            setForm(() => ({
+              ...INITIAL_FORM,
               soDinhDanh: p.SO_CCCD || "",
               hoTen: p.HO_TEN || "",
               gioiTinh: p.GIOI_TINH ?? "",
@@ -1157,7 +1184,8 @@ export default function TaoHoSo() {
                   getTeenRHM(pid).catch(() => null),
                   getCLS(pid).catch(() => []),
                   getKetLuan(pid).catch(() => null),
-                ]).then(([tl, nk, mat, tmh, rhm, clsItems, kl]) => {
+                  getTienSuBenh(pid).catch(() => null),
+                ]).then(([tl, nk, mat, tmh, rhm, clsItems, kl, tsb]) => {
                   setForm((prev) => ({
                     ...prev,
                     chieuCao:       tl?.CHIEU_CAO       ?? null,
@@ -1165,13 +1193,20 @@ export default function TaoHoSo() {
                     mach:           tl?.MACH            ?? null,
                     huyetAp:        tl?.HUYET_AP        ?? null,
                     phanLoaiTheLuc: tl?.KHAM_THE_LUC_PL ?? null,
-                    teen_nk_a:   nk?.NHI_KHOA_TUAN_HOAN    ?? null,
-                    teen_nk_b:   nk?.NHI_KHOA_HO_HAP        ?? null,
-                    teen_nk_c:   nk?.NHI_KHOA_TIEU_HOA      ?? null,
-                    teen_nk_d:   nk?.NHI_KHOA_THAN_TN_SD    ?? null,
-                    teen_nk_g:   nk?.NHI_KHOA_THAN_KINH     ?? null,
-                    teen_nk_h:   nk?.NHI_KHOA_TAM_THAN      ?? null,
-                    teen_nk_lsk: nk?.NHI_KHOA_LAM_SANG_KHAC ?? null,
+                    teen_nk_a:        nk?.NHI_KHOA_TUAN_HOAN          ?? null,
+                    teen_nk_a_ckdt:   nk?.CKDT_NHI_KHOA_TUAN_HOAN     ?? null,
+                    teen_nk_b:        nk?.NHI_KHOA_HO_HAP              ?? null,
+                    teen_nk_b_ckdt:   nk?.CKDT_NHI_KHOA_HO_HAP         ?? null,
+                    teen_nk_c:        nk?.NHI_KHOA_TIEU_HOA            ?? null,
+                    teen_nk_c_ckdt:   nk?.CKDT_NHI_KHOA_TIEU_HOA       ?? null,
+                    teen_nk_d:        nk?.NHI_KHOA_THAN_TN_SD          ?? null,
+                    teen_nk_d_ckdt:   nk?.CKDT_NHI_KHOA_THAN_TN_SD     ?? null,
+                    teen_nk_g:        nk?.NHI_KHOA_THAN_KINH           ?? null,
+                    teen_nk_g_ckdt:   nk?.CKDT_NHI_KHOA_THAN_KINH      ?? null,
+                    teen_nk_h:        nk?.NHI_KHOA_TAM_THAN            ?? null,
+                    teen_nk_h_ckdt:   nk?.CKDT_NHI_KHOA_TAM_THAN       ?? null,
+                    teen_nk_lsk:      nk?.NHI_KHOA_LAM_SANG_KHAC       ?? null,
+                    teen_nk_lsk_ckdt: nk?.CKDT_NHI_KHOA_LAM_SANG_KHAC  ?? null,
                     teen_mat_khongKinhPhai: mat?.KHONG_KINH_MAT_PHAI ?? null,
                     teen_mat_khongKinhTrai: mat?.KHONG_KINH_MAT_TRAI ?? null,
                     teen_mat_coKinhPhai:    mat?.CO_KINH_MAT_PHAI    ?? null,
@@ -1190,6 +1225,8 @@ export default function TaoHoSo() {
                     teen_rhm_ckdt:    rhm?.CKDT_KHAM_RANG_HAM_MAT ?? null,
                     // CLS
                     ...(clsItems.length > 0 && mapCLSToForm(clsItems)),
+                    // Tiền sử bệnh
+                    ...(tsb ? mapTSBToForm(tsb) : {}),
                     // Kết luận
                     kl_icd10:     kl?.KET_LUAN_BENH_FULL ? kl.KET_LUAN_BENH_FULL.split(";").filter(Boolean) : null,
                     kl_tinhTrang: kl?.GHI_RO_VAN_DE_SUC_KHOE ?? null,
@@ -1197,6 +1234,7 @@ export default function TaoHoSo() {
                     kl_bacsi:     kl?.CKS_NGUOI_KET_LUAN ?? null,
                     kl_cskcb:     kl?.CKS_BENH_VIEN      ?? null,
                   }));
+                  if (tsb) resolveIcd10InTSB(tsb).then((resolved) => { if (Object.keys(resolved).length) setForm((prev) => ({ ...prev, ...resolved })); });
                 });
               } else {
                 Promise.all([

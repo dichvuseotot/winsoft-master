@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { getBungCoQuanSinhDuc, saveBungCoQuanSinhDuc, getCoXuongThanKinh, saveCoXuongThanKinh, getDanhGiaDinhDuong, saveDanhGiaDinhDuong, DG_VONG_DAU_REVERSE } from "../../services";
+import React, { useEffect } from "react";
+import { getBungCoQuanSinhDuc, getCoXuongThanKinh, getDanhGiaDinhDuong, getDauHieuSinhTon, getDanhGiaPhatTrienTinhThanVanDong, getDanhGiaTiemChung, getToanTrang, getDauCo, DG_VONG_DAU_REVERSE } from "../../services";
 import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
 
-export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], moiQuanHeOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], loadIcd10 }) {
+export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], moiQuanHeOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], tienSuCats = [] }) {
   const set = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const radioSet = (key, val) =>
@@ -24,11 +24,11 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
             <input style={inputStyle} type="text" value={form.hoTen} onChange={set("hoTen")} placeholder="Nhập họ và tên" />
           </FieldGroup>
           <FieldGroup label="Số định danh cá nhân">
-            <input style={inputStyle} type="text" value={form.soDinhDanh} onChange={set("soDinhDanh")} placeholder="Nhập số CCCD" />
+            <input style={inputStyle} type="text" inputMode="numeric" maxLength={12} value={form.soDinhDanh} onChange={(e) => setForm((p) => ({ ...p, soDinhDanh: e.target.value.replace(/\D/g, "").slice(0, 12) }))} placeholder="Nhập số CCCD" />
           </FieldGroup>
 
           <FieldGroup label="2. Ngày sinh" required>
-            <input style={inputStyle} type="date" value={form.ngaySinh} onChange={set("ngaySinh")} />
+            <input style={inputStyle} type="date" max="9999-12-31" value={form.ngaySinh} onChange={set("ngaySinh")} />
           </FieldGroup>
           <FieldGroup label="3. Giới tính" required>
             <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", height: "38px" }}>
@@ -133,11 +133,11 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
           </FieldGroup>
 
           <FieldGroup label="14. Điện thoại">
-            <input style={inputStyle} type="text" value={form.dienThoaiNguoiDiCung || ""} onChange={set("dienThoaiNguoiDiCung")} placeholder="Nhập số điện thoại" maxLength={10} />
+            <input style={inputStyle} type="text" inputMode="numeric" maxLength={10} value={form.dienThoaiNguoiDiCung || ""} onChange={(e) => setForm((p) => ({ ...p, dienThoaiNguoiDiCung: e.target.value.replace(/\D/g, "").slice(0, 10) }))} placeholder="Nhập số điện thoại" />
           </FieldGroup>
 
           <FieldGroup label="15. Số định danh người giám hộ">
-            <input style={inputStyle} type="text" value={form.soDinhDanhGiamHo || ""} onChange={set("soDinhDanhGiamHo")} placeholder="Nhập số CCCD người giám hộ" />
+            <input style={inputStyle} type="text" inputMode="numeric" maxLength={12} value={form.soDinhDanhGiamHo || ""} onChange={(e) => setForm((p) => ({ ...p, soDinhDanhGiamHo: e.target.value.replace(/\D/g, "").slice(0, 12) }))} placeholder="Nhập số CCCD người giám hộ" />
           </FieldGroup>
 
           <FieldGroup label="Loại hình khám bệnh, chữa bệnh">
@@ -155,56 +155,59 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
         </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: ".75rem" }}>
-          {[
-            { label: "Bản thân (ghi rõ tên bệnh nếu có)", key: "tienSuBanThan", icdKey: "tienSuBanThanICD10" },
-            { label: "Gia đình (ghi rõ tên bệnh nếu có)", key: "tienSuGiaDinh", icdKey: "tienSuGiaDinhICD10" },
-          ].map(({ label, key, icdKey }) => (
-            <div key={key} style={{ display: "grid", gridTemplateColumns: "220px auto 1fr", gap: "1rem", alignItems: "center" }}>
-              <span style={{ fontSize: ".85rem", color: "var(--gray-700)", fontWeight: 500 }}>{label}</span>
-              <div style={{ display: "flex", gap: "1rem" }}>
-                <label style={radioStyle}>
-                  <input type="radio" checked={!form[key] || form[key] === "Không"} onChange={() => radioSet(key, "Không")} />
-                  Không
-                </label>
-                <label style={radioStyle}>
-                  <input type="radio" checked={form[key] === "Có"} onChange={() => radioSet(key, "Có")} />
-                  Có
-                </label>
+          {tienSuCats.filter((c) => c.ParentId === null).map((cat) => {
+            const opts = (() => { try { return JSON.parse(cat.Option || "[]"); } catch { return []; } })();
+            const children = tienSuCats.filter((c) => c.ParentId === cat.td_cauhoiid);
+            const val = String(form[cat.Field_AX] ?? "0");
+            const showChild = children.length > 0 && val === String(children[0]?.ParentValue ?? "");
+            return (
+              <div key={cat.td_cauhoiid} style={{ display: "grid", gridTemplateColumns: showChild ? "220px auto 1fr" : "220px auto", gap: "1rem", alignItems: "center" }}>
+                <span style={{ fontSize: ".85rem", color: "var(--gray-700)", fontWeight: 500 }}>{cat.CauHoi}</span>
+                <div style={{ display: "flex", gap: "1rem" }}>
+                  {opts.map((opt) => (
+                    <label key={opt.id} style={radioStyle}>
+                      <input type="radio" name={cat.Field_AX} checked={val === String(opt.id)} onChange={() => radioSet(cat.Field_AX, String(opt.id))} />
+                      {opt.name}
+                    </label>
+                  ))}
+                </div>
+                {showChild && (
+                  <input
+                    style={inputStyle}
+                    type="text"
+                    value={form[children[0].Field_AX] || ""}
+                    onChange={set(children[0].Field_AX)}
+                    placeholder={children[0].CauHoi}
+                  />
+                )}
               </div>
-              {form[key] === "Có" && (
-                <SearchableSingleSelect
-                  options={[]}
-                  loadOptions={loadIcd10}
-                  value={form[icdKey] || ""}
-                  onChange={(val) => setForm((prev) => ({ ...prev, [icdKey]: val }))}
-                  placeholder="Chọn ICD10..."
-                />
-              )}
-            </div>
-          ))}
-
-          <div style={{ display: "grid", gridTemplateColumns: "220px auto", gap: "1rem", alignItems: "center" }}>
-            <span style={{ fontSize: ".85rem", color: "var(--gray-700)", fontWeight: 500 }}>Tiền sử tiếp xúc với người bệnh lao</span>
-            <div style={{ display: "flex", gap: "1rem" }}>
-              <label style={radioStyle}>
-                <input type="radio" checked={!form.tienSuLao || form.tienSuLao === "Không"} onChange={() => radioSet("tienSuLao", "Không")} />
-                Không
-              </label>
-              <label style={radioStyle}>
-                <input type="radio" checked={form.tienSuLao === "Có"} onChange={() => radioSet("tienSuLao", "Có")} />
-                Có
-              </label>
-            </div>
-          </div>
+            );
+          })}
         </div>
       </Card>
     </>
   );
 }
 
-export function Tab3ChildContent({ form, setForm }) {
+export function Tab3ChildContent({ form, setForm, tiepNhanId }) {
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const radioSet = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getDauHieuSinhTon(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        child_nhietDo: d.NHIET_DO ?? prev.child_nhietDo,
+        child_danhGiaNhietDo: d.DGDHST_NHIET_DO ?? prev.child_danhGiaNhietDo,
+        child_mach: d.MACH ?? prev.child_mach,
+        child_danhGiaMach: d.DGDHST_MACH ?? prev.child_danhGiaMach,
+        child_nhipTho: d.NHIP_THO ?? prev.child_nhipTho,
+        child_danhGiaNhipTho: d.DGDHST_NHIP_THO ?? prev.child_danhGiaNhipTho,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
 
   const rowStyle = {
     display: "grid",
@@ -273,7 +276,6 @@ export function Tab3ChildContent({ form, setForm }) {
 }
 
 export function Tab4ChildContent({ form, setForm, tiepNhanId }) {
-  const [saving, setSaving] = useState(false);
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const checkSet = (key) => setForm((prev) => ({ ...prev, [key]: !prev[key] }));
 
@@ -356,25 +358,25 @@ export function Tab4ChildContent({ form, setForm, tiepNhanId }) {
           </div>
         ))}
       </div>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: ".75rem" }}>
-        <button
-          disabled={saving || !tiepNhanId}
-          onClick={async () => {
-            setSaving(true);
-            try { await saveDanhGiaDinhDuong(form, tiepNhanId); }
-            finally { setSaving(false); }
-          }}
-          style={{ padding: ".45rem 1.1rem", borderRadius: "var(--radius-md)", border: "none", background: saving || !tiepNhanId ? "var(--gray-300)" : "var(--primary)", color: "#fff", fontWeight: 600, fontSize: ".85rem", cursor: saving || !tiepNhanId ? "not-allowed" : "pointer" }}
-        >
-          {saving ? "Đang lưu…" : "Lưu mục 4"}
-        </button>
-      </div>
     </Card>
   );
 }
 
-export function Tab5ChildContent({ form, setForm }) {
+export function Tab5ChildContent({ form, setForm, tiepNhanId }) {
   const radioSet = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getDanhGiaPhatTrienTinhThanVanDong(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        child_phatTrienTinhThan: d.PT_TTBT_THEO_DO_TUOI === 1 ? "Có" : "Không",
+        child_phatTrienVanDong: d.PT_VDBT_THEO_DO_TUOI === 1 ? "Có" : "Không",
+        child_nguyCoBo: d.NGUY_CO_TU_KY === 1 ? "Có" : "Không",
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
 
   const ITEMS = [
     { key: "child_phatTrienTinhThan", label: "Phát triển tinh thần bình thường của trẻ theo độ tuổi" },
@@ -410,8 +412,21 @@ export function Tab5ChildContent({ form, setForm }) {
   );
 }
 
-export function Tab6ChildContent({ form, setForm }) {
+export function Tab6ChildContent({ form, setForm, tiepNhanId }) {
   const radioSet = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getDanhGiaTiemChung(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        child_tc_lao: d.TIEM_CHUNG_BCG_SS === 1 ? "Có" : "Không",
+        child_tc_viemGanB: d.TIEM_CHUNG_VGB_SS_MUI1 === 1 ? "Có" : "Không",
+        child_tc_dayDu: d.TIEM_CHUNG_DAY_DU_THEO_DO_TUOI === 1 ? "Có" : "Không",
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
 
   const ITEMS = [
     { key: "child_tc_lao", label: "Lao (sơ sinh)" },
@@ -448,9 +463,33 @@ export function Tab6ChildContent({ form, setForm }) {
 }
 
 export function Tab7ChildContent({ form, setForm, tiepNhanId }) {
-  const [savingBung, setSavingBung] = useState(false);
-  const [savingCo, setSavingCo] = useState(false);
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getToanTrang(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        child_mauSacDa: d.MAU_SAC_DA ?? prev.child_mauSacDa,
+        child_longBanTay: d.LONG_BAN_TAY ?? prev.child_longBanTay,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getDauCo(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        child_thop: d.THOP ?? prev.child_thop,
+        child_hinhDangDau: d.HINH_DANG_DAU ?? prev.child_hinhDangDau,
+        child_vanDongCo: d.VAN_DONG_CO ?? prev.child_vanDongCo,
+        child_khoiBatThuongDauCo: d.KHOI_BAT_THUONG_DAU_CO ?? prev.child_khoiBatThuongDauCo,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
 
   useEffect(() => {
     if (!tiepNhanId) return;
@@ -458,11 +497,11 @@ export function Tab7ChildContent({ form, setForm, tiepNhanId }) {
       if (!d) return;
       setForm((prev) => ({
         ...prev,
-        cl_hinhDangBung: d.HINH_DANG_BUNG_RON ?? prev.cl_hinhDangBung,
-        cl_ganLachTo: d.GAN_LACH_TO ?? prev.cl_ganLachTo,
-        cl_khoiBatThuongBung: d.KHOI_BAT_THUONG ?? prev.cl_khoiBatThuongBung,
-        cl_loHauMon: d.LO_HAU_MON ?? prev.cl_loHauMon,
-        cl_coQuanSinhDuc: d.CO_QUAN_SINH_DUC_NGOAI ?? prev.cl_coQuanSinhDuc,
+        child_hinhDangBung: d.HINH_DANG_BUNG_RON ?? prev.child_hinhDangBung,
+        child_ganLachTo: d.GAN_LACH_TO ?? prev.child_ganLachTo,
+        child_khoiBatThuong: d.KHOI_BAT_THUONG ?? prev.child_khoiBatThuong,
+        child_loHauMon: d.LO_HAU_MON ?? prev.child_loHauMon,
+        child_coQuanSinhDuc: d.CO_QUAN_SINH_DUC_NGOAI ?? prev.child_coQuanSinhDuc,
       }));
     }).catch(() => {});
   }, [tiepNhanId]);
@@ -473,16 +512,16 @@ export function Tab7ChildContent({ form, setForm, tiepNhanId }) {
       if (!d) return;
       setForm((prev) => ({
         ...prev,
-        cl_vanDongKhongDoiXung: d.VAN_DONG_KHONG_DOI_XUNG ?? prev.cl_vanDongKhongDoiXung,
-        cl_phanXaBu: d.PHAN_XA_BU ?? prev.cl_phanXaBu,
-        cl_phanXaNam: d.PHAN_XA_NAM ?? prev.cl_phanXaNam,
-        cl_phanXaMoro: d.PHAN_XA_MORO ?? prev.cl_phanXaMoro,
-        cl_truongLucCo: d.TRUONG_LUC_CO ?? prev.cl_truongLucCo,
-        cl_khopHang: d.KHOP_HANG ?? prev.cl_khopHang,
-        cl_phanXaCo: d.PHAN_XA_CO ?? prev.cl_phanXaCo,
-        cl_kiemTraLung: d.KIEM_TRA_LUNG_COT_SONG ?? prev.cl_kiemTraLung,
-        cl_khamTuChi: d.TU_CHI_KHOP ?? prev.cl_khamTuChi,
-        cl_quanSatDangDi: d.QUAN_SAT_DANG_DI ?? prev.cl_quanSatDangDi,
+        child_vanDongKhongDoiXung: d.VAN_DONG_KHONG_DOI_XUNG ?? prev.child_vanDongKhongDoiXung,
+        child_phanXaBu: d.PHAN_XA_BU ?? prev.child_phanXaBu,
+        child_phanXaNam: d.PHAN_XA_NAM ?? prev.child_phanXaNam,
+        child_phanXaMoro: d.PHAN_XA_MORO ?? prev.child_phanXaMoro,
+        child_truongLucCo: d.TRUONG_LUC_CO ?? prev.child_truongLucCo,
+        child_khopHang: d.KHOP_HANG ?? prev.child_khopHang,
+        child_phanXaCo: d.PHAN_XA_CO ?? prev.child_phanXaCo,
+        child_kiemTraLung: d.KIEM_TRA_LUNG_COT_SONG ?? prev.child_kiemTraLung,
+        child_khamTuChi: d.TU_CHI_KHOP ?? prev.child_khamTuChi,
+        child_quanSatDangDi: d.QUAN_SAT_DANG_DI ?? prev.child_quanSatDangDi,
       }));
     }).catch(() => {});
   }, [tiepNhanId]);
@@ -502,142 +541,121 @@ export function Tab7ChildContent({ form, setForm, tiepNhanId }) {
 
       <div style={{ ...subLabelStyle, marginBottom: ".75rem" }}>1. Toàn trạng</div>
       <Grid3>
-        <Sel k="cl_mauSacDa" label="Màu sắc da" />
-        <Sel k="cl_longBanTay" label="Lòng bàn tay" />
+        <Sel k="child_mauSacDa" label="Màu sắc da" />
+        <Sel k="child_longBanTay" label="Lòng bàn tay" />
         <div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>2.1. Khám đầu - cổ</div>
       <Grid3>
-        <Sel k="cl_thop" label="Thóp (trẻ nhỏ còn thóp)" />
-        <Sel k="cl_kichThuocDau" label="Kích thước và hình dạng đầu" />
-        <Sel k="cl_vanDongCo" label="Vận động cổ" />
-        <Sel k="cl_khoiBatThuongDau" label="Khối bất thường" />
+        <Sel k="child_thop" label="Thóp (trẻ nhỏ còn thóp)" />
+        <Sel k="child_hinhDangDau" label="Kích thước và hình dạng đầu" />
+        <Sel k="child_vanDongCo" label="Vận động cổ" />
+        <Sel k="child_khoiBatThuongDauCo" label="Khối bất thường" />
         <div /><div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>2.2. Khám mắt</div>
       <Grid3>
-        <Sel k="cl_viTri2Mat" label="Vị trí 2 mắt" />
-        <Sel k="cl_miMat" label="Mí mắt và kết mạc" />
-        <Sel k="cl_lacMat" label="Lác mắt" />
-        <Sel k="cl_dongTu" label="Đồng tử (kích thước, phản xạ)" />
+        <Sel k="child_viTriHaiMat" label="Vị trí 2 mắt" />
+        <Sel k="child_miMatKetMac" label="Mí mắt và kết mạc" />
+        <Sel k="child_lacMat" label="Lác mắt" />
+        <Sel k="child_dongTu" label="Đồng tử (kích thước, phản xạ)" />
         <div /><div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>2.3. Khám tai</div>
       <Grid3>
-        <Sel k="cl_taiMangNhi" label="Tai và màng nhĩ" />
-        <Sel k="cl_dapUngAmThanh" label="Đáp ứng với âm thanh" />
-        <Sel k="cl_khoiSungSauTai" label="Có khối sưng sau tai" />
-        <Sel k="cl_chayMuNuocTai" label="Dấu hiệu chảy mủ, nước tai" />
+        <Sel k="child_taiMangNhi" label="Tai và màng nhĩ" />
+        <Sel k="child_dapUngAmThanh" label="Đáp ứng với âm thanh" />
+        <Sel k="child_khoiSungSauTai" label="Có khối sưng sau tai" />
+        <Sel k="child_chayMuNuocTai" label="Dấu hiệu chảy mủ, nước tai" />
         <div /><div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>2.4. Khám mũi - họng</div>
       <Grid3>
-        <Sel k="cl_hinhDangMui" label="Hình dạng mũi" />
-        <Sel k="cl_chayNuocMui" label="Chảy nước mũi" />
-        <Sel k="cl_nghetMui" label="Nghẹt mũi" />
-        <Sel k="cl_hong" label="Họng" />
+        <Sel k="child_hinhDangMui" label="Hình dạng mũi" />
+        <Sel k="child_chayNuocMui" label="Chảy nước mũi" />
+        <Sel k="child_nghetMui" label="Nghẹt mũi" />
+        <Sel k="child_hong" label="Họng" />
         <div /><div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>2.5. Khám miệng, răng (với trẻ đã có răng)</div>
       <Grid3>
-        <Sel k="cl_hinhDangMieng" label="Hình dạng miệng" />
-        <Sel k="cl_rangSuaSoSinh" label="Răng sữa sơ sinh" />
-        <Sel k="cl_hinhDangLuoi" label="Hình dạng lưỡi" />
-        <Sel k="cl_dinhThangLuoi" label="Dính thắng lưỡi" />
-        <Sel k="cl_namMieng" label="Nấm miệng" />
-        <Sel k="cl_camNho" label="Cằm nhỏ, tụt về sau" />
-        <Sel k="cl_vetSauRang" label="Vết sâu, mảng bám, lỗ trên răng" />
+        <Sel k="child_hinhDangMieng" label="Hình dạng miệng" />
+        <Sel k="child_rangSuaSoSinh" label="Răng sữa sơ sinh" />
+        <Sel k="child_hinhDangLuoi" label="Hình dạng lưỡi" />
+        <Sel k="child_dinhThangLuoi" label="Dính thắng lưỡi" />
+        <Sel k="child_namMieng" label="Nấm miệng" />
+        <Sel k="child_camNhoTutVeSau" label="Cằm nhỏ, tụt về sau" />
+        <Sel k="child_sauMangBamLo" label="Vết sâu, mảng bám, lỗ trên răng" />
         <div /><div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>3. Hô hấp</div>
       <Grid3>
-        <Sel k="cl_nhipThoKhongDeu" label="Nhịp thở không đều" />
-        <Sel k="cl_thoRutLom" label="Thở rút lõm lồng ngực" />
-        <Sel k="cl_tiengThoBatThuong" label="Tiếng thở bất thường" />
-        <Sel k="cl_suuHoHap" label="Dấu hiệu suy hô hấp" />
-        <Sel k="cl_nghePhoi" label="Nghe phổi" />
+        <Sel k="child_nhipThoKhongDeu" label="Nhịp thở không đều" />
+        <Sel k="child_thoRutLomLongNguc" label="Thở rút lõm lồng ngực" />
+        <Sel k="child_tiengThoBatThuong" label="Tiếng thở bất thường" />
+        <Sel k="child_suyHoHap" label="Dấu hiệu suy hô hấp" />
+        <Sel k="child_nghePhoi" label="Nghe phổi" />
         <div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>4. Tim mạch</div>
       <Grid3>
-        <Sel k="cl_viTriMomTim" label="Vị trí mỏm tim" />
-        <Sel k="cl_machNgoaiVi" label="Mạch ngoại vi (mạch quay-bẹn)" />
-        <Sel k="cl_ngheTim" label="Nghe tim (loạn nhịp, tiếng thổi)" />
+        <Sel k="child_viTriMomTim" label="Vị trí mỏm tim" />
+        <Sel k="child_machNgoaiVi" label="Mạch ngoại vi (mạch quay-bẹn)" />
+        <Sel k="child_tiengTim" label="Nghe tim (loạn nhịp, tiếng thổi)" />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>5. Bụng và cơ quan sinh dục</div>
       <Grid3>
-        <Sel k="cl_hinhDangBung" label="Hình dáng bụng, rốn" />
-        <Sel k="cl_ganLachTo" label="Gan, lách to" />
-        <Sel k="cl_khoiBatThuongBung" label="Khối bất thường" />
-        <Sel k="cl_loHauMon" label="Lỗ hậu môn" />
-        <Sel k="cl_coQuanSinhDuc" label="Cơ quan sinh dục ngoài" />
+        <Sel k="child_hinhDangBung" label="Hình dáng bụng, rốn" />
+        <Sel k="child_ganLachTo" label="Gan, lách to" />
+        <Sel k="child_khoiBatThuong" label="Khối bất thường" />
+        <Sel k="child_loHauMon" label="Lỗ hậu môn" />
+        <Sel k="child_coQuanSinhDuc" label="Cơ quan sinh dục ngoài" />
         <div />
       </Grid3>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: ".75rem" }}>
-        <button
-          disabled={savingBung || !tiepNhanId}
-          onClick={async () => {
-            setSavingBung(true);
-            try {
-              await saveBungCoQuanSinhDuc(form, tiepNhanId);
-            } finally {
-              setSavingBung(false);
-            }
-          }}
-          style={{ padding: ".45rem 1.1rem", borderRadius: "var(--radius-md)", border: "none", background: savingBung || !tiepNhanId ? "var(--gray-300)" : "var(--primary)", color: "#fff", fontWeight: 600, fontSize: ".85rem", cursor: savingBung || !tiepNhanId ? "not-allowed" : "pointer" }}
-        >
-          {savingBung ? "Đang lưu…" : "Lưu mục 5"}
-        </button>
-      </div>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>6. Cơ xương và thần kinh</div>
       <Grid3>
-        <Sel k="cl_vanDongKhongDoiXung" label="Vận động không đối xứng" />
-        <Sel k="cl_phanXaBu" label="Phản xạ bú" />
-        <Sel k="cl_phanXaNam" label="Phản xạ nắm" />
-        <Sel k="cl_phanXaMoro" label="Phản xạ Moro" />
-        <Sel k="cl_truongLucCo" label="Trương lực cơ" />
-        <Sel k="cl_khopHang" label="Khớp háng" />
-        <Sel k="cl_phanXaCo" label="Phản xạ cơ" />
-        <Sel k="cl_kiemTraLung" label="Kiểm tra lưng, cột sống" />
-        <Sel k="cl_khamTuChi" label="Khám tứ chi và khớp" />
-        <Sel k="cl_quanSatDangDi" label="Quan sát dáng đi" />
+        <Sel k="child_vanDongKhongDoiXung" label="Vận động không đối xứng" />
+        <Sel k="child_phanXaBu" label="Phản xạ bú" />
+        <Sel k="child_phanXaNam" label="Phản xạ nắm" />
+        <Sel k="child_phanXaMoro" label="Phản xạ Moro" />
+        <Sel k="child_truongLucCo" label="Trương lực cơ" />
+        <Sel k="child_khopHang" label="Khớp háng" />
+        <Sel k="child_phanXaCo" label="Phản xạ cơ" />
+        <Sel k="child_kiemTraLung" label="Kiểm tra lưng, cột sống" />
+        <Sel k="child_khamTuChi" label="Khám tứ chi và khớp" />
+        <Sel k="child_quanSatDangDi" label="Quan sát dáng đi" />
         <div /><div />
       </Grid3>
-      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: ".75rem" }}>
-        <button
-          disabled={savingCo || !tiepNhanId}
-          onClick={async () => {
-            setSavingCo(true);
-            try {
-              await saveCoXuongThanKinh(form, tiepNhanId);
-            } finally {
-              setSavingCo(false);
-            }
-          }}
-          style={{ padding: ".45rem 1.1rem", borderRadius: "var(--radius-md)", border: "none", background: savingCo || !tiepNhanId ? "var(--gray-300)" : "var(--primary)", color: "#fff", fontWeight: 600, fontSize: ".85rem", cursor: savingCo || !tiepNhanId ? "not-allowed" : "pointer" }}
-        >
-          {savingCo ? "Đang lưu…" : "Lưu mục 6"}
-        </button>
-      </div>
     </Card>
   );
 }
 
-export function Tab8ChildContent({ form, setForm }) {
-  const radioSet = (key, val) => setForm((prev) => ({ ...prev, [key]: val }));
+export function Tab8ChildContent({ form, setForm, loadIcd10 }) {
+  const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
+
+  const setKetLuan = (key, val) => {
+    setForm((prev) => {
+      const next = { ...prev, [key]: val };
+      if (key === "child_kl_binhThuong") next.child_kl_vanDeSucKhoe = val === "Có" ? "Không" : "Có";
+      if (key === "child_kl_vanDeSucKhoe") next.child_kl_binhThuong = val === "Có" ? "Không" : "Có";
+      return next;
+    });
+  };
+
+  const showVanDe = (form.child_kl_vanDeSucKhoe ?? "Không") === "Có";
 
   const ITEMS = [
     { key: "child_kl_binhThuong", label: "Bình thường" },
-    { key: "child_kl_nguyCоLao", label: "Có nguy cơ mắc lao (tiền sử tiếp xúc)" },
+    { key: "child_kl_nguyCoLao", label: "Có nguy cơ mắc lao (tiền sử tiếp xúc)" },
     { key: "child_kl_vanDeSucKhoe", label: "Có vấn đề về sức khỏe" },
   ];
 
@@ -656,15 +674,47 @@ export function Tab8ChildContent({ form, setForm }) {
             <div key={item.key} style={{ display: "grid", gridTemplateColumns: "1fr 80px 80px", padding: ".65rem 1rem", borderBottom: "1px solid var(--gray-100)", alignItems: "center" }}>
               <span style={{ fontSize: ".85rem", color: "var(--gray-700)" }}>{item.label}</span>
               <div style={{ display: "flex", justifyContent: "center" }}>
-                <input type="radio" name={item.key} checked={val === "Có"} onChange={() => radioSet(item.key, "Có")} style={{ width: 16, height: 16, cursor: "pointer", accentColor: "var(--primary)" }} />
+                <input type="radio" name={item.key} checked={val === "Có"} onChange={() => setKetLuan(item.key, "Có")} style={{ width: 16, height: 16, cursor: "pointer", accentColor: "var(--primary)" }} />
               </div>
               <div style={{ display: "flex", justifyContent: "center" }}>
-                <input type="radio" name={item.key} checked={val === "Không"} onChange={() => radioSet(item.key, "Không")} style={{ width: 16, height: 16, cursor: "pointer", accentColor: "#ef4444" }} />
+                <input type="radio" name={item.key} checked={val === "Không"} onChange={() => setKetLuan(item.key, "Không")} style={{ width: 16, height: 16, cursor: "pointer", accentColor: "#ef4444" }} />
               </div>
             </div>
           );
         })}
       </div>
+
+      {showVanDe && (
+        <div style={{ marginTop: "1rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
+          <FieldGroup label="Ghi rõ vấn đề sức khỏe">
+            <input style={inputStyle} type="text" value={form.child_kl_ghiRoVanDe || ""} onChange={set("child_kl_ghiRoVanDe")} />
+          </FieldGroup>
+          <FieldGroup label="Kết luận bệnh (Mã ICD-10)">
+            <SearchableSelect
+              value={form.child_kl_icd10 || []}
+              onChange={(val) => setForm((p) => ({ ...p, child_kl_icd10: val }))}
+              loadOptions={loadIcd10}
+              placeholder="Chọn hoặc tìm kiếm..."
+            />
+          </FieldGroup>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+            <FieldGroup label="Hẹn khám lần sau">
+              <select style={inputStyle} value={form.child_kl_henKham || ""} onChange={(e) => setForm((p) => ({ ...p, child_kl_henKham: e.target.value }))}>
+                <option value="">— Chọn —</option>
+                <option value="Có">Có</option>
+                <option value="Không">Không</option>
+              </select>
+            </FieldGroup>
+            <FieldGroup label="Chuyển CSKCB chuyên khoa">
+              <select style={inputStyle} value={form.child_kl_chuyenCSKCB || ""} onChange={(e) => setForm((p) => ({ ...p, child_kl_chuyenCSKCB: e.target.value }))}>
+                <option value="">— Chọn —</option>
+                <option value="Có">Có</option>
+                <option value="Không">Không</option>
+              </select>
+            </FieldGroup>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
