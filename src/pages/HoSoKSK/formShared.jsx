@@ -695,9 +695,13 @@ export function SignatureBox({ id, onChange, value }) {
     drawing.current = false;
   };
   const confirm = () => {
-    if (onChange && canvasRef.current) {
-      onChange(canvasRef.current.toDataURL("image/png"));
-    }
+    if (!onChange || !canvasRef.current) return;
+    const src = canvasRef.current;
+    const w = 300, h = Math.round(src.height * (300 / src.width));
+    const tmp = document.createElement("canvas");
+    tmp.width = w; tmp.height = h;
+    tmp.getContext("2d").drawImage(src, 0, 0, w, h);
+    onChange(tmp.toDataURL("image/png"));
   };
   const clear = () => {
     if (onChange) onChange(null);
@@ -827,7 +831,27 @@ export function SignatureBox({ id, onChange, value }) {
                 type="file"
                 accept="image/*"
                 style={{ display: "none" }}
-                onChange={(e) => setFileName(e.target.files?.[0]?.name || "")}
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  setFileName(file.name);
+                  const reader = new FileReader();
+                  reader.onload = (ev) => {
+                    const img = new Image();
+                    img.onload = () => {
+                      const maxW = 300;
+                      const scale = Math.min(1, maxW / img.width);
+                      const w = Math.round(img.width * scale);
+                      const h = Math.round(img.height * scale);
+                      const tmp = document.createElement("canvas");
+                      tmp.width = w; tmp.height = h;
+                      tmp.getContext("2d").drawImage(img, 0, 0, w, h);
+                      onChange?.(tmp.toDataURL("image/png"));
+                    };
+                    img.src = ev.target.result;
+                  };
+                  reader.readAsDataURL(file);
+                }}
               />
             </label>
             <span style={{ fontSize: ".82rem", color: "var(--gray-400)" }}>
@@ -837,7 +861,7 @@ export function SignatureBox({ id, onChange, value }) {
           <div
             style={{ fontSize: ".72rem", color: "#2563eb", marginTop: ".4rem" }}
           >
-            Tự động scale về 200px width.
+            Tự động scale về 300px.
           </div>
         </div>
       )}
