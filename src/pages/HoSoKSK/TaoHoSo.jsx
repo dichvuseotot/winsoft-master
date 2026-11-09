@@ -1072,7 +1072,7 @@ export default function TaoHoSo() {
       >
         <div ref={(el) => (sectionRefs.current[0] = el)}>
           {isChild
-            ? <Tab1ChildContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} moiQuanHeOptions={moiQuanHeOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} loadIcd10={loadIcd10Options} tienSuCats={tienSuCategories.filter((c) => c.td_loaimau_kskid === 1).sort((a, b) => a.TT - b.TT)} />
+            ? <Tab1ChildContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} moiQuanHeOptions={moiQuanHeOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} loadIcd10={loadIcd10Options} tienSuCats={tienSuCategories.filter((c) => c.td_loaimau_kskid === 1).sort((a, b) => a.TT - b.TT)} errors={errors} />
             : isTeen
             ? <Tab1TeenContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} errors={errors} />
             : <Tab1Content form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} ngheNghiepOptions={ngheNghiepOptions} errors={errors} />
@@ -1130,7 +1130,7 @@ export default function TaoHoSo() {
         </div>
         {isChild && (
           <div ref={(el) => (sectionRefs.current[7] = el)}>
-            <Tab8ChildContent form={form} setForm={setForm} loadIcd10={loadIcd10Options} />
+            <Tab8ChildContent form={form} setForm={setForm} loadIcd10={loadIcd10Options} tiepNhanId={tiepNhanId} />
           </div>
         )}
       </div>
@@ -1172,6 +1172,7 @@ export default function TaoHoSo() {
               ngayKham: p.NGAY_VAO ? p.NGAY_VAO.slice(0, 10) : TODAY,
               maLanKham: p.MA_LK || "",
             }));
+            setErrors({});
             const pid = p.Id ?? p.KSKCD_TiepNhanId ?? null;
             setTiepNhanId(pid);
             if (pid) {

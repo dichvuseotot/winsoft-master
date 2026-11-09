@@ -1,12 +1,13 @@
 import React, { useEffect } from "react";
-import { getBungCoQuanSinhDuc, getCoXuongThanKinh, getDanhGiaDinhDuong, getDauHieuSinhTon, getDanhGiaPhatTrienTinhThanVanDong, getDanhGiaTiemChung, getToanTrang, getDauCo, DG_VONG_DAU_REVERSE } from "../../services";
+import { getBungCoQuanSinhDuc, getCoXuongThanKinh, getDanhGiaDinhDuong, getDauHieuSinhTon, getDanhGiaPhatTrienTinhThanVanDong, getDanhGiaTiemChung, getToanTrang, getDauCo, DG_VONG_DAU_REVERSE, getMat, getTai, getMuiHong, getMiengRang, getHoHap, getTimMach, getKetLuan, getICD10List } from "../../services";
 import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
 
-export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], moiQuanHeOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], tienSuCats = [] }) {
+export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], moiQuanHeOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], tienSuCats = [], errors = {} }) {
   const set = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const radioSet = (key, val) =>
     setForm((prev) => ({ ...prev, [key]: val }));
+  const err = (key) => errors[key] ? "1.5px solid #ef4444" : "1.5px solid var(--gray-200)";
 
   const radioStyle = { display: "flex", alignItems: "center", gap: ".4rem", cursor: "pointer", fontSize: ".85rem", color: "var(--gray-700)" };
 
@@ -21,17 +22,17 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
 
         <Grid3>
           <FieldGroup label="1. Họ và tên" required style={{ gridColumn: "span 2" }}>
-            <input style={inputStyle} type="text" value={form.hoTen} onChange={set("hoTen")} placeholder="Nhập họ và tên" />
+            <input style={{ ...inputStyle, border: err("hoTen") }} type="text" value={form.hoTen} onChange={set("hoTen")} placeholder="Nhập họ và tên" />
           </FieldGroup>
           <FieldGroup label="Số định danh cá nhân" required>
-            <input style={inputStyle} type="text" inputMode="numeric" maxLength={12} value={form.soDinhDanh} onChange={(e) => setForm((p) => ({ ...p, soDinhDanh: e.target.value.replace(/\D/g, "").slice(0, 12) }))} placeholder="Nhập số CCCD" />
+            <input style={{ ...inputStyle, border: err("soDinhDanh") }} type="text" inputMode="numeric" maxLength={12} value={form.soDinhDanh} onChange={(e) => setForm((p) => ({ ...p, soDinhDanh: e.target.value.replace(/\D/g, "").slice(0, 12) }))} placeholder="Nhập số CCCD" />
           </FieldGroup>
 
           <FieldGroup label="2. Ngày sinh" required>
-            <input style={inputStyle} type="date" max="9999-12-31" value={form.ngaySinh} onChange={set("ngaySinh")} />
+            <input style={{ ...inputStyle, border: err("ngaySinh") }} type="date" max="9999-12-31" value={form.ngaySinh} onChange={set("ngaySinh")} />
           </FieldGroup>
           <FieldGroup label="3. Giới tính" required>
-            <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", height: "38px" }}>
+            <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", height: "38px", border: errors.gioiTinh ? "1.5px solid #ef4444" : undefined, borderRadius: errors.gioiTinh ? 6 : undefined, padding: errors.gioiTinh ? "0 .5rem" : undefined }}>
               {gioiTinhOptions.map((g) => (
                 <label key={g.Id} style={radioStyle}>
                   <input type="radio" name="child_gt" checked={form.gioiTinh === g.Id} onChange={() => radioSet("gioiTinh", g.Id)} /> {g.TenGioiTinh}
@@ -45,6 +46,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
               onChange={(val) => set("danToc")({ target: { value: val } })}
               options={danTocOptions.map((d) => ({ value: d.MaDanToc, label: d.TenDanToc }))}
               placeholder="—Chọn dân tộc—"
+              error={errors.danToc}
             />
           </FieldGroup>
 
@@ -79,6 +81,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
               onChange={(val) => set("doiTuongKham")({ target: { value: val } })}
               options={doiTuongOptions.map((d) => ({ value: d.Id, label: d.Name }))}
               placeholder="—Chọn đối tượng—"
+              error={errors.doiTuongKham}
             />
           </FieldGroup>
           <FieldGroup label="9. Nguồn chi trả" required>
@@ -87,6 +90,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
               onChange={(val) => set("nguonChiTra")({ target: { value: val } })}
               options={nguonChiTraOptions.map((n) => ({ value: n.Id, label: n.Name }))}
               placeholder="—Chọn nguồn chi trả—"
+              error={errors.nguonChiTra}
             />
           </FieldGroup>
           <div />
@@ -103,6 +107,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
               onChange={(val) => set("tinhThanhPho")({ target: { value: val } })}
               options={tinhThanhOptions.map((t) => ({ value: t.MaTinh, label: t.TenTinh }))}
               placeholder="—Chọn tỉnh/thành phố—"
+              error={errors.tinhThanhPho}
             />
           </FieldGroup>
 
@@ -112,11 +117,12 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
               onChange={(val) => set("phuongXa")({ target: { value: val } })}
               options={phuongXaOptions.map((p) => ({ value: p.MaPhuongXa, label: p.TenPhuongXa }))}
               placeholder="—Chọn phường/xã—"
+              error={errors.phuongXa}
             />
           </FieldGroup>
 
           <FieldGroup label="Số nhà/thôn/xóm" required>
-            <input style={inputStyle} type="text" value={form.soNha} onChange={set("soNha")} placeholder="Nhập địa chỉ" />
+            <input style={{ ...inputStyle, border: err("soNha") }} type="text" value={form.soNha} onChange={set("soNha")} placeholder="Nhập địa chỉ" />
           </FieldGroup>
 
           <FieldGroup label="12. Họ tên người đi cùng trẻ" required style={{ gridColumn: "span 2" }}>
@@ -525,12 +531,107 @@ export function Tab7ChildContent({ form, setForm, tiepNhanId }) {
       }));
     }).catch(() => {});
   }, [tiepNhanId]);
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getMat(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        child_viTriHaiMat: d.VI_TRI_HAI_MAT ?? prev.child_viTriHaiMat,
+        child_miMatKetMac: d.MI_MAT_KET_MAC ?? prev.child_miMatKetMac,
+        child_lacMat: d.LAC_MAT ?? prev.child_lacMat,
+        child_dongTu: d.DONG_TU ?? prev.child_dongTu,
+        child_khongKinhMatPhai: d.KHONG_KINH_MAT_PHAI ?? prev.child_khongKinhMatPhai,
+        child_khongKinhMatTrai: d.KHONG_KINH_MAT_TRAI ?? prev.child_khongKinhMatTrai,
+        child_coKinhMatPhai: d.CO_KINH_MAT_PHAI ?? prev.child_coKinhMatPhai,
+        child_coKinhMatTrai: d.CO_KINH_MAT_TRAI ?? prev.child_coKinhMatTrai,
+        child_benhKhacMat: d.BENH_KHAC_MAT ?? prev.child_benhKhacMat,
+        child_khamMatPL: d.KHAM_MAT_PL ?? prev.child_khamMatPL,
+        child_ckdtKhamMat: d.CKDT_KHAM_MAT ?? prev.child_ckdtKhamMat,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getTai(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        child_taiMangNhi: d.TAI_MANG_NHI ?? prev.child_taiMangNhi,
+        child_dapUngAmThanh: d.DAP_UNG_AM_THANH ?? prev.child_dapUngAmThanh,
+        child_khoiSungSauTai: d.KHOI_SUNG_SAU_TAI ?? prev.child_khoiSungSauTai,
+        child_chayMuNuocTai: d.CHAY_MU_NUOC_TAI ?? prev.child_chayMuNuocTai,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getMuiHong(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        child_hinhDangMui: d.HINH_DANG_MUI ?? prev.child_hinhDangMui,
+        child_chayNuocMui: d.CHAY_NUOC_MUI ?? prev.child_chayNuocMui,
+        child_nghetMui: d.NGHET_MUI ?? prev.child_nghetMui,
+        child_hong: d.HONG ?? prev.child_hong,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getMiengRang(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        child_hinhDangMieng: d.HINH_DANG_MIENG ?? prev.child_hinhDangMieng,
+        child_rangSuaSoSinh: d.RANG_SUA_SO_SINH ?? prev.child_rangSuaSoSinh,
+        child_hinhDangLuoi: d.HINH_DANG_LUOI ?? prev.child_hinhDangLuoi,
+        child_dinhThangLuoi: d.DINH_THANG_LUOI ?? prev.child_dinhThangLuoi,
+        child_namMieng: d.NAM_MIENG ?? prev.child_namMieng,
+        child_camNhoTutVeSau: d.CAM_NHO_TUT_VE_SAU ?? prev.child_camNhoTutVeSau,
+        child_sauMangBamLo: d.SAU_MANG_BAM_LO ?? prev.child_sauMangBamLo,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getHoHap(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        child_nhipThoKhongDeu: d.NHIP_THO_KHONG_DEU ?? prev.child_nhipThoKhongDeu,
+        child_thoRutLomLongNguc: d.THO_RUT_LOM_LONG_NGUC ?? prev.child_thoRutLomLongNguc,
+        child_tiengThoBatThuong: d.TIENG_THO_BAT_THUONG ?? prev.child_tiengThoBatThuong,
+        child_suyHoHap: d.SUY_HO_HAP ?? prev.child_suyHoHap,
+        child_nghePhoi: d.NGHE_PHOI ?? prev.child_nghePhoi,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getTimMach(tiepNhanId).then((d) => {
+      if (!d) return;
+      setForm((prev) => ({
+        ...prev,
+        child_viTriMomTim: d.VI_TRI_MOM_TIM ?? prev.child_viTriMomTim,
+        child_machNgoaiVi: d.MACH_NGOAI_VI ?? prev.child_machNgoaiVi,
+        child_tiengTim: d.TIENG_TIM ?? prev.child_tiengTim,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
+
   const Sel = ({ k, label }) => (
     <FieldGroup label={label}>
       <select style={inputStyle} value={form[k] ?? ""} onChange={set(k)}>
-        <option value="">Chọn kết quả</option>
-        <option value={1}>Bình thường</option>
+        <option value="">— Chọn —</option>
         <option value={0}>Không bình thường</option>
+        <option value={1}>Bình thường</option>
       </select>
     </FieldGroup>
   );
@@ -541,97 +642,376 @@ export function Tab7ChildContent({ form, setForm, tiepNhanId }) {
 
       <div style={{ ...subLabelStyle, marginBottom: ".75rem" }}>1. Toàn trạng</div>
       <Grid3>
-        <Sel k="child_mauSacDa" label="Màu sắc da" />
-        <Sel k="child_longBanTay" label="Lòng bàn tay" />
+        <FieldGroup label="Màu sắc da">
+          <select style={inputStyle} value={form.child_mauSacDa ?? ""} onChange={set("child_mauSacDa")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Hồng hào</option>
+            <option value={2}>Nhợt</option>
+            <option value={3}>Tím</option>
+            <option value={4}>Vàng</option>
+            <option value={5}>Sạm da</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Lòng bàn tay">
+          <select style={inputStyle} value={form.child_longBanTay ?? ""} onChange={set("child_longBanTay")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bình thường (không nhợt)</option>
+            <option value={0}>Không bình thường (nhợt)</option>
+          </select>
+        </FieldGroup>
         <div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>2.1. Khám đầu - cổ</div>
       <Grid3>
-        <Sel k="child_thop" label="Thóp (trẻ nhỏ còn thóp)" />
+        <FieldGroup label="Thóp (trẻ nhỏ còn thóp)">
+          <select style={inputStyle} value={form.child_thop ?? ""} onChange={set("child_thop")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bình thường</option>
+            <option value={2}>Rộng</option>
+            <option value={3}>Hẹp</option>
+            <option value={4}>Thóp phồng</option>
+          </select>
+        </FieldGroup>
         <Sel k="child_hinhDangDau" label="Kích thước và hình dạng đầu" />
         <Sel k="child_vanDongCo" label="Vận động cổ" />
-        <Sel k="child_khoiBatThuongDauCo" label="Khối bất thường" />
+        <FieldGroup label="Khối bất thường">
+          <select style={inputStyle} value={form.child_khoiBatThuongDauCo ?? ""} onChange={set("child_khoiBatThuongDauCo")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
         <div /><div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>2.2. Khám mắt</div>
       <Grid3>
-        <Sel k="child_viTriHaiMat" label="Vị trí 2 mắt" />
-        <Sel k="child_miMatKetMac" label="Mí mắt và kết mạc" />
-        <Sel k="child_lacMat" label="Lác mắt" />
-        <Sel k="child_dongTu" label="Đồng tử (kích thước, phản xạ)" />
+        <FieldGroup label="Vị trí 2 mắt">
+          <select style={inputStyle} value={form.child_viTriHaiMat ?? ""} onChange={set("child_viTriHaiMat")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bình thường</option>
+            <option value={2}>Hai mắt xa nhau</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Mí mắt và kết mạc">
+          <select style={inputStyle} value={form.child_miMatKetMac ?? ""} onChange={set("child_miMatKetMac")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bình thường</option>
+            <option value={2}>Sưng/đỏ</option>
+            <option value={3}>Chảy ghèn/mủ</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Lác mắt">
+          <select style={inputStyle} value={form.child_lacMat ?? ""} onChange={set("child_lacMat")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Đồng tử (kích thước, phản xạ)">
+          <select style={inputStyle} value={form.child_dongTu ?? ""} onChange={set("child_dongTu")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
         <div /><div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>2.3. Khám tai</div>
       <Grid3>
-        <Sel k="child_taiMangNhi" label="Tai và màng nhĩ" />
-        <Sel k="child_dapUngAmThanh" label="Đáp ứng với âm thanh" />
-        <Sel k="child_khoiSungSauTai" label="Có khối sưng sau tai" />
-        <Sel k="child_chayMuNuocTai" label="Dấu hiệu chảy mủ, nước tai" />
+        <FieldGroup label="Tai và màng nhĩ">
+          <select style={inputStyle} value={form.child_taiMangNhi ?? ""} onChange={set("child_taiMangNhi")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Đáp ứng với âm thanh">
+          <select style={inputStyle} value={form.child_dapUngAmThanh ?? ""} onChange={set("child_dapUngAmThanh")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Có khối sưng sau tai">
+          <select style={inputStyle} value={form.child_khoiSungSauTai ?? ""} onChange={set("child_khoiSungSauTai")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Dấu hiệu chảy mủ, nước tai">
+          <select style={inputStyle} value={form.child_chayMuNuocTai ?? ""} onChange={set("child_chayMuNuocTai")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
         <div /><div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>2.4. Khám mũi - họng</div>
       <Grid3>
-        <Sel k="child_hinhDangMui" label="Hình dạng mũi" />
-        <Sel k="child_chayNuocMui" label="Chảy nước mũi" />
-        <Sel k="child_nghetMui" label="Nghẹt mũi" />
-        <Sel k="child_hong" label="Họng" />
+        <FieldGroup label="Hình dạng mũi">
+          <select style={inputStyle} value={form.child_hinhDangMui ?? ""} onChange={set("child_hinhDangMui")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bình thường</option>
+            <option value={2}>Mũi to, dày</option>
+            <option value={3}>Bất sản xương mũi</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Chảy nước mũi">
+          <select style={inputStyle} value={form.child_chayNuocMui ?? ""} onChange={set("child_chayNuocMui")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Nghẹt mũi">
+          <select style={inputStyle} value={form.child_nghetMui ?? ""} onChange={set("child_nghetMui")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Họng">
+          <select style={inputStyle} value={form.child_hong ?? ""} onChange={set("child_hong")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
         <div /><div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>2.5. Khám miệng, răng (với trẻ đã có răng)</div>
       <Grid3>
-        <Sel k="child_hinhDangMieng" label="Hình dạng miệng" />
-        <Sel k="child_rangSuaSoSinh" label="Răng sữa sơ sinh" />
-        <Sel k="child_hinhDangLuoi" label="Hình dạng lưỡi" />
-        <Sel k="child_dinhThangLuoi" label="Dính thắng lưỡi" />
-        <Sel k="child_namMieng" label="Nấm miệng" />
-        <Sel k="child_camNhoTutVeSau" label="Cằm nhỏ, tụt về sau" />
-        <Sel k="child_sauMangBamLo" label="Vết sâu, mảng bám, lỗ trên răng" />
+        <FieldGroup label="Hình dạng miệng">
+          <select style={inputStyle} value={form.child_hinhDangMieng ?? ""} onChange={set("child_hinhDangMieng")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bình thường</option>
+            <option value={2}>Sứt môi, chẻ vòm</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Răng sữa sơ sinh">
+          <select style={inputStyle} value={form.child_rangSuaSoSinh ?? ""} onChange={set("child_rangSuaSoSinh")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Hình dạng lưỡi">
+          <select style={inputStyle} value={form.child_hinhDangLuoi ?? ""} onChange={set("child_hinhDangLuoi")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bình thường</option>
+            <option value={2}>Lưỡi to bè</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Dính thắng lưỡi">
+          <select style={inputStyle} value={form.child_dinhThangLuoi ?? ""} onChange={set("child_dinhThangLuoi")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Nấm miệng">
+          <select style={inputStyle} value={form.child_namMieng ?? ""} onChange={set("child_namMieng")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Cằm nhỏ, tụt về sau">
+          <select style={inputStyle} value={form.child_camNhoTutVeSau ?? ""} onChange={set("child_camNhoTutVeSau")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Vết sâu, mảng bám, lỗ trên răng">
+          <select style={inputStyle} value={form.child_sauMangBamLo ?? ""} onChange={set("child_sauMangBamLo")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
         <div /><div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>3. Hô hấp</div>
       <Grid3>
-        <Sel k="child_nhipThoKhongDeu" label="Nhịp thở không đều" />
-        <Sel k="child_thoRutLomLongNguc" label="Thở rút lõm lồng ngực" />
-        <Sel k="child_tiengThoBatThuong" label="Tiếng thở bất thường" />
-        <Sel k="child_suyHoHap" label="Dấu hiệu suy hô hấp" />
-        <Sel k="child_nghePhoi" label="Nghe phổi" />
+        <FieldGroup label="Nhịp thở không đều">
+          <select style={inputStyle} value={form.child_nhipThoKhongDeu ?? ""} onChange={set("child_nhipThoKhongDeu")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Thở rút lõm lồng ngực">
+          <select style={inputStyle} value={form.child_thoRutLomLongNguc ?? ""} onChange={set("child_thoRutLomLongNguc")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Tiếng thở bất thường">
+          <select style={inputStyle} value={form.child_tiengThoBatThuong ?? ""} onChange={set("child_tiengThoBatThuong")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Dấu hiệu suy hô hấp">
+          <select style={inputStyle} value={form.child_suyHoHap ?? ""} onChange={set("child_suyHoHap")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Nghe phổi">
+          <select style={inputStyle} value={form.child_nghePhoi ?? ""} onChange={set("child_nghePhoi")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
         <div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>4. Tim mạch</div>
       <Grid3>
-        <Sel k="child_viTriMomTim" label="Vị trí mỏm tim" />
-        <Sel k="child_machNgoaiVi" label="Mạch ngoại vi (mạch quay-bẹn)" />
-        <Sel k="child_tiengTim" label="Nghe tim (loạn nhịp, tiếng thổi)" />
+        <FieldGroup label="Vị trí mỏm tim">
+          <select style={inputStyle} value={form.child_viTriMomTim ?? ""} onChange={set("child_viTriMomTim")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Mạch ngoại vi (mạch quay-bẹn)">
+          <select style={inputStyle} value={form.child_machNgoaiVi ?? ""} onChange={set("child_machNgoaiVi")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bắt rõ</option>
+            <option value={2}>Mạch nhẹ</option>
+            <option value={3}>Không bắt được</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Nghe tim (loạn nhịp, tiếng thổi)">
+          <select style={inputStyle} value={form.child_tiengTim ?? ""} onChange={set("child_tiengTim")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>5. Bụng và cơ quan sinh dục</div>
       <Grid3>
-        <Sel k="child_hinhDangBung" label="Hình dáng bụng, rốn" />
-        <Sel k="child_ganLachTo" label="Gan, lách to" />
-        <Sel k="child_khoiBatThuong" label="Khối bất thường" />
-        <Sel k="child_loHauMon" label="Lỗ hậu môn" />
-        <Sel k="child_coQuanSinhDuc" label="Cơ quan sinh dục ngoài" />
+        <FieldGroup label="Hình dáng bụng, rốn">
+          <select style={inputStyle} value={form.child_hinhDangBung ?? ""} onChange={set("child_hinhDangBung")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Gan, lách to">
+          <select style={inputStyle} value={form.child_ganLachTo ?? ""} onChange={set("child_ganLachTo")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Khối bất thường">
+          <select style={inputStyle} value={form.child_khoiBatThuong ?? ""} onChange={set("child_khoiBatThuong")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Lỗ hậu môn">
+          <select style={inputStyle} value={form.child_loHauMon ?? ""} onChange={set("child_loHauMon")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Cơ quan sinh dục ngoài">
+          <select style={inputStyle} value={form.child_coQuanSinhDuc ?? ""} onChange={set("child_coQuanSinhDuc")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
         <div />
       </Grid3>
 
       <div style={{ ...subLabelStyle, margin: "1.25rem 0 .75rem" }}>6. Cơ xương và thần kinh</div>
       <Grid3>
-        <Sel k="child_vanDongKhongDoiXung" label="Vận động không đối xứng" />
-        <Sel k="child_phanXaBu" label="Phản xạ bú" />
-        <Sel k="child_phanXaNam" label="Phản xạ nắm" />
-        <Sel k="child_phanXaMoro" label="Phản xạ Moro" />
-        <Sel k="child_truongLucCo" label="Trương lực cơ" />
-        <Sel k="child_khopHang" label="Khớp háng" />
-        <Sel k="child_phanXaCo" label="Phản xạ cơ" />
-        <Sel k="child_kiemTraLung" label="Kiểm tra lưng, cột sống" />
-        <Sel k="child_khamTuChi" label="Khám tứ chi và khớp" />
+        <FieldGroup label="Vận động không đối xứng">
+          <select style={inputStyle} value={form.child_vanDongKhongDoiXung ?? ""} onChange={set("child_vanDongKhongDoiXung")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Có</option>
+            <option value={0}>Không</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Phản xạ bú">
+          <select style={inputStyle} value={form.child_phanXaBu ?? ""} onChange={set("child_phanXaBu")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bình thường</option>
+            <option value={0}>Không có</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Phản xạ nắm">
+          <select style={inputStyle} value={form.child_phanXaNam ?? ""} onChange={set("child_phanXaNam")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bình thường</option>
+            <option value={0}>Không có</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Phản xạ Moro">
+          <select style={inputStyle} value={form.child_phanXaMoro ?? ""} onChange={set("child_phanXaMoro")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bình thường</option>
+            <option value={0}>Không có</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Trương lực cơ">
+          <select style={inputStyle} value={form.child_truongLucCo ?? ""} onChange={set("child_truongLucCo")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bình thường</option>
+            <option value={2}>Tăng</option>
+            <option value={0}>Giảm</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Khớp háng">
+          <select style={inputStyle} value={form.child_khopHang ?? ""} onChange={set("child_khopHang")}>
+            <option value="">— Chọn —</option>
+            <option value={1}>Bình thường</option>
+            <option value={0}>Trật khớp háng</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Phản xạ cơ">
+          <select style={inputStyle} value={form.child_phanXaCo ?? ""} onChange={set("child_phanXaCo")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Kiểm tra lưng, cột sống">
+          <select style={inputStyle} value={form.child_kiemTraLung ?? ""} onChange={set("child_kiemTraLung")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
+        <FieldGroup label="Khám tứ chi và khớp">
+          <select style={inputStyle} value={form.child_khamTuChi ?? ""} onChange={set("child_khamTuChi")}>
+            <option value="">— Chọn —</option>
+            <option value={0}>Không bình thường</option>
+            <option value={1}>Bình thường</option>
+          </select>
+        </FieldGroup>
         <Sel k="child_quanSatDangDi" label="Quan sát dáng đi" />
         <div /><div />
       </Grid3>
@@ -639,8 +1019,41 @@ export function Tab7ChildContent({ form, setForm, tiepNhanId }) {
   );
 }
 
-export function Tab8ChildContent({ form, setForm, loadIcd10 }) {
+export function Tab8ChildContent({ form, setForm, loadIcd10, tiepNhanId }) {
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
+
+  useEffect(() => {
+    if (!tiepNhanId) return;
+    getKetLuan(tiepNhanId).then(async (d) => {
+      if (!d) return;
+      let icd10Items = [];
+      if (d.KET_LUAN_BENH) {
+        const codes = d.KET_LUAN_BENH.split(",").map((c) => c.trim()).filter(Boolean);
+        const results = await Promise.all(
+          codes.map((code) => getICD10List({ search: code, pageSize: 5 })
+            .then(({ items }) => items.find((i) => i.startsWith(code)) || code)
+            .catch(() => code)
+          )
+        );
+        icd10Items = results;
+      }
+      setForm((prev) => ({
+        ...prev,
+        child_kl_binhThuong: d.BINH_THUONG === 1 ? "Có" : "Không",
+        child_kl_nguyCoLao: d.NGUY_CO_MAC_LAO === 1 ? "Có" : "Không",
+        child_kl_vanDeSucKhoe: d.VAN_DE_SUC_KHOE === 1 ? "Có" : "Không",
+        child_kl_icd10: icd10Items.length > 0 ? icd10Items : prev.child_kl_icd10,
+        child_kl_ghiRoVanDe: d.GHI_RO_VAN_DE_SUC_KHOE ?? prev.child_kl_ghiRoVanDe,
+        child_kl_henKham: d.HEN_KHAM_LAN_SAU != null ? Number(d.HEN_KHAM_LAN_SAU) : prev.child_kl_henKham,
+        child_kl_chuyenCSKCB: d.CHUYEN_CSKCB != null ? Number(d.CHUYEN_CSKCB) : prev.child_kl_chuyenCSKCB,
+        child_kl_phanLoaiSK: d.PHAN_LOAI_SK ?? prev.child_kl_phanLoaiSK,
+        child_kl_cacVanDe: d.CAC_VAN_DE_SUC_KHOE ?? prev.child_kl_cacVanDe,
+        child_kl_cacBenhTat: d.CAC_BENH_TAT_NEU_CO ?? prev.child_kl_cacBenhTat,
+        child_kl_cksNguoiKetLuan: d.CKS_NGUOI_KET_LUAN ?? prev.child_kl_cksNguoiKetLuan,
+        child_kl_cksBenhVien: d.CKS_BENH_VIEN ?? prev.child_kl_cksBenhVien,
+      }));
+    }).catch(() => {});
+  }, [tiepNhanId]);
 
   const setKetLuan = (key, val) => {
     setForm((prev) => {
@@ -699,17 +1112,17 @@ export function Tab8ChildContent({ form, setForm, loadIcd10 }) {
           </FieldGroup>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
             <FieldGroup label="Hẹn khám lần sau">
-              <select style={inputStyle} value={form.child_kl_henKham || ""} onChange={(e) => setForm((p) => ({ ...p, child_kl_henKham: e.target.value }))}>
+              <select style={inputStyle} value={form.child_kl_henKham ?? ""} onChange={(e) => setForm((p) => ({ ...p, child_kl_henKham: e.target.value === "" ? "" : Number(e.target.value) }))}>
                 <option value="">— Chọn —</option>
-                <option value="Có">Có</option>
-                <option value="Không">Không</option>
+                <option value={1}>Có</option>
+                <option value={0}>Không</option>
               </select>
             </FieldGroup>
             <FieldGroup label="Chuyển CSKCB chuyên khoa">
-              <select style={inputStyle} value={form.child_kl_chuyenCSKCB || ""} onChange={(e) => setForm((p) => ({ ...p, child_kl_chuyenCSKCB: e.target.value }))}>
+              <select style={inputStyle} value={form.child_kl_chuyenCSKCB ?? ""} onChange={(e) => setForm((p) => ({ ...p, child_kl_chuyenCSKCB: e.target.value === "" ? "" : Number(e.target.value) }))}>
                 <option value="">— Chọn —</option>
-                <option value="Có">Có</option>
-                <option value="Không">Không</option>
+                <option value={1}>Có</option>
+                <option value={0}>Không</option>
               </select>
             </FieldGroup>
           </div>

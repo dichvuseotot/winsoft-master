@@ -198,11 +198,11 @@ function toChildPayload(form, mauPhieu, resolvedId) {
     BINH_THUONG: form.child_kl_binhThuong === "Có" ? 1 : 0,
     NGUY_CO_MAC_LAO: form.child_kl_nguyCoLao === "Có" ? 1 : 0,
     VAN_DE_SUC_KHOE: form.child_kl_vanDeSucKhoe === "Có" ? 1 : 0,
-    KET_LUAN_BENH: (form.child_kl_icd10 || []).map((i) => i.value).join(",") || null,
-    KET_LUAN_BENH_FULL: (form.child_kl_icd10 || []).map((i) => i.label).join("; ") || null,
+    KET_LUAN_BENH: (form.child_kl_icd10 || []).map((s) => s.split(" - ")[0].trim()).join(",") || null,
+    KET_LUAN_BENH_FULL: (form.child_kl_icd10 || []).join("; ") || null,
     GHI_RO_VAN_DE_SUC_KHOE: form.child_kl_ghiRoVanDe || null,
-    HEN_KHAM_LAN_SAU: form.child_kl_henKham ? Number(form.child_kl_henKham) : null,
-    CHUYEN_CSKCB: form.child_kl_chuyenCSKCB ? Number(form.child_kl_chuyenCSKCB) : null,
+    HEN_KHAM_LAN_SAU: form.child_kl_henKham !== "" && form.child_kl_henKham != null ? Number(form.child_kl_henKham) : null,
+    CHUYEN_CSKCB: form.child_kl_chuyenCSKCB !== "" && form.child_kl_chuyenCSKCB != null ? Number(form.child_kl_chuyenCSKCB) : null,
     PHAN_LOAI_SK: form.child_kl_phanLoaiSK ? Number(form.child_kl_phanLoaiSK) : null,
     CAC_VAN_DE_SUC_KHOE: form.child_kl_cacVanDe || null,
     CAC_BENH_TAT_NEU_CO: form.child_kl_cacBenhTat || null,
@@ -282,3 +282,34 @@ export async function getCoXuongThanKinh(kskcdTiepNhanId) {
   const res = await api.get(`/get-co-xuong-than-kinh?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
 }
+
+export async function getMat(kskcdTiepNhanId) {
+  const res = await api.get(`/get-kham-lam-sang-mat?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+  return (res.data ?? [])[0] ?? null;
+}
+
+export async function getTai(kskcdTiepNhanId) {
+  const res = await api.get(`/get-kham-lam-sang-tai?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+  return (res.data ?? [])[0] ?? null;
+}
+
+export async function getMuiHong(kskcdTiepNhanId) {
+  const res = await api.get(`/get-kham-lam-sang-mui-hong?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+  return (res.data ?? [])[0] ?? null;
+}
+
+export async function getMiengRang(kskcdTiepNhanId) {
+  const res = await api.get(`/get-kham-lam-sang-mieng-rang?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+  return (res.data ?? [])[0] ?? null;
+}
+
+export async function getHoHap(kskcdTiepNhanId) {
+  const res = await api.get(`/get-ho-hap?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+  return (res.data ?? [])[0] ?? null;
+}
+
+export async function getTimMach(kskcdTiepNhanId) {
+  const res = await api.get(`/get-kham-lam-sang-tim-mach?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+  return (res.data ?? [])[0] ?? null;
+}
+
