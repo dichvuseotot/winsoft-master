@@ -1017,7 +1017,7 @@ export default function TaoHoSo() {
                     if (isTeen) {
                       await saveTeenTiepNhan(form, mauPhieu, tiepNhanId || null, tienSuCategories.filter((c) => c.td_loaimau_kskid === 2));
                     } else if (isChild) {
-                      await saveChildTiepNhan(form, mauPhieu, tiepNhanId || null);
+                      await saveChildTiepNhan(form, mauPhieu, tiepNhanId || null, tienSuCategories.filter((c) => c.td_loaimau_kskid === mauPhieu));
                     } else {
                       await saveAdultTiepNhan(form, mauPhieu, tiepNhanId || null, cats);
                     }

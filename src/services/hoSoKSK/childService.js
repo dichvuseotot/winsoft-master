@@ -12,7 +12,18 @@ function generateId() {
   return `${yyyymmdd}${random}`;
 }
 
-function toChildPayload(form, mauPhieu, resolvedId) {
+const toInt = (v) => v != null && v !== "" ? Number(v) : null;
+
+function buildTienSuBenhList(tienSuCats, form, tiepNhanId) {
+  return tienSuCats.map((cat) => ({
+    Id_TienSuBenh:    generateId(),
+    KSKCD_TiepNhanId: tiepNhanId,
+    td_cauhoiid:      cat.td_cauhoiid,
+    GiaTri:           form[cat.Field_AX] ?? "",
+  }));
+}
+
+function toChildPayload(form, mauPhieu, resolvedId, tienSuCats = []) {
   return {
     Id: resolvedId,
     HO_TEN: form.hoTen,
@@ -43,6 +54,8 @@ function toChildPayload(form, mauPhieu, resolvedId) {
     MA_LOAI_KCB: form.loaiHinhKham || null,
     NGAY_VAO: form.ngayKham,
     TYPE: "ChildUnder",
+    // ── Tiền sử bệnh ──────────────────────────────────────────────────────
+    TienSuBenhList: buildTienSuBenhList(tienSuCats, form, resolvedId),
     // ── Dấu hiệu sinh tồn ─────────────────────────────────────────────────
     Id_DauHieuSinhTon: generateId(),
     NHIET_DO: form.child_nhietDo || null,
@@ -90,106 +103,106 @@ function toChildPayload(form, mauPhieu, resolvedId) {
     PostingDate_DanhGiaTC: nowVN(),
     // ── Toàn trạng ────────────────────────────────────────────────────────
     Id_ToanTrang: generateId(),
-    MAU_SAC_DA: form.child_mauSacDa ? Number(form.child_mauSacDa) : null,
-    LONG_BAN_TAY: form.child_longBanTay ? Number(form.child_longBanTay) : null,
+    MAU_SAC_DA: toInt(form.child_mauSacDa),
+    LONG_BAN_TAY: toInt(form.child_longBanTay),
     EmployeeCode_ToanTrang: "1",
     EmployeeCodeDoctor_ToanTrang: "Nghia",
     PostingDate_ToanTrang: nowVN(),
     // ── Đầu cổ ────────────────────────────────────────────────────────────
     Id_DauCo: generateId(),
-    THOP: form.child_thop ? Number(form.child_thop) : null,
-    HINH_DANG_DAU: form.child_hinhDangDau ? Number(form.child_hinhDangDau) : null,
-    VAN_DONG_CO: form.child_vanDongCo ? Number(form.child_vanDongCo) : null,
-    KHOI_BAT_THUONG_DAU_CO: form.child_khoiBatThuongDauCo ? Number(form.child_khoiBatThuongDauCo) : null,
+    THOP: toInt(form.child_thop),
+    HINH_DANG_DAU: toInt(form.child_hinhDangDau),
+    VAN_DONG_CO: toInt(form.child_vanDongCo),
+    KHOI_BAT_THUONG_DAU_CO: toInt(form.child_khoiBatThuongDauCo),
     EmployeeCode_DauCo: "1",
     EmployeeCodeDoctor_DauCo: "Nghia",
     PostingDate_DauCo: nowVN(),
     // ── Mắt ───────────────────────────────────────────────────────────────
     Id_Mat: generateId(),
-    VI_TRI_HAI_MAT: form.child_viTriHaiMat ? Number(form.child_viTriHaiMat) : null,
-    MI_MAT_KET_MAC: form.child_miMatKetMac ? Number(form.child_miMatKetMac) : null,
-    LAC_MAT: form.child_lacMat ? Number(form.child_lacMat) : null,
-    DONG_TU: form.child_dongTu ? Number(form.child_dongTu) : null,
+    VI_TRI_HAI_MAT: toInt(form.child_viTriHaiMat),
+    MI_MAT_KET_MAC: toInt(form.child_miMatKetMac),
+    LAC_MAT: toInt(form.child_lacMat),
+    DONG_TU: toInt(form.child_dongTu),
     KHONG_KINH_MAT_PHAI: form.child_khongKinhMatPhai || null,
     KHONG_KINH_MAT_TRAI: form.child_khongKinhMatTrai || null,
     CO_KINH_MAT_PHAI: form.child_coKinhMatPhai || null,
     CO_KINH_MAT_TRAI: form.child_coKinhMatTrai || null,
     BENH_KHAC_MAT: form.child_benhKhacMat || null,
-    KHAM_MAT_PL: form.child_khamMatPL ? Number(form.child_khamMatPL) : null,
+    KHAM_MAT_PL: toInt(form.child_khamMatPL),
     CKDT_KHAM_MAT: form.child_ckdtKhamMat || null,
     EmployeeCode_Mat: "1",
     EmployeeCodeDoctor_Mat: "Nghia",
     PostingDate_Mat: nowVN(),
     // ── Tai ───────────────────────────────────────────────────────────────
     Id_Tai: generateId(),
-    TAI_MANG_NHI: form.child_taiMangNhi ? Number(form.child_taiMangNhi) : null,
-    DAP_UNG_AM_THANH: form.child_dapUngAmThanh ? Number(form.child_dapUngAmThanh) : null,
-    KHOI_SUNG_SAU_TAI: form.child_khoiSungSauTai ? Number(form.child_khoiSungSauTai) : null,
-    CHAY_MU_NUOC_TAI: form.child_chayMuNuocTai ? Number(form.child_chayMuNuocTai) : null,
+    TAI_MANG_NHI: toInt(form.child_taiMangNhi),
+    DAP_UNG_AM_THANH: toInt(form.child_dapUngAmThanh),
+    KHOI_SUNG_SAU_TAI: toInt(form.child_khoiSungSauTai),
+    CHAY_MU_NUOC_TAI: toInt(form.child_chayMuNuocTai),
     EmployeeCode_Tai: "1",
     EmployeeCodeDoctor_Tai: "Nghia",
     PostingDate_Tai: nowVN(),
     // ── Mũi họng ──────────────────────────────────────────────────────────
     Id_MuiHong: generateId(),
-    HINH_DANG_MUI: form.child_hinhDangMui ? Number(form.child_hinhDangMui) : null,
-    CHAY_NUOC_MUI: form.child_chayNuocMui ? Number(form.child_chayNuocMui) : null,
-    NGHET_MUI: form.child_nghetMui ? Number(form.child_nghetMui) : null,
-    HONG: form.child_hong ? Number(form.child_hong) : null,
+    HINH_DANG_MUI: toInt(form.child_hinhDangMui),
+    CHAY_NUOC_MUI: toInt(form.child_chayNuocMui),
+    NGHET_MUI: toInt(form.child_nghetMui),
+    HONG: toInt(form.child_hong),
     EmployeeCode_MuiHong: "1",
     EmployeeCodeDoctor_MuiHong: "Nghia",
     PostingDate_MuiHong: nowVN(),
     // ── Miệng răng ────────────────────────────────────────────────────────
     Id_MiengRang: generateId(),
-    HINH_DANG_MIENG: form.child_hinhDangMieng ? Number(form.child_hinhDangMieng) : null,
-    RANG_SUA_SO_SINH: form.child_rangSuaSoSinh ? Number(form.child_rangSuaSoSinh) : null,
-    HINH_DANG_LUOI: form.child_hinhDangLuoi ? Number(form.child_hinhDangLuoi) : null,
-    DINH_THANG_LUOI: form.child_dinhThangLuoi ? Number(form.child_dinhThangLuoi) : null,
-    NAM_MIENG: form.child_namMieng ? Number(form.child_namMieng) : null,
-    CAM_NHO_TUT_VE_SAU: form.child_camNhoTutVeSau ? Number(form.child_camNhoTutVeSau) : null,
-    SAU_MANG_BAM_LO: form.child_sauMangBamLo ? Number(form.child_sauMangBamLo) : null,
+    HINH_DANG_MIENG: toInt(form.child_hinhDangMieng),
+    RANG_SUA_SO_SINH: toInt(form.child_rangSuaSoSinh),
+    HINH_DANG_LUOI: toInt(form.child_hinhDangLuoi),
+    DINH_THANG_LUOI: toInt(form.child_dinhThangLuoi),
+    NAM_MIENG: toInt(form.child_namMieng),
+    CAM_NHO_TUT_VE_SAU: toInt(form.child_camNhoTutVeSau),
+    SAU_MANG_BAM_LO: toInt(form.child_sauMangBamLo),
     EmployeeCode_MR: "1",
     EmployeeCodeDoctor_MR: "Nghia",
     PostingDate_MR: nowVN(),
     // ── Hô hấp ────────────────────────────────────────────────────────────
     Id_HoHap: generateId(),
-    NHIP_THO_KHONG_DEU: form.child_nhipThoKhongDeu ? Number(form.child_nhipThoKhongDeu) : null,
-    THO_RUT_LOM_LONG_NGUC: form.child_thoRutLomLongNguc ? Number(form.child_thoRutLomLongNguc) : null,
-    TIENG_THO_BAT_THUONG: form.child_tiengThoBatThuong ? Number(form.child_tiengThoBatThuong) : null,
-    SUY_HO_HAP: form.child_suyHoHap ? Number(form.child_suyHoHap) : null,
-    NGHE_PHOI: form.child_nghePhoi ? Number(form.child_nghePhoi) : null,
+    NHIP_THO_KHONG_DEU: toInt(form.child_nhipThoKhongDeu),
+    THO_RUT_LOM_LONG_NGUC: toInt(form.child_thoRutLomLongNguc),
+    TIENG_THO_BAT_THUONG: toInt(form.child_tiengThoBatThuong),
+    SUY_HO_HAP: toInt(form.child_suyHoHap),
+    NGHE_PHOI: toInt(form.child_nghePhoi),
     EmployeeCode_HoHap: "1",
     EmployeeCodeDoctor_HoHap: "Nghia",
     PostingDate_HoHap: nowVN(),
     // ── Tim mạch ──────────────────────────────────────────────────────────
     Id_TimMach: generateId(),
-    VI_TRI_MOM_TIM: form.child_viTriMomTim ? Number(form.child_viTriMomTim) : null,
-    MACH_NGOAI_VI: form.child_machNgoaiVi ? Number(form.child_machNgoaiVi) : null,
-    TIENG_TIM: form.child_tiengTim ? Number(form.child_tiengTim) : null,
+    VI_TRI_MOM_TIM: toInt(form.child_viTriMomTim),
+    MACH_NGOAI_VI: toInt(form.child_machNgoaiVi),
+    TIENG_TIM: toInt(form.child_tiengTim),
     EmployeeCode_TimMach: "1",
     EmployeeCodeDoctor_TimMach: "Nghia",
     PostingDate_TimMach: nowVN(),
     // ── Bụng và cơ quan sinh dục ──────────────────────────────────────────
     Id_BungCoQuanSinhDuc: generateId(),
-    HINH_DANG_BUNG_RON: form.child_hinhDangBung ? Number(form.child_hinhDangBung) : null,
-    GAN_LACH_TO: form.child_ganLachTo ? Number(form.child_ganLachTo) : null,
-    KHOI_BAT_THUONG: form.child_khoiBatThuong ? Number(form.child_khoiBatThuong) : null,
-    LO_HAU_MON: form.child_loHauMon ? Number(form.child_loHauMon) : null,
-    CO_QUAN_SINH_DUC_NGOAI: form.child_coQuanSinhDuc ? Number(form.child_coQuanSinhDuc) : null,
+    HINH_DANG_BUNG_RON: toInt(form.child_hinhDangBung),
+    GAN_LACH_TO: toInt(form.child_ganLachTo),
+    KHOI_BAT_THUONG: toInt(form.child_khoiBatThuong),
+    LO_HAU_MON: toInt(form.child_loHauMon),
+    CO_QUAN_SINH_DUC_NGOAI: toInt(form.child_coQuanSinhDuc),
     EmployeeCode_BungCoQuanSinhDuc: "1",
     EmployeeCodeDoctor_BungCoQuanSinhDuc: "Nghia",
     PostingDate_BungCoQuanSinhDuc: nowVN(),
     // ── Cơ xương và thần kinh ─────────────────────────────────────────────
     Id_CoXuongThanKinh: generateId(),
-    VAN_DONG_KHONG_DOI_XUNG: form.child_vanDongKhongDoiXung ? Number(form.child_vanDongKhongDoiXung) : null,
-    PHAN_XA_BU: form.child_phanXaBu ? Number(form.child_phanXaBu) : null,
-    PHAN_XA_NAM: form.child_phanXaNam ? Number(form.child_phanXaNam) : null,
-    PHAN_XA_MORO: form.child_phanXaMoro ? Number(form.child_phanXaMoro) : null,
-    TRUONG_LUC_CO: form.child_truongLucCo ? Number(form.child_truongLucCo) : null,
-    KHOP_HANG: form.child_khopHang ? Number(form.child_khopHang) : null,
-    PHAN_XA_CO: form.child_phanXaCo ? Number(form.child_phanXaCo) : null,
-    KIEM_TRA_LUNG_COT_SONG: form.child_kiemTraLung ? Number(form.child_kiemTraLung) : null,
-    TU_CHI_KHOP: form.child_khamTuChi ? Number(form.child_khamTuChi) : null,
-    QUAN_SAT_DANG_DI: form.child_quanSatDangDi ? Number(form.child_quanSatDangDi) : null,
+    VAN_DONG_KHONG_DOI_XUNG: toInt(form.child_vanDongKhongDoiXung),
+    PHAN_XA_BU: toInt(form.child_phanXaBu),
+    PHAN_XA_NAM: toInt(form.child_phanXaNam),
+    PHAN_XA_MORO: toInt(form.child_phanXaMoro),
+    TRUONG_LUC_CO: toInt(form.child_truongLucCo),
+    KHOP_HANG: toInt(form.child_khopHang),
+    PHAN_XA_CO: toInt(form.child_phanXaCo),
+    KIEM_TRA_LUNG_COT_SONG: toInt(form.child_kiemTraLung),
+    TU_CHI_KHOP: toInt(form.child_khamTuChi),
+    QUAN_SAT_DANG_DI: toInt(form.child_quanSatDangDi),
     EmployeeCode_CoXuongThanKinh: "1",
     EmployeeCodeDoctor_CoXuongThanKinh: "Nghia",
     PostingDate_CoXuongThanKinh: nowVN(),
@@ -203,7 +216,7 @@ function toChildPayload(form, mauPhieu, resolvedId) {
     GHI_RO_VAN_DE_SUC_KHOE: form.child_kl_ghiRoVanDe || null,
     HEN_KHAM_LAN_SAU: form.child_kl_henKham !== "" && form.child_kl_henKham != null ? Number(form.child_kl_henKham) : null,
     CHUYEN_CSKCB: form.child_kl_chuyenCSKCB !== "" && form.child_kl_chuyenCSKCB != null ? Number(form.child_kl_chuyenCSKCB) : null,
-    PHAN_LOAI_SK: form.child_kl_phanLoaiSK ? Number(form.child_kl_phanLoaiSK) : null,
+    PHAN_LOAI_SK: toInt(form.child_kl_phanLoaiSK),
     CAC_VAN_DE_SUC_KHOE: form.child_kl_cacVanDe || null,
     CAC_BENH_TAT_NEU_CO: form.child_kl_cacBenhTat || null,
     CKS_NGUOI_KET_LUAN: form.child_kl_cksNguoiKetLuan || null,
@@ -214,10 +227,10 @@ function toChildPayload(form, mauPhieu, resolvedId) {
   };
 }
 
-export async function saveChildTiepNhan(form, mauPhieu, id = null) {
+export async function saveChildTiepNhan(form, mauPhieu, id = null, tienSuCats = []) {
   try {
     const resolvedId = id ?? generateId();
-    const payload = toChildPayload(form, mauPhieu, resolvedId);
+    const payload = toChildPayload(form, mauPhieu, resolvedId, tienSuCats);
     console.log("[saveChildTiepNhan] payload:", payload);
     const result = await api.post("/add-update-tiep-nhan", payload);
     const TiepNhanId = result?.ID ?? resolvedId;
