@@ -359,6 +359,7 @@ function mapCLSToForm(clsItems) {
     cls_coKhac:            khac ? "Có" : "",
     cls_ketQuaChiTiet:     khac?.GIA_TRI ?? null,
     cls_ketQuaChiTiet_id:  khac ? itemId(khac) : null,
+    cls_sig:               khac?.CKDT_KET_QUA_CLS ?? null,
     clsDynamic,
   };
 }

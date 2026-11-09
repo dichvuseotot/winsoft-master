@@ -12,7 +12,7 @@ function generateId() {
   return `${yyyymmdd}${random}`;
 }
 
-function clsRecord(tiepNhanId, tenDichVu, tenChiSo, giaTri, donViDo = null, existingId = null, moTa = null, ketLuan = null, maDichVu = null, maChiSo = null) {
+function clsRecord(tiepNhanId, tenDichVu, tenChiSo, giaTri, donViDo = null, existingId = null, moTa = null, ketLuan = null, maDichVu = null, maChiSo = null, ckdtKetQuaCls = null) {
   return {
     ID_CLS:              existingId ?? generateId(),
     KSKCD_TiepNhanId:   tiepNhanId,
@@ -24,7 +24,7 @@ function clsRecord(tiepNhanId, tenDichVu, tenChiSo, giaTri, donViDo = null, exis
     DON_VI_DO:          donViDo,
     MO_TA:              moTa,
     KET_LUAN:           ketLuan,
-    CKDT_KET_QUA_CLS:   null,
+    CKDT_KET_QUA_CLS:   ckdtKetQuaCls,
     EmployeeCode_CLS:       "1",
     EmployeeCodeDoctor_CLS: "Nghia",
     PostingDate:        nowVN(),
@@ -44,7 +44,7 @@ function buildCLSItems(form, tiepNhanId) {
   if (form.cls_cdha)         items.push(clsRecord(tiepNhanId, "Chẩn đoán hình ảnh",   "Chẩn đoán hình ảnh (XQ tim phổi thẳng)",        form.cls_cdha,         null,     form.cls_cdha_id,         null, null, "CDHA1", "CS009"));
   if (form.cls_sieuAm)       items.push(clsRecord(tiepNhanId, "Chẩn đoán hình ảnh",   "Siêu âm",                                       form.cls_sieuAm,       null,     form.cls_sieuAm_id,       null, null, "CDHA1", "CS010"));
   if (form.cls_coKhac === "Có" && form.cls_ketQuaChiTiet)
-    items.push(clsRecord(tiepNhanId, "Cận lâm sàng khác", "Kết quả chi tiết", form.cls_ketQuaChiTiet, null, form.cls_ketQuaChiTiet_id, null, null, "KHAC1", "CS011"));
+    items.push(clsRecord(tiepNhanId, "Cận lâm sàng khác", "Kết quả chi tiết", form.cls_ketQuaChiTiet, null, form.cls_ketQuaChiTiet_id, null, null, "KHAC1", "CS011", form.cls_sig || null));
   for (const dk of (form.clsDynamic || [])) {
     if (dk.giaTri && !dk._toDelete)
       items.push(clsRecord(tiepNhanId, dk.name, dk.code, dk.giaTri, dk.donViDo || null, dk._existingId ?? null, dk.moTa || null, dk.ketLuan || null));

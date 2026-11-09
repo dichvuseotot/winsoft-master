@@ -1259,7 +1259,7 @@ export function Tab6Content({ form, setForm }) {
       <div
         style={{
           display: "grid",
-          // gridTemplateColumns: "1fr 300px",
+          gridTemplateColumns: "1fr 300px",
           gap: "1.25rem",
           alignItems: "start",
           marginBottom: "1.25rem",
@@ -1320,7 +1320,7 @@ export function Tab6Content({ form, setForm }) {
             </div>
           )}
         </div>
-        {/* <div>
+        <div>
           <div
             style={{
               fontSize: ".75rem",
@@ -1333,7 +1333,7 @@ export function Tab6Content({ form, setForm }) {
             Họ tên và chữ ký của Bác sĩ
           </div>
           <SignatureBox id="cls_sig" value={form.cls_sig} onChange={(v) => setForm((p) => ({ ...p, cls_sig: v }))} />
-        </div> */}
+        </div>
       </div>
 
       {/* ── Khám sức khoẻ định kỳ ── */}
