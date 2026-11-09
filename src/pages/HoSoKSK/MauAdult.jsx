@@ -284,32 +284,31 @@ export function Tab2Content({ form, setForm, subtitle = "Mã cơ sở khám bệ
   );
 }
 
-function RadioKhongCo({ name, value, onChange }) {
+function RadioKhongCo({ name, value, onChange, options }) {
+  const opts = options || [{ id: 0, name: "Không" }, { id: 1, name: "Có" }];
   return (
     <div style={{ display: "flex", gap: "1.25rem", alignItems: "center" }}>
-      {["Không", "Có"].map((opt) => (
+      {opts.map((opt) => (
         <label
-          key={opt}
+          key={opt.id}
           style={{
             display: "flex",
             alignItems: "center",
             gap: ".35rem",
             cursor: "pointer",
             fontSize: ".85rem",
-            fontWeight: value === opt ? 600 : 400,
-            color:
-              value === opt ? "var(--primary)" : "var(--gray-700, #374151)",
+            fontWeight: value === String(opt.id) ? 600 : 400,
+            color: value === String(opt.id) ? "var(--primary)" : "var(--gray-700, #374151)",
           }}
         >
           <input
             type="radio"
             name={name}
-            value={opt}
-            checked={value === opt}
-            onChange={() => onChange(opt)}
+            checked={value === String(opt.id)}
+            onChange={() => onChange(String(opt.id))}
             style={{ accentColor: "#2563eb", width: 15, height: 15 }}
           />
-          {opt}
+          {opt.name}
         </label>
       ))}
     </div>
@@ -340,11 +339,11 @@ function BanThanTable({ items, startIdx, childCats = [], form, setRadio, setForm
       </div>
       {items.map((item, i) => {
         const key = item.Field_AX;
-        const val = form[key] || "Không";
-        const opts = item.Option ? JSON.parse(item.Option) : [];
+        const opts = item.Option ? JSON.parse(item.Option) : [{ id: 0, name: "Không" }, { id: 1, name: "Có" }];
+        const defaultId = String(opts.find((o) => o.name === "Không")?.id ?? "0");
+        const val = form[key] ?? defaultId;
         const child = childCats.find((c) => c.ParentId === item.td_cauhoiid);
-        const triggerOpt = opts.find((o) => o.name === val);
-        const showChild = child && String(triggerOpt?.id ?? "") === String(child.ParentValue ?? "");
+        const showChild = child && val === String(child.ParentValue ?? "");
         const isLast = i === items.length - 1;
         return (
           <React.Fragment key={key}>
@@ -360,7 +359,7 @@ function BanThanTable({ items, startIdx, childCats = [], form, setRadio, setForm
               <span style={{ fontSize: ".78rem", color: "var(--gray-400)" }}>{startIdx + i + 1}</span>
               <span style={{ fontSize: ".83rem", color: "var(--gray-800)", lineHeight: 1.4 }}>{item.CauHoi}</span>
               <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                <RadioKhongCo name={key} value={val} onChange={setRadio(key)} />
+                <RadioKhongCo name={key} value={val} onChange={setRadio(key)} options={opts} />
               </div>
             </div>
             {showChild && (
@@ -395,11 +394,10 @@ export function Tab3Content({ form, setForm, loadIcd10, giadinhCats = [], bantha
   const gdParent   = giadinhCats.find((c) => c.ParentId === null);
   const gdChild    = giadinhCats.find((c) => c.ParentId !== null && c.ParentId === gdParent?.td_cauhoiid);
   const gdOptions  = gdParent?.Option ? JSON.parse(gdParent.Option) : [{ id: 0, name: "Không" }, { id: 1, name: "Có" }];
+  const gdDefaultId = String(gdOptions.find((o) => o.name === "Không")?.id ?? "0");
+  const gdSelectedId = form[gdParent?.Field_AX] ?? gdDefaultId;
   const gdQuestion = gdParent?.CauHoi || "Có ai trong gia đình mắc một trong các bệnh: truyền nhiễm, tim mạch, đái tháo đường, lao, hen phế quản, ung thư, động kinh, rối loạn tâm thần không?";
-  const gdChildVisible = gdChild && gdParent && (() => {
-    const selectedOpt = gdOptions.find((o) => o.name === (form[gdParent.Field_AX] || "Không"));
-    return String(selectedOpt?.id ?? "") === String(gdChild.ParentValue ?? "");
-  })();
+  const gdChildVisible = gdChild && gdParent && gdSelectedId === String(gdChild.ParentValue ?? "");
   const gdChildLoai = (gdChild?.LoaiNhap || "").trim();
 
   return (
@@ -441,16 +439,15 @@ export function Tab3Content({ form, setForm, loadIcd10, giadinhCats = [], bantha
                   gap: ".35rem",
                   cursor: "pointer",
                   fontSize: ".85rem",
-                  fontWeight: (form[gdParent?.Field_AX] || "Không") === opt.name ? 600 : 400,
-                  color: (form[gdParent?.Field_AX] || "Không") === opt.name ? "var(--primary)" : "var(--gray-700)",
+                  fontWeight: gdSelectedId === String(opt.id) ? 600 : 400,
+                  color: gdSelectedId === String(opt.id) ? "var(--primary)" : "var(--gray-700)",
                 }}
               >
                 <input
                   type="radio"
                   name={gdParent?.Field_AX}
-                  value={opt.name}
-                  checked={(form[gdParent?.Field_AX] || "Không") === opt.name}
-                  onChange={() => setRadio(gdParent?.Field_AX)(opt.name)}
+                  checked={gdSelectedId === String(opt.id)}
+                  onChange={() => setRadio(gdParent?.Field_AX)(String(opt.id))}
                   style={{ accentColor: "#2563eb", width: 15, height: 15 }}
                 />
                 {opt.name}
@@ -472,13 +469,18 @@ export function Tab3Content({ form, setForm, loadIcd10, giadinhCats = [], bantha
                   onChange={(val) => setForm((prev) => ({ ...prev, [gdChild?.Field_AX]: val }))}
                 />
               )}
-              {gdChildLoai === "Radio" && (
-                <RadioKhongCo
-                  name={gdChild?.Field_AX}
-                  value={form[gdChild?.Field_AX] || "Không"}
-                  onChange={(val) => setForm((prev) => ({ ...prev, [gdChild?.Field_AX]: val }))}
-                />
-              )}
+              {gdChildLoai === "Radio" && (() => {
+                const gdChildOpts = gdChild?.Option ? JSON.parse(gdChild.Option) : [{ id: 0, name: "Không" }, { id: 1, name: "Có" }];
+                const gdChildDefault = String(gdChildOpts.find((o) => o.name === "Không")?.id ?? "0");
+                return (
+                  <RadioKhongCo
+                    name={gdChild?.Field_AX}
+                    value={form[gdChild?.Field_AX] ?? gdChildDefault}
+                    onChange={(val) => setForm((prev) => ({ ...prev, [gdChild?.Field_AX]: val }))}
+                    options={gdChildOpts}
+                  />
+                );
+              })()}
             </div>
           )}
         </div>
@@ -524,17 +526,17 @@ export function Tab3Content({ form, setForm, loadIcd10, giadinhCats = [], bantha
           {visibleParents.map((cat, i) => {
             const key = cat.Field_AX;
             const opts = cat.Option ? JSON.parse(cat.Option) : [{ id: 0, name: "Không" }, { id: 1, name: "Có" }];
-            const val = form[key] || opts.find((o) => String(o.id) === "0")?.name || "Không";
+            const defaultId = String(opts.find((o) => o.name === "Không")?.id ?? "0");
+            const val = form[key] ?? defaultId;
             const children = visibleKhac.filter((c) => c.ParentId === cat.td_cauhoiid);
-            const triggerOpt = opts.find((o) => o.name === val);
-            const showChildren = children.length > 0 && String(triggerOpt?.id ?? "0") !== "0";
+            const showChildren = children.length > 0 && val !== defaultId;
             return (
               <div key={key} style={{ marginBottom: i < visibleParents.length - 1 ? ".875rem" : 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "1.25rem" }}>
                   <span style={{ fontSize: ".84rem", color: "var(--gray-700)" }}>
                     {String.fromCharCode(97 + i)}. {cat.CauHoi}
                   </span>
-                  <RadioKhongCo name={key} value={val} onChange={setRadio(key)} />
+                  <RadioKhongCo name={key} value={val} onChange={setRadio(key)} options={opts} />
                 </div>
                 {showChildren && (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginTop: ".875rem" }}>
@@ -1257,7 +1259,7 @@ export function Tab6Content({ form, setForm }) {
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "1fr 300px",
+          // gridTemplateColumns: "1fr 300px",
           gap: "1.25rem",
           alignItems: "start",
           marginBottom: "1.25rem",
@@ -1318,7 +1320,7 @@ export function Tab6Content({ form, setForm }) {
             </div>
           )}
         </div>
-        <div>
+        {/* <div>
           <div
             style={{
               fontSize: ".75rem",
@@ -1331,7 +1333,7 @@ export function Tab6Content({ form, setForm }) {
             Họ tên và chữ ký của Bác sĩ
           </div>
           <SignatureBox id="cls_sig" value={form.cls_sig} onChange={(v) => setForm((p) => ({ ...p, cls_sig: v }))} />
-        </div>
+        </div> */}
       </div>
 
       {/* ── Khám sức khoẻ định kỳ ── */}
