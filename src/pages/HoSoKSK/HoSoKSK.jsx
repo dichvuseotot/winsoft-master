@@ -76,9 +76,18 @@ export default function HoSoKSK() {
 
   const handlePushLienThong = async () => {
     if (pushing) return
+    if (!selected.length) {
+      Swal.fire({ icon: 'warning', title: 'Chưa chọn hồ sơ', text: 'Vui lòng chọn ít nhất một hồ sơ để đẩy liên thông.', confirmButtonText: 'Đóng' })
+      return
+    }
     setPushing(true)
     try {
-      const res = await exportXmlLienThong({ tuNgay: applied.fromDate, denNgay: applied.toDate })
+      const res = await exportXmlLienThong({
+        tuNgay: applied.fromDate,
+        denNgay: applied.toDate,
+        tdLoaimauKskid: Number(applied.mauPhieu),
+        kskcdTiepNhanIds: selected,
+      })
       const total = res.total ?? 0
       const successCount = res.successCount ?? 0
       const errorCount = res.errorCount ?? 0
@@ -214,10 +223,10 @@ export default function HoSoKSK() {
               {[10, 20, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
-          <button onClick={handlePushLienThong} disabled={pushing}
+          {applied.mauPhieu && <button onClick={handlePushLienThong} disabled={pushing}
             style={{ height: 34, padding: '0 .875rem', borderRadius: 'var(--radius-sm)', border: 'none', background: pushing ? 'var(--gray-300)' : '#2563eb', color: pushing ? 'var(--gray-500)' : '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.78rem', cursor: pushing ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '.35rem', transition: 'all .15s' }}>
             <i className={`bi ${pushing ? 'bi-arrow-clockwise' : 'bi-cloud-arrow-up-fill'}`} /> {pushing ? 'Đang đẩy...' : 'Đẩy liên thông đã chọn'}
-          </button>
+          </button>}
           <button style={{ height: 34, padding: '0 .875rem', borderRadius: 'var(--radius-sm)', border: 'none', background: '#0891b2', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.35rem' }}>
             <i className="bi bi-file-earmark-excel-fill" /> Xuất Excel dữ liệu
           </button>
@@ -233,7 +242,7 @@ export default function HoSoKSK() {
               <tr style={{ borderBottom: '2px solid var(--gray-100)' }}>
                 {[
                   { label: 'Thao tác', w: 80, center: true },
-                  { label: <input type="checkbox" checked={allChecked} onChange={toggleAll} style={{ cursor: 'pointer' }} />, w: 40, center: true },
+                  ...(applied.mauPhieu ? [{ label: <input type="checkbox" checked={allChecked} onChange={toggleAll} style={{ cursor: 'pointer' }} />, w: 40, center: true }] : []),
                   { label: 'Họ tên', sort: true },
                   { label: 'CCCD/Mã định danh', sort: true },
                   { label: 'Mẫu phiếu', sort: true },
@@ -262,9 +271,9 @@ export default function HoSoKSK() {
                       <button title="Xem chi tiết" onClick={() => navigate(`/ho-so-ksk/tao-moi?id=${r.Id}&mauPhieu=${r.td_loaimau_kskid}&mode=view`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontSize: '1rem', padding: '0 .2rem' }}><i className="bi bi-eye" /></button>
                       <button title="Chỉnh sửa" onClick={() => navigate(`/ho-so-ksk/tao-moi?id=${r.Id}&mauPhieu=${r.td_loaimau_kskid}`)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-500)', fontSize: '1rem', padding: '0 .2rem' }}><i className="bi bi-pencil" /></button>
                     </td>
-                    <td style={{ padding: '.6rem .875rem', textAlign: 'center' }}>
+                    {applied.mauPhieu && <td style={{ padding: '.6rem .875rem', textAlign: 'center' }}>
                       <input type="checkbox" checked={checked} onChange={() => toggleOne(r.Id)} style={{ cursor: 'pointer' }} />
-                    </td>
+                    </td>}
                     <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', fontWeight: 600, color: 'var(--gray-800)' }}>{r.HO_TEN}</td>
                     <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-600)', fontFamily: 'monospace' }}>{r.SO_CCCD}</td>
                     <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-700)' }}>{mauPhieuOptions.find(o => o.Id === r.td_loaimau_kskid)?.Name ?? r.td_loaimau_kskid}</td>

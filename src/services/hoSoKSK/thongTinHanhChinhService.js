@@ -21,11 +21,13 @@ export async function getThongTinHanhChinhList({ fromDate, toDate, mauPhieu, sea
   };
 }
 
-export async function exportXmlLienThong({ tuNgay, denNgay } = {}) {
-  const params = new URLSearchParams();
-  if (tuNgay) params.set("TuNgay", tuNgay);
-  if (denNgay) params.set("DenNgay", denNgay);
-  const res = await api.get(`/export-xml-tren-18-tuoi-send-to-portal?${params.toString()}`);
+export async function exportXmlLienThong({ tuNgay, denNgay, tdLoaimauKskid, kskcdTiepNhanIds = [] } = {}) {
+  const res = await api.post("/export-xml-tren-18-tuoi-send-to-portal", {
+    TuNgay: tuNgay,
+    DenNgay: denNgay,
+    td_loaimau_kskid: tdLoaimauKskid,
+    KSKCD_TiepNhanIds: kskcdTiepNhanIds.join(","),
+  });
   return res;
 }
 

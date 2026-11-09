@@ -15,12 +15,18 @@ function generateId() {
 const toInt = (v) => v != null && v !== "" ? Number(v) : null;
 
 function buildTienSuBenhList(tienSuCats, form, tiepNhanId) {
-  return tienSuCats.map((cat) => ({
-    Id_TienSuBenh:    generateId(),
-    KSKCD_TiepNhanId: tiepNhanId,
-    td_cauhoiid:      cat.td_cauhoiid,
-    GiaTri:           form[cat.Field_AX] ?? "",
-  }));
+  return tienSuCats.map((cat) => {
+    const val = form[cat.Field_AX];
+    const giaTri = Array.isArray(val)
+      ? val.map((s) => s.split(" - ")[0].trim()).join(";")
+      : (val ?? "");
+    return {
+      Id_TienSuBenh:    generateId(),
+      KSKCD_TiepNhanId: tiepNhanId,
+      td_cauhoiid:      cat.td_cauhoiid,
+      GiaTri:           giaTri,
+    };
+  });
 }
 
 function toChildPayload(form, mauPhieu, resolvedId, tienSuCats = []) {

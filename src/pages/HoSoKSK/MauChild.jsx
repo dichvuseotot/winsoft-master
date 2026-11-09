@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { getBungCoQuanSinhDuc, getCoXuongThanKinh, getDanhGiaDinhDuong, getDauHieuSinhTon, getDanhGiaPhatTrienTinhThanVanDong, getDanhGiaTiemChung, getToanTrang, getDauCo, DG_VONG_DAU_REVERSE, getMat, getTai, getMuiHong, getMiengRang, getHoHap, getTimMach, getKetLuan, getICD10List } from "../../services";
 import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
 
-export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], moiQuanHeOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], tienSuCats = [], errors = {} }) {
+export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], moiQuanHeOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], tienSuCats = [], loadIcd10 = null, errors = {} }) {
   const set = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const radioSet = (key, val) =>
@@ -178,12 +178,11 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
                   ))}
                 </div>
                 {showChild && (
-                  <input
-                    style={inputStyle}
-                    type="text"
-                    value={form[children[0].Field_AX] || ""}
-                    onChange={set(children[0].Field_AX)}
-                    placeholder={children[0].CauHoi}
+                  <SearchableSelect
+                    value={form[children[0].Field_AX] || []}
+                    onChange={(vals) => setForm((prev) => ({ ...prev, [children[0].Field_AX]: vals }))}
+                    loadOptions={loadIcd10}
+                    placeholder="Nhập mã hoặc tên bệnh ICD-10..."
                   />
                 )}
               </div>
