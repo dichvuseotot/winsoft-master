@@ -23,7 +23,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
           <FieldGroup label="1. Họ và tên" required style={{ gridColumn: "span 2" }}>
             <input style={inputStyle} type="text" value={form.hoTen} onChange={set("hoTen")} placeholder="Nhập họ và tên" />
           </FieldGroup>
-          <FieldGroup label="Số định danh cá nhân">
+          <FieldGroup label="Số định danh cá nhân" required>
             <input style={inputStyle} type="text" inputMode="numeric" maxLength={12} value={form.soDinhDanh} onChange={(e) => setForm((p) => ({ ...p, soDinhDanh: e.target.value.replace(/\D/g, "").slice(0, 12) }))} placeholder="Nhập số CCCD" />
           </FieldGroup>
 
@@ -39,7 +39,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
               ))}
             </div>
           </FieldGroup>
-          <FieldGroup label="4. Dân tộc">
+          <FieldGroup label="4. Dân tộc" required>
             <SearchableSingleSelect
               value={form.danToc}
               onChange={(val) => set("danToc")({ target: { value: val } })}
@@ -73,7 +73,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
             </select>
           </FieldGroup>
 
-          <FieldGroup label="8. Đối tượng">
+          <FieldGroup label="8. Đối tượng" required>
             <SearchableSingleSelect
               value={form.doiTuongKham}
               onChange={(val) => set("doiTuongKham")({ target: { value: val } })}
@@ -97,7 +97,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
         </div>
 
         <Grid3>
-          <FieldGroup label="Tỉnh/Thành phố">
+          <FieldGroup label="Tỉnh/Thành phố" required>
             <SearchableSingleSelect
               value={form.tinhThanhPho}
               onChange={(val) => set("tinhThanhPho")({ target: { value: val } })}
@@ -106,7 +106,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
             />
           </FieldGroup>
 
-          <FieldGroup label="Phường/Xã">
+          <FieldGroup label="Phường/Xã" required>
             <SearchableSingleSelect
               value={form.phuongXa}
               onChange={(val) => set("phuongXa")({ target: { value: val } })}
@@ -115,7 +115,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
             />
           </FieldGroup>
 
-          <FieldGroup label="Số nhà/thôn/xóm">
+          <FieldGroup label="Số nhà/thôn/xóm" required>
             <input style={inputStyle} type="text" value={form.soNha} onChange={set("soNha")} placeholder="Nhập địa chỉ" />
           </FieldGroup>
 
@@ -123,7 +123,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
             <input style={inputStyle} type="text" value={form.hoTenNguoiDiCung || ""} onChange={set("hoTenNguoiDiCung")} placeholder="Nhập họ tên người đi cùng" />
           </FieldGroup>
 
-          <FieldGroup label="13. Mối quan hệ với trẻ">
+          <FieldGroup label="13. Mối quan hệ với trẻ" required>
             <select style={inputStyle} value={form.moiQuanHe || ""} onChange={set("moiQuanHe")}>
               <option value="">Chọn mối quan hệ</option>
               {moiQuanHeOptions.map((m) => (
@@ -136,11 +136,11 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
             <input style={inputStyle} type="text" inputMode="numeric" maxLength={10} value={form.dienThoaiNguoiDiCung || ""} onChange={(e) => setForm((p) => ({ ...p, dienThoaiNguoiDiCung: e.target.value.replace(/\D/g, "").slice(0, 10) }))} placeholder="Nhập số điện thoại" />
           </FieldGroup>
 
-          <FieldGroup label="15. Số định danh người giám hộ">
+          <FieldGroup label="15. Số định danh người giám hộ" required>
             <input style={inputStyle} type="text" inputMode="numeric" maxLength={12} value={form.soDinhDanhGiamHo || ""} onChange={(e) => setForm((p) => ({ ...p, soDinhDanhGiamHo: e.target.value.replace(/\D/g, "").slice(0, 12) }))} placeholder="Nhập số CCCD người giám hộ" />
           </FieldGroup>
 
-          <FieldGroup label="Loại hình khám bệnh, chữa bệnh">
+          <FieldGroup label="Loại hình khám bệnh, chữa bệnh" required>
             <SearchableSingleSelect
               options={loaiHinhKCBOptions.map((o) => ({ value: o.Id, label: o.TenLoaiHinhKCB }))}
               value={form.loaiHinhKham}
@@ -256,13 +256,13 @@ export function Tab3ChildContent({ form, setForm, tiepNhanId }) {
             />
             <span style={assessLabelStyle}>{r.assessLabel}</span>
             <div style={radioRowStyle}>
-              {r.options.map((opt) => (
+              {r.options.map((opt, idx) => (
                 <label key={opt} style={radioOptStyle}>
                   <input
                     type="radio"
                     name={r.assessKey}
-                    checked={form[r.assessKey] === opt}
-                    onChange={() => radioSet(r.assessKey, opt)}
+                    checked={Number(form[r.assessKey]) === idx}
+                    onChange={() => radioSet(r.assessKey, idx)}
                   />
                   {opt}
                 </label>
