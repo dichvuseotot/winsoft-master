@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { getBungCoQuanSinhDuc, getCoXuongThanKinh, getDanhGiaDinhDuong, getDauHieuSinhTon, getDanhGiaPhatTrienTinhThanVanDong, getDanhGiaTiemChung, getToanTrang, getDauCo, DG_VONG_DAU_REVERSE, getMat, getTai, getMuiHong, getMiengRang, getHoHap, getTimMach, getKetLuan, getICD10List } from "../../services";
 import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
 
-export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], moiQuanHeOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], tienSuCats = [], loadIcd10 = null, errors = {} }) {
+export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], moiQuanHeOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], nhomMauOptions = [], tienSuCats = [], loadIcd10 = null, errors = {} }) {
   const set = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const radioSet = (key, val) =>
@@ -68,10 +68,9 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
           <FieldGroup label="7. Nhóm máu">
             <select style={inputStyle} value={form.nhomMau} onChange={set("nhomMau")}>
               <option value="">Chọn nhóm máu</option>
-              <option value="A+">A+</option><option value="A-">A-</option>
-              <option value="B+">B+</option><option value="B-">B-</option>
-              <option value="AB+">AB+</option><option value="AB-">AB-</option>
-              <option value="O+">O+</option><option value="O-">O-</option>
+              {nhomMauOptions.map((o) => (
+                <option key={o.Id} value={o.MaNhomMau_AX}>{o.TenNhomMau}</option>
+              ))}
             </select>
           </FieldGroup>
 
@@ -126,11 +125,11 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
           </FieldGroup>
 
           <FieldGroup label="12. Họ tên người đi cùng trẻ" required style={{ gridColumn: "span 2" }}>
-            <input style={inputStyle} type="text" value={form.hoTenNguoiDiCung || ""} onChange={set("hoTenNguoiDiCung")} placeholder="Nhập họ tên người đi cùng" />
+            <input style={{ ...inputStyle, border: err("hoTenNguoiDiCung") }} type="text" value={form.hoTenNguoiDiCung || ""} onChange={set("hoTenNguoiDiCung")} placeholder="Nhập họ tên người đi cùng" />
           </FieldGroup>
 
           <FieldGroup label="13. Mối quan hệ với trẻ" required>
-            <select style={inputStyle} value={form.moiQuanHe || ""} onChange={set("moiQuanHe")}>
+            <select style={{ ...inputStyle, border: err("moiQuanHe") }} value={form.moiQuanHe || ""} onChange={set("moiQuanHe")}>
               <option value="">Chọn mối quan hệ</option>
               {moiQuanHeOptions.map((m) => (
                 <option key={m.Id} value={m.Id}>{m.TenMoiQuanHe}</option>
@@ -143,7 +142,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
           </FieldGroup>
 
           <FieldGroup label="15. Số định danh người giám hộ" required>
-            <input style={inputStyle} type="text" inputMode="numeric" maxLength={12} value={form.soDinhDanhGiamHo || ""} onChange={(e) => setForm((p) => ({ ...p, soDinhDanhGiamHo: e.target.value.replace(/\D/g, "").slice(0, 12) }))} placeholder="Nhập số CCCD người giám hộ" />
+            <input style={{ ...inputStyle, border: err("soDinhDanhGiamHo") }} type="text" inputMode="numeric" maxLength={12} value={form.soDinhDanhGiamHo || ""} onChange={(e) => setForm((p) => ({ ...p, soDinhDanhGiamHo: e.target.value.replace(/\D/g, "").slice(0, 12) }))} placeholder="Nhập số CCCD người giám hộ" />
           </FieldGroup>
 
           <FieldGroup label="Loại hình khám bệnh, chữa bệnh" required>
@@ -152,6 +151,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
               value={form.loaiHinhKham}
               onChange={(val) => setForm((p) => ({ ...p, loaiHinhKham: val }))}
               placeholder="—Chọn loại hình—"
+              error={errors.loaiHinhKham}
             />
           </FieldGroup>
         </Grid3>

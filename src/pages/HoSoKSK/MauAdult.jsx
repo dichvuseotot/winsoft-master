@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
 
-export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], ngheNghiepOptions = [], errors = {} }) {
+export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], ngheNghiepOptions = [], nhomMauOptions = [], errors = {} }) {
   const set = (key) => (e) =>
     setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const err = (key) => errors[key] ? "1.5px solid #ef4444" : "1.5px solid var(--gray-200)";
@@ -149,20 +149,11 @@ export function Tab1Content({ form, setForm, viewOnly = false, gioiTinhOptions =
           </FieldGroup>
 
           <FieldGroup label="Nhóm máu">
-            <select
-              style={inputStyle}
-              value={form.nhomMau}
-              onChange={set("nhomMau")}
-            >
+            <select style={inputStyle} value={form.nhomMau} onChange={set("nhomMau")}>
               <option value="">—Chọn—</option>
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="AB+">AB+</option>
-              <option value="AB-">AB-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
+              {nhomMauOptions.map((o) => (
+                <option key={o.Id} value={o.MaNhomMau_AX}>{o.TenNhomMau}</option>
+              ))}
             </select>
           </FieldGroup>
           <FieldGroup label="Đối tượng khám" required>

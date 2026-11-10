@@ -40,6 +40,11 @@ export async function getPhanLoaiSucKhoeList() {
   return res.data;
 }
 
+export async function getNhomMauList() {
+  const res = await api.get("/get-category-nhom-mau");
+  return res.data ?? [];
+}
+
 export async function getLoaiHinhKCBList() {
   const res = await api.get("/get-category-loai-hinh-kcb");
   return res.data;

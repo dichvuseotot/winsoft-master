@@ -139,10 +139,10 @@ function buildGiaTri(cat, form) {
   const val = form[cat.Field_AX];
   const loai = (cat.LoaiNhap || "").trim();
   if (loai === "Radio") {
-    if (!val) return "";
+    if (val == null || val === "") return "0";
     const opts = cat.Option ? JSON.parse(cat.Option) : [];
     const found = opts.find((o) => String(o.id) === String(val) || o.name === val);
-    return found !== undefined ? String(found.id) : "";
+    return found !== undefined ? String(found.id) : "0";
   }
   if (loai.startsWith("MultiSelect")) {
     return (val || []).map((s) => s.split(" - ")[0]).join(";");

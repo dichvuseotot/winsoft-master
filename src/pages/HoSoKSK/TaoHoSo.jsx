@@ -5,7 +5,7 @@ import "./TaoHoSo.css";
 import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content, CLS_DINH_KY_DATA } from "./MauAdult";
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
-import { saveAdultTiepNhan, saveTeenTiepNhan, saveChildTiepNhan, getTeenTheLuc, getTeenNhiKhoa, getTeenMat, getTeenTMH, getTeenRHM, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList, getTienSuBenhCategories } from "../../services";
+import { saveAdultTiepNhan, saveTeenTiepNhan, saveChildTiepNhan, getTeenTheLuc, getTeenNhiKhoa, getTeenMat, getTeenTMH, getTeenRHM, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList, getTienSuBenhCategories, getNhomMauList } from "../../services";
 import { todayVN, timeNowVN } from "../../utils/date";
 import { api } from "../../services/api";
 
@@ -393,6 +393,7 @@ export default function TaoHoSo() {
   const [mauPhieuOptions, setMauPhieuOptions] = useState([]);
   const [ngheNghiepOptions, setNgheNghiepOptions] = useState([]);
   const [tienSuCategories, setTienSuCategories] = useState([]);
+  const [nhomMauOptions, setNhomMauOptions] = useState([]);
   const sectionRefs = useRef([]);
   const tabBarRef = useRef(null);
   const isScrollingTo = useRef(false);
@@ -443,6 +444,7 @@ export default function TaoHoSo() {
     getLoaiMauKSKList().then((data) => setMauPhieuOptions(data)).catch(() => {});
     getCareerList().then((data) => setNgheNghiepOptions(data)).catch(() => {});
     getTienSuBenhCategories().then((data) => setTienSuCategories(data)).catch(() => {});
+    getNhomMauList().then((data) => setNhomMauOptions(data)).catch(() => {});
   }, []);
 
   const loadIcd10Options = async (search, page = 1) => {
@@ -1002,8 +1004,16 @@ export default function TaoHoSo() {
                     lyDoKham:     !form.lyDoKham,
                     loaiHinhKham: !form.loaiHinhKham,
                   };
-                  const newErrors = isTeen || isChild
-                    ? { ...commonRequired, loaiHinhKham: false }
+                  const newErrors = isChild
+                    ? {
+                        ...commonRequired,
+                        soDinhDanh:       !form.soDinhDanh,
+                        hoTenNguoiDiCung: !form.hoTenNguoiDiCung,
+                        moiQuanHe:        !form.moiQuanHe,
+                        soDinhDanhGiamHo: !form.soDinhDanhGiamHo,
+                      }
+                    : isTeen
+                    ? { ...commonRequired }
                     : { ...commonRequired, ngheNghiep: !form.ngheNghiep };
                   setErrors(newErrors);
                   if (Object.values(newErrors).some(Boolean)) return;
@@ -1073,15 +1083,15 @@ export default function TaoHoSo() {
       >
         <div ref={(el) => (sectionRefs.current[0] = el)}>
           {isChild
-            ? <Tab1ChildContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} moiQuanHeOptions={moiQuanHeOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} loadIcd10={loadIcd10Options} tienSuCats={tienSuCategories.filter((c) => c.td_loaimau_kskid === 1).sort((a, b) => a.TT - b.TT)} errors={errors} />
+            ? <Tab1ChildContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} moiQuanHeOptions={moiQuanHeOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} nhomMauOptions={nhomMauOptions} loadIcd10={loadIcd10Options} tienSuCats={tienSuCategories.filter((c) => c.td_loaimau_kskid === 1).sort((a, b) => a.TT - b.TT)} errors={errors} />
             : isTeen
-            ? <Tab1TeenContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} errors={errors} />
-            : <Tab1Content form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} ngheNghiepOptions={ngheNghiepOptions} errors={errors} />
+            ? <Tab1TeenContent form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} nhomMauOptions={nhomMauOptions} errors={errors} />
+            : <Tab1Content form={form} setForm={setForm} viewOnly={viewOnly} gioiTinhOptions={gioiTinhOptions} danTocOptions={danTocOptions} tinhThanhOptions={tinhThanhOptions} phuongXaOptions={phuongXaOptions} doiTuongOptions={doiTuongOptions} nguonChiTraOptions={nguonChiTraOptions} loaiHinhKCBOptions={loaiHinhKCBOptions} ngheNghiepOptions={ngheNghiepOptions} nhomMauOptions={nhomMauOptions} errors={errors} />
           }
         </div>
         <div ref={(el) => (sectionRefs.current[1] = el)}>
           {isTeen
-            ? <Tab2TeenContent form={form} setForm={setForm} loaiHinhKCBOptions={loaiHinhKCBOptions} />
+            ? <Tab2TeenContent form={form} setForm={setForm} loaiHinhKCBOptions={loaiHinhKCBOptions} errors={errors} />
             : <Tab2Content form={form} setForm={setForm} subtitle={isChild ? "" : undefined} />
           }
         </div>

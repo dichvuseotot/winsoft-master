@@ -237,7 +237,6 @@ export async function saveChildTiepNhan(form, mauPhieu, id = null, tienSuCats = 
   try {
     const resolvedId = id ?? generateId();
     const payload = toChildPayload(form, mauPhieu, resolvedId, tienSuCats);
-    console.log("[saveChildTiepNhan] payload:", payload);
     const result = await api.post("/add-update-tiep-nhan", payload);
     const TiepNhanId = result?.ID ?? resolvedId;
     await Swal.fire({

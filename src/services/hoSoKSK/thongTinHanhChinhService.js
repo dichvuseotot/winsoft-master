@@ -1,4 +1,4 @@
-import { api } from "../api";
+import { api, instance } from "../api";
 
 export async function getThongTinHanhChinhById(id) {
   const res = await api.get(`/get-thong-tin-hanh-chinh?KSKCD_TiepNhanId=${id}`);
@@ -28,6 +28,14 @@ export async function exportXmlLienThong({ tuNgay, denNgay, tdLoaimauKskid, kskc
     td_loaimau_kskid: tdLoaimauKskid,
     KSKCD_TiepNhanIds: kskcdTiepNhanIds.join(","),
   });
+  return res;
+}
+
+export async function importExcelFile({ file, tdLoaimauKskid }) {
+  const formData = new FormData();
+  formData.append("file", file);
+  formData.append("td_loaimau_kskid", tdLoaimauKskid);
+  const res = await instance.post("/import-file-excel", formData);
   return res;
 }
 

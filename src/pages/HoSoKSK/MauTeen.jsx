@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { inputStyle, inputStyleNoBackground, FieldGroup, SectionHeader, Card, Grid3, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
 
-export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], errors = {} }) {
+export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], nhomMauOptions = [], errors = {} }) {
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
   const err = (key) => errors[key] ? "1.5px solid #ef4444" : "1.5px solid var(--gray-200)";
 
@@ -70,14 +70,9 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
           <FieldGroup label="Nhóm máu">
             <select style={inputStyle} value={form.nhomMau} onChange={set("nhomMau")}>
               <option value="">— Chọn —</option>
-              <option value="A+">A+</option>
-              <option value="A-">A-</option>
-              <option value="B+">B+</option>
-              <option value="B-">B-</option>
-              <option value="AB+">AB+</option>
-              <option value="AB-">AB-</option>
-              <option value="O+">O+</option>
-              <option value="O-">O-</option>
+              {nhomMauOptions.map((o) => (
+                <option key={o.Id} value={o.MaNhomMau_AX}>{o.TenNhomMau}</option>
+              ))}
             </select>
           </FieldGroup>
           <FieldGroup label="Điện thoại">
@@ -124,7 +119,7 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
   );
 }
 
-export function Tab2TeenContent({ form, setForm, loaiHinhKCBOptions = [] }) {
+export function Tab2TeenContent({ form, setForm, loaiHinhKCBOptions = [], errors = {} }) {
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));
 
   return (
@@ -154,6 +149,7 @@ export function Tab2TeenContent({ form, setForm, loaiHinhKCBOptions = [] }) {
             value={form.loaiHinhKham}
             onChange={(val) => setForm((p) => ({ ...p, loaiHinhKham: val }))}
             placeholder="—Chọn loại hình—"
+            error={errors.loaiHinhKham}
           />
         </FieldGroup>
       </div>

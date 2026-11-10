@@ -1,11 +1,28 @@
-import { useRef, useState } from 'react' 
+import { useEffect, useRef, useState } from 'react'
+import { getLoaiMauKSKList, importExcelFile } from '../../services'
 
-function ImportModal({ onClose }) {
+function ImportModal({ onClose, mauPhieuOptions = [] }) {
   const fileRef   = useRef(null)
   const [bieuMau, setBieuMau] = useState('')
   const [file,    setFile]    = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error,   setError]   = useState('')
 
-  const canSubmit = bieuMau && file
+  const canSubmit = bieuMau && file && !loading
+
+  const handleSubmit = async () => {
+    if (!canSubmit) return
+    setLoading(true)
+    setError('')
+    try {
+      await importExcelFile({ file, tdLoaimauKskid: bieuMau })
+      onClose()
+    } catch (e) {
+      setError(e?.response?.data?.message || e?.message || 'Có lỗi xảy ra, vui lòng thử lại.')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.45)', zIndex: 1050, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
@@ -36,7 +53,7 @@ function ImportModal({ onClose }) {
               style={{ width: '100%', height: 44, borderRadius: 'var(--radius-md)', border: `1.5px solid ${bieuMau ? 'var(--primary)' : 'var(--gray-200)'}`, padding: '0 .875rem', fontSize: '.88rem', fontFamily: 'var(--font-body)', color: bieuMau ? 'var(--gray-800)' : 'var(--gray-400)', background: 'var(--gray-100)', cursor: 'pointer', outline: 'none' }}
             >
               <option value="">Chọn mẫu import</option>
-              {BIEU_MAU_LIST.map(b => <option key={b} value={b}>{b}</option>)}
+              {mauPhieuOptions.map(o => <option key={o.Id} value={o.Id}>{o.Name}</option>)}
             </select>
           </div>
 
@@ -70,14 +87,21 @@ function ImportModal({ onClose }) {
           </div>
         </div>
 
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '.625rem', padding: '1rem 1.75rem', borderTop: '1px solid var(--gray-100)' }}>
-          <button onClick={onClose} style={{ height: 40, padding: '0 1.25rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--gray-200)', background: 'var(--gray-100)', color: 'var(--gray-700)', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '.85rem', cursor: 'pointer' }}>
+                {error && (
+          <div style={{ margin: '0 1.75rem .75rem', padding: '.6rem .875rem', background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 'var(--radius-md)', fontSize: '.82rem', color: '#991b1b' }}>
+            {error}
+          </div>
+        )}
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '.625rem', padding: '1rem 1.75rem', borderTop: '1px solid var(--gray-100)' }}>
+          <button onClick={onClose} disabled={loading} style={{ height: 40, padding: '0 1.25rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--gray-200)', background: 'var(--gray-100)', color: 'var(--gray-700)', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '.85rem', cursor: 'pointer' }}>
             HỦY
           </button>
           <button
+            onClick={handleSubmit}
             disabled={!canSubmit}
-            style={{ height: 40, padding: '0 1.25rem', borderRadius: 'var(--radius-md)', border: 'none', background: canSubmit ? 'var(--gray-900)' : 'var(--gray-300)', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.85rem', cursor: canSubmit ? 'pointer' : 'not-allowed', transition: 'background .15s' }}
+            style={{ height: 40, padding: '0 1.25rem', borderRadius: 'var(--radius-md)', border: 'none', background: canSubmit ? 'var(--gray-900)' : 'var(--gray-300)', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.85rem', cursor: canSubmit ? 'pointer' : 'not-allowed', transition: 'background .15s', display: 'flex', alignItems: 'center', gap: '.4rem' }}
           >
+            {loading && <span className="spinner-border spinner-border-sm" />}
             TẠO BẢN XEM TRƯỚC
           </button>
         </div>
@@ -86,8 +110,7 @@ function ImportModal({ onClose }) {
   )
 }
 
-const BIEU_MAU_LIST = ['Biểu mẫu KSK toàn dân', 'Biểu mẫu KSK trẻ em', 'Biểu mẫu KSK học sinh', 'Biểu mẫu KSK người cao tuổi']
-const TRANG_THAI_LIST = ['Tất cả trạng thái', 'Đang xử lý', 'Hoàn thành', 'Thất bại', 'Chờ xử lý']
+const TRANG_THAI_LIST = ['Tất cả trạng thái', 'Chờ xử lý', 'Đang xử lý', 'Sẵn sàng xem trước', 'Đang import', 'Đã hoàn tất', 'Hoàn tất có lỗi', 'Thất bại', 'Đã hủy']
 
 const MOCK_IMPORTS = [
   { id: 1, file: 'KSK_toan_dan_T8_2026.xlsx',     bieuMau: 'Biểu mẫu KSK toàn dân',      trangThai: 'Hoàn thành', tienDo: 100, lyDo: '',                            thoiDiem: '24/08/2026 14:32' },
@@ -219,6 +242,7 @@ function ZipModal({ selectedCount, onClose }) {
 }
 
 export default function NhapDuLieu() {
+  const [mauPhieuOptions, setMauPhieuOptions] = useState([])
   const [fBieuMau,   setFBieuMau]   = useState('')
   const [fTrangThai, setFTrangThai] = useState('Tất cả trạng thái')
   const [fFile,      setFFile]      = useState('')
@@ -232,6 +256,10 @@ export default function NhapDuLieu() {
   const [zipOpen,    setZipOpen]    = useState(false)
   const [importOpen, setImportOpen] = useState(false)
   const [importing,  setImporting]  = useState(false)
+
+  useEffect(() => {
+    getLoaiMauKSKList().then(setMauPhieuOptions).catch(() => {})
+  }, [])
 
   const filtered = MOCK_IMPORTS.filter(r => {
     if (aBieuMau   && r.bieuMau !== aBieuMau) return false
@@ -278,8 +306,8 @@ export default function NhapDuLieu() {
           <div>
             <label style={labelStyle}>Biểu mẫu</label>
             <select style={selectStyle} value={fBieuMau} onChange={e => setFBieuMau(e.target.value)}>
-              <option value="">Vui lòng chọn</option>
-              {BIEU_MAU_LIST.map(b => <option key={b} value={b}>{b}</option>)}
+              <option value="">Tất cả</option>
+              {mauPhieuOptions.map(o => <option key={o.Id} value={o.Id}>{o.Name}</option>)}
             </select>
           </div>
           <div>
@@ -408,7 +436,7 @@ export default function NhapDuLieu() {
         )}
       </div>
 
-            {importOpen && <ImportModal onClose={() => setImportOpen(false)} />}
+            {importOpen && <ImportModal onClose={() => setImportOpen(false)} mauPhieuOptions={mauPhieuOptions} />}
 
             {zipOpen && <ZipModal selectedCount={selected.length} onClose={() => setZipOpen(false)} />}
     </div>

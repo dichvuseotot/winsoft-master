@@ -85,7 +85,7 @@ export default function HoSoKSK() {
       const res = await exportXmlLienThong({
         tuNgay: applied.fromDate,
         denNgay: applied.toDate,
-        tdLoaimauKskid: Number(applied.mauPhieu),
+        tdLoaimauKskid: applied.mauPhieu ? Number(applied.mauPhieu) : null,
         kskcdTiepNhanIds: selected,
       })
       const total = res.total ?? 0

@@ -13,6 +13,8 @@ instance.interceptors.response.use(
   }
 );
 
+export { instance };
+
 export const api = {
   get:    (path)        => instance.get(path),
   post:   (path, body)  => instance.post(path, body),
