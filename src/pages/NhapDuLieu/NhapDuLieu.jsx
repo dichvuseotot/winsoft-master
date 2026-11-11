@@ -7,16 +7,23 @@ function ImportModal({ onClose, mauPhieuOptions = [] }) {
   const [file,    setFile]    = useState(null)
   const [loading, setLoading] = useState(false)
   const [error,   setError]   = useState('')
+  const [result,  setResult]  = useState(null)
 
-  const canSubmit = bieuMau && file && !loading
+  const canSubmit = bieuMau && file && !loading && !result
 
   const handleSubmit = async () => {
     if (!canSubmit) return
     setLoading(true)
     setError('')
     try {
-      await importExcelFile({ file, tdLoaimauKskid: bieuMau })
-      onClose()
+      const res = await importExcelFile({ file, tdLoaimauKskid: bieuMau })
+      const data = res?.data ?? res
+      setResult({
+        thanhCong: data?.thanhCong ?? 0,
+        thatBai:   data?.thatBai   ?? 0,
+        total:     data?.total     ?? 0,
+        message:   data?.message   || data?.GhiChu || '',
+      })
     } catch (e) {
       setError(e?.response?.data?.message || e?.message || 'Có lỗi xảy ra, vui lòng thử lại.')
     } finally {
@@ -92,18 +99,36 @@ function ImportModal({ onClose, mauPhieuOptions = [] }) {
             {error}
           </div>
         )}
+        {result && (
+          <div style={{ margin: '0 1.75rem .75rem', padding: '.75rem 1rem', background: result.thatBai > 0 ? '#fffbeb' : '#f0fdf4', border: `1px solid ${result.thatBai > 0 ? '#fde68a' : '#86efac'}`, borderRadius: 'var(--radius-md)', fontSize: '.83rem', color: result.thatBai > 0 ? '#92400e' : '#166534' }}>
+            <div style={{ fontWeight: 700, marginBottom: '.35rem' }}>{result.message}</div>
+            <div style={{ display: 'flex', gap: '1.5rem' }}>
+              <span>Tổng: <b>{result.total}</b></span>
+              <span style={{ color: '#16a34a' }}>Thành công: <b>{result.thanhCong}</b></span>
+              {result.thatBai > 0 && <span style={{ color: '#dc2626' }}>Thất bại: <b>{result.thatBai}</b></span>}
+            </div>
+          </div>
+        )}
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '.625rem', padding: '1rem 1.75rem', borderTop: '1px solid var(--gray-100)' }}>
-          <button onClick={onClose} disabled={loading} style={{ height: 40, padding: '0 1.25rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--gray-200)', background: 'var(--gray-100)', color: 'var(--gray-700)', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '.85rem', cursor: 'pointer' }}>
-            HỦY
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={!canSubmit}
-            style={{ height: 40, padding: '0 1.25rem', borderRadius: 'var(--radius-md)', border: 'none', background: canSubmit ? 'var(--gray-900)' : 'var(--gray-300)', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.85rem', cursor: canSubmit ? 'pointer' : 'not-allowed', transition: 'background .15s', display: 'flex', alignItems: 'center', gap: '.4rem' }}
-          >
-            {loading && <span className="spinner-border spinner-border-sm" />}
-            TẠO BẢN XEM TRƯỚC
-          </button>
+          {!result && (
+            <button onClick={onClose} disabled={loading} style={{ height: 40, padding: '0 1.25rem', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--gray-200)', background: 'var(--gray-100)', color: 'var(--gray-700)', fontFamily: 'var(--font-display)', fontWeight: 600, fontSize: '.85rem', cursor: 'pointer' }}>
+              HỦY
+            </button>
+          )}
+          {result ? (
+            <button onClick={onClose} style={{ height: 40, padding: '0 1.25rem', borderRadius: 'var(--radius-md)', border: 'none', background: 'var(--gray-900)', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.85rem', cursor: 'pointer' }}>
+              ĐÓNG
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={!canSubmit}
+              style={{ height: 40, padding: '0 1.25rem', borderRadius: 'var(--radius-md)', border: 'none', background: canSubmit ? 'var(--gray-900)' : 'var(--gray-300)', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.85rem', cursor: canSubmit ? 'pointer' : 'not-allowed', transition: 'background .15s', display: 'flex', alignItems: 'center', gap: '.4rem' }}
+            >
+              {loading && <span className="spinner-border spinner-border-sm" />}
+              TẠO BẢN XEM TRƯỚC
+            </button>
+          )}
         </div>
       </div>
     </div>

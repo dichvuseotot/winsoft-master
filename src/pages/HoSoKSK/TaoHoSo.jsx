@@ -5,7 +5,7 @@ import "./TaoHoSo.css";
 import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content, CLS_DINH_KY_DATA } from "./MauAdult";
 import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
-import { saveAdultTiepNhan, saveTeenTiepNhan, saveChildTiepNhan, getTeenTheLuc, getTeenNhiKhoa, getTeenMat, getTeenTMH, getTeenRHM, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList, getTienSuBenhCategories, getNhomMauList } from "../../services";
+import { saveAdultTiepNhan, saveTeenTiepNhan, saveChildTiepNhan, getTeenTheLuc, getTeenNhiKhoa, getTeenMat, getTeenTMH, getTeenRHM, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList, getTienSuBenhCategories, getNhomMauList, getInfoConnectAPI } from "../../services";
 import { todayVN, timeNowVN } from "../../utils/date";
 import { deleteCLSRecord } from "../../services";
 
@@ -417,8 +417,8 @@ export default function TaoHoSo() {
     dienThoai: "",
     lyDoKham: "Khám sức khỏe định kỳ",
     loaiHinhKham: "",
-    maCskcb: "75407",
-    maCskcbGln: "0752636875407",
+    maCskcb: "",
+    maCskcbGln: "",
     maLanKham: "",
     ngayKham: TODAY,
     gioKham: timeNowVN(),
@@ -445,6 +445,15 @@ export default function TaoHoSo() {
     getCareerList().then((data) => setNgheNghiepOptions(data)).catch(() => {});
     getTienSuBenhCategories().then((data) => setTienSuCategories(data)).catch(() => {});
     getNhomMauList().then((data) => setNhomMauOptions(data)).catch(() => {});
+    getInfoConnectAPI().then((data) => {
+      if (data) {
+        setForm((prev) => ({
+          ...prev,
+          maCskcb:    data.MaCSKCB   || prev.maCskcb,
+          maCskcbGln: data.Sender_Id || prev.maCskcbGln,
+        }));
+      }
+    }).catch(() => {});
   }, []);
 
   const loadIcd10Options = async (search, page = 1) => {
@@ -1155,8 +1164,10 @@ export default function TaoHoSo() {
           gioiTinhOptions={gioiTinhOptions}
           onClose={() => setShowPatientPicker(false)}
           onSelect={(p) => {
-            setForm(() => ({
+            setForm((prev) => ({
               ...INITIAL_FORM,
+              maCskcb:    prev.maCskcb,
+              maCskcbGln: prev.maCskcbGln,
               soDinhDanh: p.SO_CCCD || "",
               hoTen: p.HO_TEN || "",
               gioiTinh: p.GIOI_TINH ?? "",
