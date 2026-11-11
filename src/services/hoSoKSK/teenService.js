@@ -1,5 +1,5 @@
 import Swal from "sweetalert2";
-import { api } from "../api";
+import { axiosClient } from "../api";
 import { nowVN } from "../../utils/date";
 
 function generateId() {
@@ -108,11 +108,11 @@ function toTeenPayload(form, mauPhieu, resolvedId, tienSuCats = []) {
     MA_NGHE_NGHIEP: null,
     NOI_LAM_VIEC_HOC_TAP: null,
     td_loaimau_kskid: Number(mauPhieu),
-    MA_LK: form.maLanKham,
+    MA_LK: form.maLanKham || generateId(),
     DOI_TUONG: String(form.doiTuongKham),
     NGUON_CHI_TRA: Number(form.nguonChiTra),
     MA_LOAI_KCB: form.loaiHinhKham,
-    NGAY_VAO: form.ngayKham,
+    NGAY_VAO: ((form.ngayKham || "").replace(/-/g, "") + (form.gioKham || "").replace(":", "")) || null,
     TYPE: "Minor",
 
     // ── Tiền sử bệnh ──────────────────────────────────────────────────────
@@ -218,36 +218,36 @@ function toTeenPayload(form, mauPhieu, resolvedId, tienSuCats = []) {
   };
 }
 
-export async function getTeenTheLuc(tiepNhanId) {
-  const res = await api.get(`/get-kham-lam-sang-the-luc?KSKCD_TiepNhanId=${tiepNhanId}`);
+export const getTeenTheLuc = async (tiepNhanId) => {
+  const res = await axiosClient.get(`/get-kham-lam-sang-the-luc?KSKCD_TiepNhanId=${tiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getTeenTMH(tiepNhanId) {
-  const res = await api.get(`/get-kham-lam-sang-tai-mui-hong?KSKCD_TiepNhanId=${tiepNhanId}`);
+export const getTeenTMH = async (tiepNhanId) => {
+  const res = await axiosClient.get(`/get-kham-lam-sang-tai-mui-hong?KSKCD_TiepNhanId=${tiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getTeenMat(tiepNhanId) {
-  const res = await api.get(`/get-kham-lam-sang-mat?KSKCD_TiepNhanId=${tiepNhanId}`);
+export const getTeenMat = async (tiepNhanId) => {
+  const res = await axiosClient.get(`/get-kham-lam-sang-mat?KSKCD_TiepNhanId=${tiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getTeenNhiKhoa(tiepNhanId) {
-  const res = await api.get(`/get-kham-lam-sang-nhi-khoa?KSKCD_TiepNhanId=${tiepNhanId}`);
+export const getTeenNhiKhoa = async (tiepNhanId) => {
+  const res = await axiosClient.get(`/get-kham-lam-sang-nhi-khoa?KSKCD_TiepNhanId=${tiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getTeenRHM(tiepNhanId) {
-  const res = await api.get(`/get-kham-lam-sang-rang-ham-mat?KSKCD_TiepNhanId=${tiepNhanId}`);
+export const getTeenRHM = async (tiepNhanId) => {
+  const res = await axiosClient.get(`/get-kham-lam-sang-rang-ham-mat?KSKCD_TiepNhanId=${tiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function saveTeenTiepNhan(form, mauPhieu, id = null, tienSuCats = []) {
+export const saveTeenTiepNhan = async (form, mauPhieu, id = null, tienSuCats = []) => {
   try {
     const resolvedId = id ?? generateId();
     const payload = toTeenPayload(form, mauPhieu, resolvedId, tienSuCats);
-      const result = await api.post("/add-update-tiep-nhan", payload);
+    const result = await axiosClient.post("/add-update-tiep-nhan", payload);
     const TiepNhanId = result?.ID ?? resolvedId;
     await Swal.fire({
       icon: "success",
@@ -267,4 +267,4 @@ export async function saveTeenTiepNhan(form, mauPhieu, id = null, tienSuCats = [
     });
     throw error;
   }
-}
+};

@@ -1,11 +1,11 @@
-import { api, instance } from "../api";
+import { axiosClient } from "../api";
 
-export async function getThongTinHanhChinhById(id) {
-  const res = await api.get(`/get-thong-tin-hanh-chinh?KSKCD_TiepNhanId=${id}`);
+export const getThongTinHanhChinhById = async (id) => {
+  const res = await axiosClient.get(`/get-thong-tin-hanh-chinh?KSKCD_TiepNhanId=${id}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getThongTinHanhChinhList({ fromDate, toDate, mauPhieu, search = "", page = 1, pageSize = 20 } = {}) {
+export const getThongTinHanhChinhList = async ({ fromDate, toDate, mauPhieu, search = "", page = 1, pageSize = 20 } = {}) => {
   const params = new URLSearchParams();
   if (fromDate) params.set("FromDate", fromDate);
   if (toDate) params.set("ToDate", toDate);
@@ -13,34 +13,34 @@ export async function getThongTinHanhChinhList({ fromDate, toDate, mauPhieu, sea
   params.set("Page", page);
   params.set("PageSize", pageSize);
   if (mauPhieu) params.set("td_loaimau_kskid", mauPhieu);
-  const res = await api.get(`/list-thong-tin-hanh-chinh?${params.toString()}`);
+  const res = await axiosClient.get(`/list-thong-tin-hanh-chinh?${params.toString()}`);
   return {
     items: res.data ?? [],
     total: Number(res.pagination?.Total ?? 0),
     totalPages: Number(res.pagination?.TotalPages ?? 1),
   };
-}
+};
 
-export async function exportXmlLienThong({ tuNgay, denNgay, tdLoaimauKskid, kskcdTiepNhanIds = [] } = {}) {
-  const res = await api.post("/export-xml-tren-18-tuoi-send-to-portal", {
+export const exportXmlLienThong = async ({ tuNgay, denNgay, tdLoaimauKskid, kskcdTiepNhanIds = [] } = {}) => {
+  const res = await axiosClient.post("/export-xml-tren-18-tuoi-send-to-portal", {
     TuNgay: tuNgay,
     DenNgay: denNgay,
     td_loaimau_kskid: tdLoaimauKskid,
     KSKCD_TiepNhanIds: kskcdTiepNhanIds.join(","),
   });
   return res;
-}
+};
 
-export async function importExcelFile({ file, tdLoaimauKskid }) {
+export const importExcelFile = async ({ file, tdLoaimauKskid }) => {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("td_loaimau_kskid", tdLoaimauKskid);
-  const res = await instance.post("/import-file-excel", formData);
+  const res = await axiosClient.post("/import-file-excel", formData);
   return res;
-}
+};
 
-export async function getThongKeDongBo() {
-  const res = await api.get("/thong-ke-dong-bo-ksk");
+export const getThongKeDongBo = async () => {
+  const res = await axiosClient.get("/thong-ke-dong-bo-ksk");
   const p = res.pagination ?? {};
   return {
     "da-dong-bo":   Number(p.DaDongBo   ?? 0),
@@ -48,4 +48,4 @@ export async function getThongKeDongBo() {
     "dong-bo-loi":  Number(p.LoiDongBo  ?? 0),
     "dang-dong-bo": Number(p.DangDongBo ?? 0),
   };
-}
+};

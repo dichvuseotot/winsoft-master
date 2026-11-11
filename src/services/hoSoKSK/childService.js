@@ -1,5 +1,5 @@
 import Swal from "sweetalert2";
-import { api } from "../api";
+import { axiosClient } from "../api";
 import { nowVN } from "../../utils/date";
 
 function generateId() {
@@ -54,11 +54,11 @@ function toChildPayload(form, mauPhieu, resolvedId, tienSuCats = []) {
     MA_NGHE_NGHIEP: null,
     NOI_LAM_VIEC_HOC_TAP: null,
     td_loaimau_kskid: Number(mauPhieu),
-    MA_LK: form.maLanKham || null,
+    MA_LK: form.maLanKham || generateId(),
     DOI_TUONG: String(form.doiTuongKham),
     NGUON_CHI_TRA: Number(form.nguonChiTra),
     MA_LOAI_KCB: form.loaiHinhKham || null,
-    NGAY_VAO: form.ngayKham,
+    NGAY_VAO: ((form.ngayKham || "").replace(/-/g, "") + (form.gioKham || "").replace(":", "")) || null,
     TYPE: "ChildUnder",
     // ── Tiền sử bệnh ──────────────────────────────────────────────────────
     TienSuBenhList: buildTienSuBenhList(tienSuCats, form, resolvedId),
@@ -233,11 +233,11 @@ function toChildPayload(form, mauPhieu, resolvedId, tienSuCats = []) {
   };
 }
 
-export async function saveChildTiepNhan(form, mauPhieu, id = null, tienSuCats = []) {
+export const saveChildTiepNhan = async (form, mauPhieu, id = null, tienSuCats = []) => {
   try {
     const resolvedId = id ?? generateId();
     const payload = toChildPayload(form, mauPhieu, resolvedId, tienSuCats);
-    const result = await api.post("/add-update-tiep-nhan", payload);
+    const result = await axiosClient.post("/add-update-tiep-nhan", payload);
     const TiepNhanId = result?.ID ?? resolvedId;
     await Swal.fire({
       icon: "success",
@@ -257,77 +257,76 @@ export async function saveChildTiepNhan(form, mauPhieu, id = null, tienSuCats = 
     });
     throw error;
   }
-}
+};
 
-export async function getDauHieuSinhTon(kskcdTiepNhanId) {
-  const res = await api.get(`/get-dau-hieu-sinh-ton?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getDauHieuSinhTon = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-dau-hieu-sinh-ton?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getDanhGiaPhatTrienTinhThanVanDong(kskcdTiepNhanId) {
-  const res = await api.get(`/get-danh-gia-phat-trien-tinh-than-van-dong?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getDanhGiaPhatTrienTinhThanVanDong = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-danh-gia-phat-trien-tinh-than-van-dong?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getDanhGiaTiemChung(kskcdTiepNhanId) {
-  const res = await api.get(`/get-danh-gia-tiem-chung?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getDanhGiaTiemChung = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-danh-gia-tiem-chung?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getToanTrang(kskcdTiepNhanId) {
-  const res = await api.get(`/get-kham-lam-sang-toan-trang?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getToanTrang = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-kham-lam-sang-toan-trang?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getDauCo(kskcdTiepNhanId) {
-  const res = await api.get(`/get-kham-lam-sang-dau-co?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getDauCo = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-kham-lam-sang-dau-co?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getBungCoQuanSinhDuc(kskcdTiepNhanId) {
-  const res = await api.get(`/get-bung-co-quang-sinh-duc?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getBungCoQuanSinhDuc = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-bung-co-quang-sinh-duc?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getDanhGiaDinhDuong(kskcdTiepNhanId) {
-  const res = await api.get(`/get-danh-gia-dinh-duong?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getDanhGiaDinhDuong = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-danh-gia-dinh-duong?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
 export const DG_VONG_DAU_REVERSE = { 1: "Bình thường", 2: "To", 3: "Nhỏ" };
 
-export async function getCoXuongThanKinh(kskcdTiepNhanId) {
-  const res = await api.get(`/get-co-xuong-than-kinh?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getCoXuongThanKinh = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-co-xuong-than-kinh?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getMat(kskcdTiepNhanId) {
-  const res = await api.get(`/get-kham-lam-sang-mat?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getMat = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-kham-lam-sang-mat?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getTai(kskcdTiepNhanId) {
-  const res = await api.get(`/get-kham-lam-sang-tai?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getTai = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-kham-lam-sang-tai?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getMuiHong(kskcdTiepNhanId) {
-  const res = await api.get(`/get-kham-lam-sang-mui-hong?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getMuiHong = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-kham-lam-sang-mui-hong?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getMiengRang(kskcdTiepNhanId) {
-  const res = await api.get(`/get-kham-lam-sang-mieng-rang?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getMiengRang = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-kham-lam-sang-mieng-rang?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getHoHap(kskcdTiepNhanId) {
-  const res = await api.get(`/get-ho-hap?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getHoHap = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-ho-hap?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
+};
 
-export async function getTimMach(kskcdTiepNhanId) {
-  const res = await api.get(`/get-kham-lam-sang-tim-mach?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
+export const getTimMach = async (kskcdTiepNhanId) => {
+  const res = await axiosClient.get(`/get-kham-lam-sang-tim-mach?KSKCD_TiepNhanId=${kskcdTiepNhanId}`);
   return (res.data ?? [])[0] ?? null;
-}
-
+};

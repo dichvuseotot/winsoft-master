@@ -1,74 +1,74 @@
-import { api } from "./api";
+import { axiosClient } from "./api";
 
-export async function getGioiTinhList() {
-  const res = await api.get("/get-category-gioi-tinh");
+export const getGioiTinhList = async () => {
+  const res = await axiosClient.get("/get-category-gioi-tinh");
   return res.data;
-}
+};
 
-export async function getMoiQuanHeList() {
-  const res = await api.get("/get-category-moi-quan-he");
+export const getMoiQuanHeList = async () => {
+  const res = await axiosClient.get("/get-category-moi-quan-he");
   return res.data;
-}
+};
 
-export async function getDanTocList() {
-  const res = await api.get("/get-category-dan-toc");
+export const getDanTocList = async () => {
+  const res = await axiosClient.get("/get-category-dan-toc");
   return res.data;
-}
+};
 
-export async function getTinhThanhList() {
-  const res = await api.get("/get-category-tinh-thanh");
+export const getTinhThanhList = async () => {
+  const res = await axiosClient.get("/get-category-tinh-thanh");
   return res.data;
-}
+};
 
-export async function getPhuongXaList(maTinh) {
-  const res = await api.get(`/get-category-phuong-xa?MaTinh=${maTinh}`);
+export const getPhuongXaList = async (maTinh) => {
+  const res = await axiosClient.get(`/get-category-phuong-xa?MaTinh=${maTinh}`);
   return res.data;
-}
+};
 
-export async function getDoiTuongList() {
-  const res = await api.get("/get-category-doi-tuong");
+export const getDoiTuongList = async () => {
+  const res = await axiosClient.get("/get-category-doi-tuong");
   return res.data;
-}
+};
 
-export async function getNguonChiTraList() {
-  const res = await api.get("/get-category-nguon-chi-tra");
+export const getNguonChiTraList = async () => {
+  const res = await axiosClient.get("/get-category-nguon-chi-tra");
   return res.data;
-}
+};
 
-export async function getPhanLoaiSucKhoeList() {
-  const res = await api.get("/get-category-phan-loai-suc-khoe");
+export const getPhanLoaiSucKhoeList = async () => {
+  const res = await axiosClient.get("/get-category-phan-loai-suc-khoe");
   return res.data;
-}
+};
 
-export async function getNhomMauList() {
-  const res = await api.get("/get-category-nhom-mau");
+export const getNhomMauList = async () => {
+  const res = await axiosClient.get("/get-category-nhom-mau");
   return res.data ?? [];
-}
+};
 
-export async function getLoaiHinhKCBList() {
-  const res = await api.get("/get-category-loai-hinh-kcb");
+export const getLoaiHinhKCBList = async () => {
+  const res = await axiosClient.get("/get-category-loai-hinh-kcb");
   return res.data;
-}
+};
 
-export async function getLoaiMauKSKList() {
-  const res = await api.get("/get-category-loai-mau-ksk");
+export const getLoaiMauKSKList = async () => {
+  const res = await axiosClient.get("/get-category-loai-mau-ksk");
   return res.data ?? [];
-}
+};
 
-export async function getCareerList() {
-  const res = await api.get("/get-category-career");
+export const getCareerList = async () => {
+  const res = await axiosClient.get("/get-category-career");
   return res.data ?? [];
-}
+};
 
-export async function getTienSuBenhCategories() {
-  const res = await api.get("/get-list-category-tien-su-benh");
+export const getTienSuBenhCategories = async () => {
+  const res = await axiosClient.get("/get-list-category-tien-su-benh");
   return res.data ?? [];
-}
+};
 
-export async function getICD10List({ search = "", page = 1, pageSize = 20 } = {}) {
+export const getICD10List = async ({ search = "", page = 1, pageSize = 20 } = {}) => {
   const params = new URLSearchParams({ Search: search, Page: page, PageSize: pageSize });
-  const res = await api.get(`/get-category-icd10?${params}`);
+  const res = await axiosClient.get(`/get-category-icd10?${params}`);
   const items = (res.data ?? []).map((d) => `${d.MaICD10} - ${d.TenICD10}`);
   const totalPages = Number(res.pagination?.TotalPages ?? 1);
   return { items, hasMore: page < totalPages };
-}
+};

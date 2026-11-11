@@ -7,7 +7,7 @@ import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent,
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
 import { saveAdultTiepNhan, saveTeenTiepNhan, saveChildTiepNhan, getTeenTheLuc, getTeenNhiKhoa, getTeenMat, getTeenTMH, getTeenRHM, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList, getTienSuBenhCategories, getNhomMauList } from "../../services";
 import { todayVN, timeNowVN } from "../../utils/date";
-import { api } from "../../services/api";
+import { deleteCLSRecord } from "../../services";
 
 const TODAY = todayVN();
 
@@ -489,7 +489,8 @@ export default function TaoHoSo() {
         doiTuongKham: p.DOI_TUONG || prev.doiTuongKham,
         nguonChiTra: p.NGUON_CHI_TRA ?? prev.nguonChiTra,
         loaiHinhKham: p.MA_LOAI_KCB || prev.loaiHinhKham,
-        ngayKham: p.NGAY_VAO ? p.NGAY_VAO : prev.ngayKham,
+        ngayKham: p.NGAY_VAO ? p.NGAY_VAO.slice(0,4)+"-"+p.NGAY_VAO.slice(4,6)+"-"+p.NGAY_VAO.slice(6,8) : prev.ngayKham,
+        gioKham: p.NGAY_VAO ? p.NGAY_VAO.slice(8,10)+":"+p.NGAY_VAO.slice(10,12) : prev.gioKham,
         maLanKham: p.MA_LK || prev.maLanKham,
         hoTenNguoiDiCung: p.HO_TEN_NGUOI_DI_CUNG || prev.hoTenNguoiDiCung,
         soDinhDanhGiamHo: p.SO_CCCD_NGUOI_DI_CUNG || prev.soDinhDanhGiamHo,
@@ -608,7 +609,8 @@ export default function TaoHoSo() {
         doiTuongKham: p.DOI_TUONG || prev.doiTuongKham,
         nguonChiTra: p.NGUON_CHI_TRA ?? prev.nguonChiTra,
         loaiHinhKham: p.MA_LOAI_KCB || prev.loaiHinhKham,
-        ngayKham: p.NGAY_VAO ? p.NGAY_VAO : prev.ngayKham,
+        ngayKham: p.NGAY_VAO ? p.NGAY_VAO.slice(0,4)+"-"+p.NGAY_VAO.slice(4,6)+"-"+p.NGAY_VAO.slice(6,8) : prev.ngayKham,
+        gioKham: p.NGAY_VAO ? p.NGAY_VAO.slice(8,10)+":"+p.NGAY_VAO.slice(10,12) : prev.gioKham,
         maLanKham: p.MA_LK || prev.maLanKham,
         hoTenNguoiDiCung: p.HO_TEN_NGUOI_DI_CUNG || prev.hoTenNguoiDiCung,
         soDinhDanhGiamHo: p.SO_CCCD_NGUOI_DI_CUNG || prev.soDinhDanhGiamHo,
@@ -1022,7 +1024,7 @@ export default function TaoHoSo() {
                     if (!isChild) {
                       const toDelete = (form.clsDynamic || []).filter((i) => i._toDelete && i._existingId);
                       const toResave = (form.clsDynamic || []).filter((i) => !i._toDelete && i._existingId && i.giaTri);
-                      await Promise.all([...toDelete, ...toResave].map((i) => api.delete(`/delete-kham-can-lam-sang?Id=${i._existingId}`).catch(() => {})));
+                      await Promise.all([...toDelete, ...toResave].map((i) => deleteCLSRecord(i._existingId).catch(() => {})));
                     }
                     const cats = tienSuCategories.filter((c) => c.td_loaimau_kskid === mauPhieu);
                     if (isTeen) {
@@ -1180,7 +1182,8 @@ export default function TaoHoSo() {
               doiTuongKham: p.DOI_TUONG || "",
               nguonChiTra: p.NGUON_CHI_TRA ?? "",
               loaiHinhKham: p.MA_LOAI_KCB || "",
-              ngayKham: p.NGAY_VAO ? p.NGAY_VAO.slice(0, 10) : TODAY,
+              ngayKham: p.NGAY_VAO ? p.NGAY_VAO.slice(0,4)+"-"+p.NGAY_VAO.slice(4,6)+"-"+p.NGAY_VAO.slice(6,8) : TODAY,
+              gioKham: p.NGAY_VAO ? p.NGAY_VAO.slice(8,10)+":"+p.NGAY_VAO.slice(10,12) : timeNowVN(),
               maLanKham: p.MA_LK || "",
             }));
             setErrors({});

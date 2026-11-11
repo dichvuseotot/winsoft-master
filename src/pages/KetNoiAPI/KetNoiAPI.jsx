@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-import { api } from "../../services/api";
+import { getInfoConnectAPI, updateInfoConnectAPI } from "../../services/ketNoiAPI/ketNoiAPIService";
 
 
 const FIELDS = [
@@ -48,9 +48,8 @@ export default function KetNoiAPI() {
   const [showPw, setShowPw] = useState(false);
 
   useEffect(() => {
-    api.get("/get-info-connect-api?Id=1")
-      .then((res) => {
-        const data = res?.data?.[0];
+    getInfoConnectAPI()
+      .then((data) => {
         if (data) {
           setForm({
             Id:           data.Id           ?? 0,
@@ -99,7 +98,7 @@ export default function KetNoiAPI() {
         Txn_Type:     form.Txn_Type     || null,
         MaCSKCB:      form.MaCSKCB      || null,
       };
-      const res = await api.post("/add-update-info-connect-api", payload);
+      const res = await updateInfoConnectAPI(payload);
       if (!res?.success) throw new Error(res?.message || "Lỗi không xác định");
       await Swal.fire({ icon: "success", title: "Lưu thành công", text: res.message, confirmButtonText: "OK", confirmButtonColor: "#16a34a" });
     } catch (err) {
