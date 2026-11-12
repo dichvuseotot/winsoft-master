@@ -22,6 +22,7 @@ const NAV_SECTIONS = [
     label: 'Hệ thống',
     items: [
       { path: '/connect-api', icon: 'bi-plug-fill', label: 'Kết nối API' },
+      { path: '/ky-so', icon: 'bi-plug-fill', label: 'Ký số' },
     ],
   },
 ]

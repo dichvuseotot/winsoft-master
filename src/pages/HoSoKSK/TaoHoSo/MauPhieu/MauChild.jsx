@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
-import { getBungCoQuanSinhDuc, getCoXuongThanKinh, getDanhGiaDinhDuong, getDauHieuSinhTon, getDanhGiaPhatTrienTinhThanVanDong, getDanhGiaTiemChung, getToanTrang, getDauCo, DG_VONG_DAU_REVERSE, getMat, getTai, getMuiHong, getMiengRang, getHoHap, getTimMach, getKetLuan, getICD10List } from "../../services";
-import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
+import { getBungCoQuanSinhDuc, getCoXuongThanKinh, getDanhGiaDinhDuong, getDauHieuSinhTon, getDanhGiaPhatTrienTinhThanVanDong, getDanhGiaTiemChung, getToanTrang, getDauCo, DG_VONG_DAU_REVERSE, getMat, getTai, getMuiHong, getMiengRang, getHoHap, getTimMach, getKetLuan, getICD10List } from "../../../../services";
+import { labelStyle, inputStyle, inputStyleNoBackground, textareaStyle, helperStyle, Required, FieldGroup, SectionHeader, Card, Grid3, TabTitle, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "../../formShared";
 
 export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], moiQuanHeOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], nhomMauOptions = [], tienSuCats = [], loadIcd10 = null, errors = {} }) {
   const set = (key) => (e) =>

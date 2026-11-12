@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { getLoaiMauKSKList, importExcelFile } from '../../services'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { getLoaiMauKSKList, importExcelFile, getListImportFileExcel } from '../../services'
 
 function ImportModal({ onClose, mauPhieuOptions = [] }) {
   const fileRef   = useRef(null)
@@ -135,22 +135,25 @@ function ImportModal({ onClose, mauPhieuOptions = [] }) {
   )
 }
 
-const TRANG_THAI_LIST = ['Tất cả trạng thái', 'Chờ xử lý', 'Đang xử lý', 'Sẵn sàng xem trước', 'Đang import', 'Đã hoàn tất', 'Hoàn tất có lỗi', 'Thất bại', 'Đã hủy']
+const today = new Date().toISOString().slice(0, 10)
 
-const MOCK_IMPORTS = [
-  { id: 1, file: 'KSK_toan_dan_T8_2026.xlsx',     bieuMau: 'Biểu mẫu KSK toàn dân',      trangThai: 'Hoàn thành', tienDo: 100, lyDo: '',                            thoiDiem: '24/08/2026 14:32' },
-  { id: 2, file: 'KSK_tre_em_Q2_2026.xlsx',       bieuMau: 'Biểu mẫu KSK trẻ em',        trangThai: 'Thất bại',   tienDo: 45,  lyDo: 'Sai định dạng cột CCCD',      thoiDiem: '23/08/2026 09:15' },
-  { id: 3, file: 'KSK_hoc_sinh_2026.xlsm',        bieuMau: 'Biểu mẫu KSK học sinh',      trangThai: 'Hoàn thành', tienDo: 100, lyDo: '',                            thoiDiem: '22/08/2026 16:48' },
-  { id: 4, file: 'KSK_nguoi_cao_tuoi_T7.xlsx',    bieuMau: 'Biểu mẫu KSK người cao tuổi',trangThai: 'Đang xử lý', tienDo: 67,  lyDo: '',                            thoiDiem: '21/08/2026 11:20' },
-  { id: 5, file: 'KSK_toan_dan_T7_2026.xlsx',     bieuMau: 'Biểu mẫu KSK toàn dân',      trangThai: 'Hoàn thành', tienDo: 100, lyDo: '',                            thoiDiem: '18/08/2026 08:05' },
-  { id: 6, file: 'import_backup_20260815.xlsx',   bieuMau: 'Biểu mẫu KSK toàn dân',      trangThai: 'Thất bại',   tienDo: 10,  lyDo: 'File không đúng mẫu quy định',thoiDiem: '15/08/2026 13:44' },
+const TRANG_THAI_OPTIONS = [
+  { value: '-1', label: 'Tất cả trạng thái' },
+  { value: '1',  label: 'Thành công' },
+  { value: '0',  label: 'Thất bại' },
 ]
 
-const STATUS_STYLE = {
-  'Hoàn thành': { bg: '#dcfce7', color: '#166534' },
-  'Thất bại':   { bg: '#fee2e2', color: '#991b1b' },
-  'Đang xử lý': { bg: '#dbeafe', color: '#1e40af' },
-  'Chờ xử lý':  { bg: '#fef9c3', color: '#854d0e' },
+const STATUS_MAP = {
+  1: { label: 'Thành công', bg: '#dcfce7', color: '#166534' },
+  0: { label: 'Thất bại',   bg: '#fee2e2', color: '#991b1b' },
+}
+
+function formatDateTime(str) {
+  if (!str) return ''
+  const d = new Date(str)
+  if (isNaN(d)) return str
+  const pad = n => String(n).padStart(2, '0')
+  return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 function ZipModal({ selectedCount, onClose }) {
@@ -269,38 +272,67 @@ function ZipModal({ selectedCount, onClose }) {
 export default function NhapDuLieu() {
   const [mauPhieuOptions, setMauPhieuOptions] = useState([])
   const [fBieuMau,   setFBieuMau]   = useState('')
-  const [fTrangThai, setFTrangThai] = useState('Tất cả trạng thái')
+  const [fTrangThai, setFTrangThai] = useState('-1')
   const [fFile,      setFFile]      = useState('')
+  const [fFromDate,  setFFromDate]  = useState(today)
+  const [fToDate,    setFToDate]    = useState(today)
 
   const [aBieuMau,   setABieuMau]   = useState('')
-  const [aTrangThai, setATrangThai] = useState('Tất cả trạng thái')
+  const [aTrangThai, setATrangThai] = useState('-1')
   const [aFile,      setAFile]      = useState('')
+  const [aFromDate,  setAFromDate]  = useState(today)
+  const [aToDate,    setAToDate]    = useState(today)
 
-  const [perPage,   setPerPage]   = useState(10)
-  const [selected,  setSelected]  = useState([])
-  const [zipOpen,    setZipOpen]    = useState(false)
-  const [importOpen, setImportOpen] = useState(false)
-  const [importing,  setImporting]  = useState(false)
+  const [imports,     setImports]     = useState([])
+  const [loadingList, setLoadingList] = useState(false)
+  const [total,       setTotal]       = useState(0)
+  const [totalPages,  setTotalPages]  = useState(1)
+  const [page,        setPage]        = useState(1)
+  const [perPage,     setPerPage]     = useState(10)
+  const [selected,    setSelected]    = useState([])
+  const [zipOpen,     setZipOpen]     = useState(false)
+  const [importOpen,  setImportOpen]  = useState(false)
 
   useEffect(() => {
     getLoaiMauKSKList().then(setMauPhieuOptions).catch(() => {})
   }, [])
 
-  const filtered = MOCK_IMPORTS.filter(r => {
-    if (aBieuMau   && r.bieuMau !== aBieuMau) return false
-    if (aTrangThai !== 'Tất cả trạng thái' && r.trangThai !== aTrangThai) return false
-    if (aFile      && !r.file.toLowerCase().includes(aFile.toLowerCase())) return false
-    return true
-  })
+  const fetchImports = useCallback(async () => {
+    setLoadingList(true)
+    try {
+      const res = await getListImportFileExcel({
+        fromDate: aFromDate, toDate: aToDate,
+        tdLoaimauKskid: aBieuMau, isSuccess: Number(aTrangThai),
+        search: aFile, page, pageSize: perPage,
+      })
+      setImports(res.items)
+      setTotal(res.total)
+      setTotalPages(res.totalPages)
+      setSelected([])
+    } catch {}
+    finally { setLoadingList(false) }
+  }, [aFromDate, aToDate, aBieuMau, aTrangThai, aFile, page, perPage])
 
-  const displayed = filtered.slice(0, perPage)
+  useEffect(() => { fetchImports() }, [fetchImports])
 
-  const allChecked = displayed.length > 0 && displayed.every(r => selected.includes(r.id))
-  const toggleAll  = () => setSelected(allChecked ? [] : displayed.map(r => r.id))
+  const allChecked = imports.length > 0 && imports.every(r => selected.includes(r.Id))
+  const toggleAll  = () => setSelected(allChecked ? [] : imports.map(r => r.Id))
   const toggleOne  = (id) => setSelected(p => p.includes(id) ? p.filter(x => x !== id) : [...p, id])
 
-  const handleReset = () => { setFBieuMau(''); setFTrangThai('Tất cả trạng thái'); setFFile(''); setABieuMau(''); setATrangThai('Tất cả trạng thái'); setAFile('') }
-  const handleFilter = () => { setABieuMau(fBieuMau); setATrangThai(fTrangThai); setAFile(fFile) }
+  const handleReset = () => {
+    setFBieuMau(''); setFTrangThai('-1'); setFFile(''); setFFromDate(today); setFToDate(today)
+    setPage(1)
+    setABieuMau(''); setATrangThai('-1'); setAFile(''); setAFromDate(today); setAToDate(today)
+  }
+  const handleFilter = () => {
+    setPage(1)
+    setABieuMau(fBieuMau); setATrangThai(fTrangThai); setAFile(fFile)
+    setAFromDate(fFromDate); setAToDate(fToDate)
+  }
+
+  const handleCloseImport = () => { setImportOpen(false); fetchImports() }
+
+  const mauMap = Object.fromEntries(mauPhieuOptions.map(o => [String(o.Id), o.Name]))
 
   const selectStyle = {
     height: 38, borderRadius: 'var(--radius-md)', border: '1.5px solid var(--gray-200)',
@@ -312,22 +344,27 @@ export default function NhapDuLieu() {
 
   return (
     <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-        <div>
-          <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.18rem', color: 'var(--gray-900)' }}>Nhập dữ liệu sức khỏe</div>
-        </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+        <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '1.18rem', color: 'var(--gray-900)' }}>Nhập dữ liệu sức khỏe</div>
         <button
           onClick={() => setImportOpen(true)}
-          disabled={importing}
           style={{ height: 40, padding: '0 1.1rem', borderRadius: 'var(--radius-md)', border: 'none', background: '#16a34a', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.4rem' }}
         >
-          {importing ? <><span className="spinner-border spinner-border-sm" /> Đang nhập...</> : <><i className="bi bi-file-earmark-excel-fill" /> Import Excel</>}
+          <i className="bi bi-file-earmark-excel-fill" /> Import Excel
         </button>
       </div>
 
-            <div className="card-custom" style={{ padding: '1.25rem', marginBottom: '1rem' }}>
+      <div className="card-custom" style={{ padding: '1.25rem', marginBottom: '1rem' }}>
         <div style={{ fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.85rem', color: 'var(--gray-700)', marginBottom: '1rem' }}>Lọc</div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+          <div>
+            <label style={labelStyle}>Từ ngày</label>
+            <input type="date" style={inputStyle} value={fFromDate} onChange={e => setFFromDate(e.target.value)} />
+          </div>
+          <div>
+            <label style={labelStyle}>Đến ngày</label>
+            <input type="date" style={inputStyle} value={fToDate} onChange={e => setFToDate(e.target.value)} />
+          </div>
           <div>
             <label style={labelStyle}>Biểu mẫu</label>
             <select style={selectStyle} value={fBieuMau} onChange={e => setFBieuMau(e.target.value)}>
@@ -338,7 +375,7 @@ export default function NhapDuLieu() {
           <div>
             <label style={labelStyle}>Trạng thái</label>
             <select style={selectStyle} value={fTrangThai} onChange={e => setFTrangThai(e.target.value)}>
-              {TRANG_THAI_LIST.map(t => <option key={t} value={t}>{t}</option>)}
+              {TRANG_THAI_OPTIONS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
             </select>
           </div>
           <div>
@@ -356,27 +393,24 @@ export default function NhapDuLieu() {
         </div>
       </div>
 
-            <div className="card-custom" style={{ padding: '1rem 1.25rem' }}>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+      <div className="card-custom" style={{ padding: '1rem 1.25rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.4rem' }}>
             <span style={{ fontSize: '.83rem', color: 'var(--gray-600)' }}>Mỗi trang:</span>
             <select
               value={perPage}
-              onChange={e => setPerPage(Number(e.target.value))}
+              onChange={e => { setPerPage(Number(e.target.value)); setPage(1) }}
               style={{ height: 32, borderRadius: 'var(--radius-sm)', border: '1.5px solid var(--gray-200)', padding: '0 .5rem', fontSize: '.83rem', fontFamily: 'var(--font-body)', color: 'var(--gray-700)', background: 'var(--gray-100)', cursor: 'pointer', outline: 'none' }}
             >
               {[10, 25, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
-
           <button
             onClick={() => setZipOpen(true)}
             style={{ height: 34, padding: '0 .875rem', borderRadius: 'var(--radius-sm)', border: 'none', background: '#2563eb', color: '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.78rem', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '.35rem' }}
           >
             <i className="bi bi-file-zip-fill" /> Tải gói file kết quả (.ZIP)
           </button>
-
           <button
             disabled={selected.length === 0}
             style={{ height: 34, padding: '0 .875rem', borderRadius: 'var(--radius-sm)', border: 'none', background: selected.length > 0 ? '#dc2626' : 'var(--gray-200)', color: selected.length > 0 ? '#fff' : 'var(--gray-400)', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.78rem', cursor: selected.length > 0 ? 'pointer' : 'not-allowed', display: 'flex', alignItems: 'center', gap: '.35rem', transition: 'all .15s' }}
@@ -385,7 +419,7 @@ export default function NhapDuLieu() {
           </button>
         </div>
 
-                <div style={{ overflowX: 'auto' }}>
+        <div style={{ overflowX: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: 860 }}>
             <thead>
               <tr style={{ borderBottom: '2px solid var(--gray-100)' }}>
@@ -396,7 +430,7 @@ export default function NhapDuLieu() {
                   { label: 'Biểu mẫu', sort: true },
                   { label: 'Trạng thái', sort: true },
                   { label: 'Tiến độ xử lý' },
-                  { label: 'Lý do thất bại' },
+                  { label: 'Ghi chú' },
                   { label: 'Thời điểm tạo', sort: true },
                 ].map((h, i) => (
                   <th key={i} style={{ fontSize: '.72rem', fontWeight: 700, color: 'var(--gray-500)', letterSpacing: '.06em', textTransform: 'uppercase', padding: '.6rem .875rem', background: 'var(--gray-50)', whiteSpace: 'nowrap', width: h.w, textAlign: i <= 1 ? 'center' : 'left' }}>
@@ -406,47 +440,40 @@ export default function NhapDuLieu() {
               </tr>
             </thead>
             <tbody>
-              {displayed.length === 0 ? (
-                <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--gray-400)', fontSize: '.85rem' }}>
-                    Không tìm thấy kết quả
-                  </td>
-                </tr>
-              ) : displayed.map((r, i) => {
-                const st = STATUS_STYLE[r.trangThai] || {}
-                const checked = selected.includes(r.id)
+              {loadingList ? (
+                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--gray-400)', fontSize: '.85rem' }}><span className="spinner-border spinner-border-sm me-2" />Đang tải...</td></tr>
+              ) : imports.length === 0 ? (
+                <tr><td colSpan={8} style={{ textAlign: 'center', padding: '2.5rem', color: 'var(--gray-400)', fontSize: '.85rem' }}>Không tìm thấy kết quả</td></tr>
+              ) : imports.map(r => {
+                const st = STATUS_MAP[r.IsSuccess] || { label: '—', bg: 'var(--gray-100)', color: 'var(--gray-500)' }
+                const tienDo = r.IsSuccess === 1 ? 100 : 0
+                const checked = selected.includes(r.Id)
                 return (
-                  <tr key={r.id} className={checked ? 'row-checked' : ''} style={{ background: checked ? 'var(--primary-bg)' : 'transparent', borderBottom: '1px solid var(--gray-100)' }}>
+                  <tr key={r.Id} className={checked ? 'row-checked' : ''} style={{ background: checked ? 'var(--primary-bg)' : 'transparent', borderBottom: '1px solid var(--gray-100)' }}>
                     <td style={{ padding: '.6rem .875rem', textAlign: 'center' }}>
-                      <button title="Xem chi tiết" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontSize: '1rem', padding: '0 .25rem' }}>
-                        <i className="bi bi-eye" />
-                      </button>
-                      <button title="Tải xuống" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-500)', fontSize: '1rem', padding: '0 .25rem' }}>
-                        <i className="bi bi-download" />
-                      </button>
+                      <button title="Xem chi tiết" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontSize: '1rem', padding: '0 .25rem' }}><i className="bi bi-eye" /></button>
+                      <button title="Tải xuống" style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-500)', fontSize: '1rem', padding: '0 .25rem' }}><i className="bi bi-download" /></button>
                     </td>
                     <td style={{ padding: '.6rem .875rem', textAlign: 'center' }}>
-                      <input type="checkbox" checked={checked} onChange={() => toggleOne(r.id)} style={{ cursor: 'pointer' }} />
+                      <input type="checkbox" checked={checked} onChange={() => toggleOne(r.Id)} style={{ cursor: 'pointer' }} />
                     </td>
                     <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-800)', fontWeight: 500 }}>
-                      <i className="bi bi-file-earmark-excel-fill me-1" style={{ color: '#16a34a' }} />{r.file}
+                      <i className="bi bi-file-earmark-excel-fill me-1" style={{ color: '#16a34a' }} />{r.TenFile}
                     </td>
-                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-700)' }}>{r.bieuMau}</td>
+                    <td style={{ padding: '.6rem .875rem', fontSize: '.83rem', color: 'var(--gray-700)' }}>{mauMap[String(r.td_loaimau_kskid)] || r.td_loaimau_kskid}</td>
                     <td style={{ padding: '.6rem .875rem' }}>
-                      <span style={{ background: st.bg, color: st.color, fontSize: '.75rem', fontWeight: 700, padding: '.2em .65em', borderRadius: 99, whiteSpace: 'nowrap' }}>
-                        {r.trangThai}
-                      </span>
+                      <span style={{ background: st.bg, color: st.color, fontSize: '.75rem', fontWeight: 700, padding: '.2em .65em', borderRadius: 99, whiteSpace: 'nowrap' }}>{st.label}</span>
                     </td>
                     <td style={{ padding: '.6rem .875rem', minWidth: 120 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
                         <div style={{ flex: 1, height: 6, background: 'var(--gray-100)', borderRadius: 99 }}>
-                          <div style={{ width: `${r.tienDo}%`, height: '100%', background: r.tienDo === 100 ? '#16a34a' : r.trangThai === 'Thất bại' ? '#dc2626' : '#2563eb', borderRadius: 99, transition: 'width .4s' }} />
+                          <div style={{ width: `${tienDo}%`, height: '100%', background: tienDo === 100 ? '#16a34a' : '#dc2626', borderRadius: 99 }} />
                         </div>
-                        <span style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--gray-600)', flexShrink: 0 }}>{r.tienDo}%</span>
+                        <span style={{ fontSize: '.75rem', fontWeight: 600, color: 'var(--gray-600)', flexShrink: 0 }}>{tienDo}%</span>
                       </div>
                     </td>
-                    <td style={{ padding: '.6rem .875rem', fontSize: '.78rem', color: '#dc2626' }}>{r.lyDo || <span style={{ color: 'var(--gray-300)' }}>—</span>}</td>
-                    <td style={{ padding: '.6rem .875rem', fontSize: '.8rem', color: 'var(--gray-500)', whiteSpace: 'nowrap' }}>{r.thoiDiem}</td>
+                    <td style={{ padding: '.6rem .875rem', fontSize: '.78rem', color: '#dc2626' }}>{r.GhiChu || <span style={{ color: 'var(--gray-300)' }}>—</span>}</td>
+                    <td style={{ padding: '.6rem .875rem', fontSize: '.8rem', color: 'var(--gray-500)', whiteSpace: 'nowrap' }}>{formatDateTime(r.CreatedAt)}</td>
                   </tr>
                 )
               })}
@@ -454,16 +481,19 @@ export default function NhapDuLieu() {
           </table>
         </div>
 
-                {filtered.length > 0 && (
-          <div style={{ marginTop: '.875rem', fontSize: '.78rem', color: 'var(--gray-400)', textAlign: 'right' }}>
-            Hiển thị {displayed.length} / {filtered.length} kết quả
+        {total > 0 && (
+          <div style={{ marginTop: '.875rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ fontSize: '.78rem', color: 'var(--gray-400)' }}>Trang {page} / {totalPages} &nbsp;·&nbsp; Tổng {total} kết quả</div>
+            <div style={{ display: 'flex', gap: '.35rem' }}>
+              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1} style={{ height: 30, padding: '0 .75rem', borderRadius: 'var(--radius-sm)', border: '1.5px solid var(--gray-200)', background: 'var(--gray-100)', color: page <= 1 ? 'var(--gray-300)' : 'var(--gray-700)', fontSize: '.78rem', cursor: page <= 1 ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600 }}>‹ Trước</button>
+              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page >= totalPages} style={{ height: 30, padding: '0 .75rem', borderRadius: 'var(--radius-sm)', border: '1.5px solid var(--gray-200)', background: 'var(--gray-100)', color: page >= totalPages ? 'var(--gray-300)' : 'var(--gray-700)', fontSize: '.78rem', cursor: page >= totalPages ? 'not-allowed' : 'pointer', fontFamily: 'var(--font-display)', fontWeight: 600 }}>Sau ›</button>
+            </div>
           </div>
         )}
       </div>
 
-            {importOpen && <ImportModal onClose={() => setImportOpen(false)} mauPhieuOptions={mauPhieuOptions} />}
-
-            {zipOpen && <ZipModal selectedCount={selected.length} onClose={() => setZipOpen(false)} />}
+      {importOpen && <ImportModal onClose={handleCloseImport} mauPhieuOptions={mauPhieuOptions} />}
+      {zipOpen && <ZipModal selectedCount={selected.length} onClose={() => setZipOpen(false)} />}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { inputStyle, inputStyleNoBackground, FieldGroup, SectionHeader, Card, Grid3, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "./formShared";
+import { inputStyle, inputStyleNoBackground, FieldGroup, SectionHeader, Card, Grid3, SearchableSelect, SearchableSingleSelect, subLabelStyle, SignatureBox, } from "../../formShared";
 
 export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptions = [], danTocOptions = [], tinhThanhOptions = [], phuongXaOptions = [], doiTuongOptions = [], nguonChiTraOptions = [], loaiHinhKCBOptions = [], nhomMauOptions = [], errors = {} }) {
   const set = (key) => (e) => setForm((prev) => ({ ...prev, [key]: e.target.value }));

@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import { useNavigate } from "react-router";
 import "./TaoHoSo.css";
-import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content, CLS_DINH_KY_DATA } from "./MauAdult";
-import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauChild";
-import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauTeen";
-import { saveAdultTiepNhan, saveTeenTiepNhan, saveChildTiepNhan, getTeenTheLuc, getTeenNhiKhoa, getTeenMat, getTeenTMH, getTeenRHM, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList, getTienSuBenhCategories, getNhomMauList, getInfoConnectAPI } from "../../services";
-import { todayVN, timeNowVN } from "../../utils/date";
-import { deleteCLSRecord } from "../../services";
+import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content, CLS_DINH_KY_DATA } from "./MauPhieu/MauAdult";
+import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent, Tab6ChildContent, Tab7ChildContent, Tab8ChildContent } from "./MauPhieu/MauChild";
+import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauPhieu/MauTeen";
+import { saveAdultTiepNhan, saveTeenTiepNhan, saveChildTiepNhan, getTeenTheLuc, getTeenNhiKhoa, getTeenMat, getTeenTMH, getTeenRHM, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList, getTienSuBenhCategories, getNhomMauList, getInfoConnectAPI } from "../../../services";
+import { todayVN, timeNowVN } from "../../../utils/date";
+import { deleteCLSRecord } from "../../../services";
 
 const TODAY = todayVN();
 
@@ -151,7 +151,7 @@ const [fromDate, setFromDate] = useState(today);
 
         {/* Search */}
         <div style={{ padding: ".625rem 1.25rem", borderBottom: "1px solid var(--gray-200)", flexShrink: 0 }}>
-          <div className="modal-search-wrapper" style={{ display: "flex", alignItems: "center", gap: ".5rem", border: "1.5px solid var(--gray-200)", borderRadius: "var(--radius-md)", padding: ".4rem .75rem" }}>
+          <div className="modal-search-wrapper" style={{ display: "flex", alignItems: "center", gap: ".5rem", border: "1.5px solid var(--gray-200)", borderRadius: "var(--radius-md)", padding: ".4rem .75rem", background: "#fff" }}>
             <i className="bi bi-search" style={{ color: "var(--gray-400)", fontSize: ".85rem" }} />
             <input
               autoFocus

@@ -21,6 +21,7 @@ const PAGE_META = {
   '/nhap-du-lieu-api':  { name: 'Nhập dữ liệu từ API',  sub: 'Nhập dữ liệu từ API' },
   '/ho-so-ksk/tao-moi': { name: 'Tạo mới hồ sơ sức khỏe', sub: 'Hồ sơ khám sức khỏe' },
   '/cai-dat':           { name: 'Hồ sơ',           sub: 'Thông tin & pháp lý cơ sở' },
+  '/ky-so':           { name: 'Ký số',           sub: 'Ký Số' }
 }
 
 function useTodayStr() {

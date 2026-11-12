@@ -26,6 +26,10 @@
   box-shadow: 0 0 0 2px rgba(0, 103, 172, 0.1);
 }
 
+[data-theme="dark"] .modal-search-wrapper {
+  background: transparent !important;
+}
+
 .modal-search-wrapper input:focus {
   box-shadow: none !important;
   border-color: transparent !important;
