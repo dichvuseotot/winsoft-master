@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router'
-import Swal from 'sweetalert2'
-import { getThongKeDongBo, getThongTinHanhChinhList, exportXmlLienThong } from '../../services/hoSoKSK'
+import { getThongKeDongBo, getThongTinHanhChinhList } from '../../services/hoSoKSK'
 import { getLoaiMauKSKList } from '../../services/categoryService'
 
 const TODAY = new Date().toISOString().slice(0, 10)
@@ -39,7 +38,7 @@ export default function HoSoKSK() {
   const [applied,     setApplied]   = useState({ fromDate: TODAY, toDate: TODAY, mauPhieu: undefined, search: '' })
   const [dongBoStats, setDongBoStats] = useState({ 'da-dong-bo': 0, 'chua-dong-bo': 0, 'dong-bo-loi': 0, 'dang-dong-bo': 0 })
   const [mauPhieuOptions, setMauPhieuOptions] = useState([])
-  const [pushing, setPushing] = useState(false)
+  const [pushing] = useState(false)
 
   useEffect(() => {
     getThongKeDongBo().then(setDongBoStats).catch(() => {})
@@ -74,36 +73,6 @@ export default function HoSoKSK() {
 
   const goToPage = (p) => { setPage(p) }
 
-  const handlePushLienThong = async () => {
-    if (pushing) return
-    if (!selected.length) {
-      Swal.fire({ icon: 'warning', title: 'Chưa chọn hồ sơ', text: 'Vui lòng chọn ít nhất một hồ sơ để đẩy liên thông.', confirmButtonText: 'Đóng' })
-      return
-    }
-    setPushing(true)
-    try {
-      const res = await exportXmlLienThong({
-        tuNgay: applied.fromDate,
-        denNgay: applied.toDate,
-        tdLoaimauKskid: applied.mauPhieu ? Number(applied.mauPhieu) : null,
-        kskcdTiepNhanIds: selected,
-      })
-      const total = res.total ?? 0
-      const successCount = res.successCount ?? 0
-      const errorCount = res.errorCount ?? 0
-      Swal.fire({
-        icon: errorCount > 0 ? 'warning' : 'success',
-        title: 'Đẩy liên thông hoàn tất',
-        html: `Tổng: <b>${total}</b> &nbsp;|&nbsp; Thành công: <b style="color:#16a34a">${successCount}</b> &nbsp;|&nbsp; Lỗi: <b style="color:#dc2626">${errorCount}</b>`,
-        confirmButtonText: 'Đóng',
-      })
-      getThongKeDongBo().then(setDongBoStats).catch(() => {})
-    } catch {
-      Swal.fire({ icon: 'error', title: 'Lỗi', text: 'Không thể đẩy liên thông. Vui lòng thử lại.' })
-    } finally {
-      setPushing(false)
-    }
-  }
 
   const toTrangThai = (r) => r.IsSynchronize === 1 ? 'da-dong-bo' : 'chua-dong-bo'
 
@@ -223,7 +192,7 @@ export default function HoSoKSK() {
               {[10, 20, 50, 100].map(n => <option key={n} value={n}>{n}</option>)}
             </select>
           </div>
-          {applied.mauPhieu && <button onClick={handlePushLienThong} disabled={pushing}
+          {applied.mauPhieu && <button onClick={() => navigate('/ho-so-ksk/ky-so', { state: { tuNgay: applied.fromDate, denNgay: applied.toDate, tdLoaimauKskid: applied.mauPhieu, kskcdTiepNhanIds: selected } })} disabled={pushing}
             style={{ height: 34, padding: '0 .875rem', borderRadius: 'var(--radius-sm)', border: 'none', background: pushing ? 'var(--gray-300)' : '#2563eb', color: pushing ? 'var(--gray-500)' : '#fff', fontFamily: 'var(--font-display)', fontWeight: 700, fontSize: '.78rem', cursor: pushing ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '.35rem', transition: 'all .15s' }}>
             <i className={`bi ${pushing ? 'bi-arrow-clockwise' : 'bi-cloud-arrow-up-fill'}`} /> {pushing ? 'Đang đẩy...' : 'Đẩy liên thông đã chọn'}
           </button>}

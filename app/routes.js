@@ -12,5 +12,6 @@ export default [
     route('cai-dat', '../src/pages/CaiDat/CaiDat.jsx'),
     route('connect-api', '../src/pages/KetNoiAPI/KetNoiAPI.jsx'),
     route('ky-so', '../src/pages/KySo/KySo.jsx'),
+    route('ho-so-ksk/ky-so', '../src/pages/HoSoKSK/KySo/KySo.jsx'),
   ]),
 ]
