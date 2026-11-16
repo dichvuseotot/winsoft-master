@@ -71,7 +71,7 @@ export function Tab1TeenContent({ form, setForm, viewOnly = false, gioiTinhOptio
             <select style={inputStyle} value={form.nhomMau} onChange={set("nhomMau")}>
               <option value="">— Chọn —</option>
               {nhomMauOptions.map((o) => (
-                <option key={o.Id} value={o.MaNhomMau_AX}>{o.TenNhomMau}</option>
+                <option key={o.Id} value={o.Id}>{o.TenNhomMau}</option>
               ))}
             </select>
           </FieldGroup>

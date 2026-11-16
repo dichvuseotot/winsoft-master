@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router";
+import { useSearchParams, useLocation } from "react-router";
 import { useNavigate } from "react-router";
 import "./TaoHoSo.css";
 import { Tab1Content, Tab2Content, Tab3Content, Tab4Content, Tab5Content, Tab6Content, Tab7Content, CLS_DINH_KY_DATA } from "./MauPhieu/MauAdult";
@@ -17,6 +17,7 @@ const parseYYYYMMDD = (v) => {
   if (s.length === 8) return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`;
   return s;
 };
+
 
 const TABS = [
   { id: 1, label: "1. Thông tin Hành chính" },
@@ -366,6 +367,7 @@ function mapCLSToForm(clsItems) {
 
 export default function TaoHoSo() {
   const navigate = useNavigate();
+  const { state: locationState } = useLocation();
   const [searchParams] = useSearchParams();
   const editId = searchParams.get("id");
   const editMauPhieu = searchParams.get("mauPhieu");
@@ -455,6 +457,43 @@ export default function TaoHoSo() {
       }
     }).catch(() => {});
   }, []);
+
+  // ── Pre-fill từ HIS data ───────────────────────────────────────────────────
+  useEffect(() => {
+    const h = locationState?.hisData;
+    if (!h) return;
+    setForm((prev) => ({
+      ...prev,
+      soDinhDanh:  h.SO_CCCD               || prev.soDinhDanh,
+      hoTen:       h.HO_TEN                || prev.hoTen,
+      gioiTinh:    h.GIOI_TINH != null     ? String(h.GIOI_TINH) : prev.gioiTinh,
+      ngaySinh:    h.NGAY_SINH                 || prev.ngaySinh,
+      ngayCap:     h.NGAYCAP_CCCD          || prev.ngayCap,
+      noiCap:      h.NOICAP_CCCD           || prev.noiCap,
+      danToc:      h.MA_DAN_TOC            || prev.danToc,
+      nhomMau:     h.NHOM_MAU              || prev.nhomMau,
+      doiTuongKham: h.DOI_TUONG            || prev.doiTuongKham,
+      nguonChiTra: h.NGUON_CHI_TRA != null ? String(h.NGUON_CHI_TRA) : prev.nguonChiTra,
+      tinhThanhPho: h.MATINH_CU_TRU        || prev.tinhThanhPho,
+      phuongXa:    h.MAXA_CU_TRU           || prev.phuongXa,
+      soNha:       h.DIA_CHI               || prev.soNha,
+      ngheNghiep:  h.MA_NGHE_NGHIEP        || prev.ngheNghiep,
+      noiCongTac:  h.NOI_LAM_VIEC_HOC_TAP  || prev.noiCongTac,
+      dienThoai:   h.DIEN_THOAI            || prev.dienThoai,
+      lyDoKham:    h.LY_DO_VV              || prev.lyDoKham,
+      loaiHinhKham: h.MA_LOAI_KCB          || prev.loaiHinhKham,
+      maLanKham:   h.MA_LK                 || prev.maLanKham,
+      ngayKham:    parseYYYYMMDD(h.NGAY_VAO) || prev.ngayKham,
+      hoTenNguoiDiCung:      h.HO_TEN_NGUOI_DI_CUNG         || prev.hoTenNguoiDiCung,
+      soDinhDanhNguoiDiCung: h.SO_CCCD_NGUOI_DI_CUNG         || prev.soDinhDanhNguoiDiCung,
+      moiQuanHeVoiTre:       h.MOI_QUAN_HE_VOI_TRE != null   ? String(h.MOI_QUAN_HE_VOI_TRE) : prev.moiQuanHeVoiTre,
+      dienThoaiNguoiDiCung:  h.DIEN_THOAI_NGUOI_DI_CUNG      || prev.dienThoaiNguoiDiCung,
+      chieuCao:    h.CHIEU_CAO             ?? prev.chieuCao,
+      canNang:     h.CAN_NANG              ?? prev.canNang,
+      mach:        h.MACH                  ?? prev.mach,
+      huyetAp:     h.HUYET_AP              || prev.huyetAp,
+    }));
+  }, [locationState]);
 
   const loadIcd10Options = async (search, page = 1) => {
     return getICD10List({ search, page, pageSize: 20 });

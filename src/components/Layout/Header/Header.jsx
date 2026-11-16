@@ -18,7 +18,7 @@ const PAGE_META = {
   '/ho-so-ksk':         { name: 'Hồ Sơ KSK',           sub: 'Hồ sơ khám sức khỏe' },
   '/nhap-du-lieu':      { name: 'Nhập dữ liệu',         sub: 'Nhập dữ liệu sức khỏe' },
   '/xuat-du-lieu':      { name: 'Xuất dữ liệu',         sub: 'Xuất dữ liệu sức khỏe' },
-  '/nhap-du-lieu-api':  { name: 'Nhập dữ liệu từ API',  sub: 'Nhập dữ liệu từ API' },
+  '/nhap-du-lieu-his':  { name: 'Nhập dữ liệu từ HIS',  sub: 'Nhập dữ liệu từ HIS' },
   '/ho-so-ksk/tao-moi': { name: 'Tạo mới hồ sơ sức khỏe', sub: 'Hồ sơ khám sức khỏe' },
   '/cai-dat':           { name: 'Hồ sơ',           sub: 'Thông tin & pháp lý cơ sở' },
   '/ky-so':           { name: 'Ký số',           sub: 'Ký Số' }

@@ -15,9 +15,10 @@ export const getThongTinHanhChinhList = async ({ fromDate, toDate, mauPhieu, sea
   if (mauPhieu) params.set("td_loaimau_kskid", mauPhieu);
   const res = await axiosClient.get(`/list-thong-tin-hanh-chinh?${params.toString()}`);
   return {
-    items: res.data ?? [],
-    total: Number(res.pagination?.Total ?? 0),
+    items:      res.data                          ?? [],
+    total:      Number(res.pagination?.Total      ?? 0),
     totalPages: Number(res.pagination?.TotalPages ?? 1),
+    page:       Number(res.pagination?.Page       ?? 1),
   };
 };
 

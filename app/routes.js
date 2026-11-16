@@ -8,7 +8,7 @@ export default [
     route('ho-so-ksk/tao-moi', '../src/pages/HoSoKSK/TaoHoSo/TaoHoSo.jsx'),
     route('nhap-du-lieu', '../src/pages/NhapDuLieu/NhapDuLieu.jsx'),
     route('xuat-du-lieu', '../src/pages/XuatDuLieu/XuatDuLieu.jsx'),
-    route('nhap-du-lieu-api', '../src/pages/NhapDuLieuAPI/NhapDuLieuAPI.jsx'),
+    route('nhap-du-lieu-his', '../src/pages/NhapDuLieuHis/NhapDuLieuHis.jsx'),
     route('cai-dat', '../src/pages/CaiDat/CaiDat.jsx'),
     route('connect-api', '../src/pages/KetNoiAPI/KetNoiAPI.jsx'),
     route('ky-so', '../src/pages/KySo/KySo.jsx'),

@@ -21,8 +21,9 @@ export const getListImportFileExcel = async ({ fromDate, toDate, tdLoaimauKskid,
   params.set('PageSize', pageSize);
   const res = await axiosClient.get(`/list-import-file-excel?${params.toString()}`);
   return {
-    items: res.data ?? [],
-    total: Number(res.pagination?.Total ?? 0),
+    items:      res.data                          ?? [],
+    total:      Number(res.pagination?.Total      ?? 0),
     totalPages: Number(res.pagination?.TotalPages ?? 1),
+    page:       Number(res.pagination?.Page       ?? 1),
   };
 };

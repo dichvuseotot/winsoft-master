@@ -15,7 +15,7 @@ const NAV_SECTIONS = [
       { path: '/ho-so-ksk',      icon: 'bi-file-earmark-medical-fill', label: 'Hồ Sơ KSK' },
       { path: '/nhap-du-lieu',   icon: 'bi-cloud-upload-fill',  label: 'Nhập dữ liệu' },
       { path: '/xuat-du-lieu',   icon: 'bi-cloud-download-fill',label: 'Xuất dữ liệu' },
-      { path: '/nhap-du-lieu-api', icon: 'bi-diagram-3-fill',  label: 'Nhập dữ liệu từ API' },
+      { path: '/nhap-du-lieu-his', icon: 'bi-diagram-3-fill',  label: 'Nhập dữ liệu từ HIS' },
     ],
   },
   {

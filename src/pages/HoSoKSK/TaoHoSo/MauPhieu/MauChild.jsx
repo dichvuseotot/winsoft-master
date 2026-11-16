@@ -69,7 +69,7 @@ export function Tab1ChildContent({ form, setForm, viewOnly = false, gioiTinhOpti
             <select style={inputStyle} value={form.nhomMau} onChange={set("nhomMau")}>
               <option value="">Chọn nhóm máu</option>
               {nhomMauOptions.map((o) => (
-                <option key={o.Id} value={o.MaNhomMau_AX}>{o.TenNhomMau}</option>
+                <option key={o.Id} value={o.Id}>{o.TenNhomMau}</option>
               ))}
             </select>
           </FieldGroup>
