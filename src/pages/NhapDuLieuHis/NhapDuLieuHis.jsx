@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router'
-import { getLoaiMauKSKList, getListTiepNhanTuHis, getTiepNhanCCCD } from '../../services'
+import { getLoaiMauKSKList, getListTiepNhanTuHis, getTiepNhanCCCD, getLaboratoryResults } from '../../services'
 
 const today = new Date().toISOString().slice(0, 10)
 
@@ -154,8 +154,11 @@ export default function NhapDuLieuHIS() {
                   <tr key={r.Id} style={{ borderBottom: '1px solid var(--gray-100)' }}>
                     <td style={{ padding: '.6rem .875rem', textAlign: 'center' }}>
                       <button title="Tạo hồ sơ" onClick={async () => {
-                        const detail = await getTiepNhanCCCD({ soCCCD: r.SO_CCCD, maLK: r.MA_LK })
-                        navigate(`/ho-so-ksk/tao-moi?mauPhieu=${r.td_loaimau_kskid}`, { state: { hisData: detail ?? r } })
+                        const [detail, labResults] = await Promise.all([
+                          getTiepNhanCCCD({ soCCCD: r.SO_CCCD, maLK: r.MA_LK }),
+                          r.PatientReceiveID ? getLaboratoryResults({ patientReceiveID: r.PatientReceiveID }).catch(() => []) : Promise.resolve([]),
+                        ])
+                        navigate(`/ho-so-ksk/tao-moi?mauPhieu=${r.td_loaimau_kskid}`, { state: { hisData: detail ?? r, labResults } })
                       }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', fontSize: '1rem', padding: '0 .2rem' }}>
                         <i className="bi bi-eye" />
                       </button>

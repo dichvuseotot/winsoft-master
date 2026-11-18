@@ -71,6 +71,13 @@ export default function Header({ onToggleSidebar, onLogout }) {
       </div>
 
             <div className="header-right">
+        {user?.tenDonVi && (
+          <div style={{ fontSize: '.82rem', color: 'var(--gray-600)', fontWeight: 600, whiteSpace: 'nowrap', padding: '0 .75rem', borderRight: '1.5px solid var(--gray-200)' }}>
+            <i className="bi bi-hospital" style={{ color: 'var(--primary)', marginRight: '.4rem' }} />
+            {user.tenDonVi}
+          </div>
+        )}
+
                 <div className="header-date">
           <i className="bi bi-calendar3" />
           {today}

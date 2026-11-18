@@ -7,7 +7,7 @@ import { Tab1ChildContent, Tab3ChildContent, Tab4ChildContent, Tab5ChildContent,
 import { Tab1TeenContent, Tab2TeenContent, Tab3TeenContent, Tab5TeenContent } from "./MauPhieu/MauTeen";
 import { saveAdultTiepNhan, saveTeenTiepNhan, saveChildTiepNhan, getTeenTheLuc, getTeenNhiKhoa, getTeenMat, getTeenTMH, getTeenRHM, getThongTinHanhChinhById, getThongTinHanhChinhList, getKhamTheLuc, getKhamNoiKhoa, getNgoaiKhoa, getDaLieu, getSanPhuKhoa, getKhamMat, getKhamTMH, getKhamRHM, getCLS, getTienSuBenh, getKetLuan, getGioiTinhList, getMoiQuanHeList, getDanTocList, getTinhThanhList, getPhuongXaList, getDoiTuongList, getNguonChiTraList, getPhanLoaiSucKhoeList, getLoaiHinhKCBList, getICD10List, getLoaiMauKSKList, getCareerList, getTienSuBenhCategories, getNhomMauList, getInfoConnectAPI } from "../../../services";
 import { todayVN, timeNowVN } from "../../../utils/date";
-import { deleteCLSRecord } from "../../../services";
+import { deleteCLSRecord, getLaboratoryResults } from "../../../services";
 
 const TODAY = todayVN();
 
@@ -422,6 +422,7 @@ export default function TaoHoSo() {
     maCskcb: "",
     maCskcbGln: "",
     maLanKham: "",
+    patientReceiveID: null,
     ngayKham: TODAY,
     gioKham: timeNowVN(),
     gdICD10: [],
@@ -457,6 +458,27 @@ export default function TaoHoSo() {
       }
     }).catch(() => {});
   }, []);
+
+  // ── Pre-fill CLS từ laboratory results ────────────────────────────────────
+  useEffect(() => {
+    const labs = locationState?.labResults;
+    if (!labs || !labs.length) return;
+    const items = [...labs].sort((a, b) => (a.SortOrder ?? 0) - (b.SortOrder ?? 0)).map((item) => ({
+      _key:        `lab_${item.Id ?? item.HisOrderId ?? Date.now()}_${Math.random()}`,
+      _existingId: null,
+      code:        item.MaChiSoBHYT ?? null,
+      name:        item.TestName ?? null,
+      unit:        item.Result_Unit ?? null,
+      g1:          null,
+      g2:          null,
+      g3:          null,
+      donViDo:     item.Result_Unit ?? null,
+      giaTri:      item.Result_Value != null ? String(item.Result_Value) : null,
+      moTa:        item.TestName ?? null,
+      ketLuan:     item.Conclusion ?? null,
+    }));
+    setForm((prev) => ({ ...prev, clsDynamic: items }));
+  }, [locationState]);
 
   // ── Pre-fill từ HIS data ───────────────────────────────────────────────────
   useEffect(() => {
@@ -1235,7 +1257,28 @@ export default function TaoHoSo() {
               ngayKham: p.NGAY_VAO ? p.NGAY_VAO.slice(0,4)+"-"+p.NGAY_VAO.slice(4,6)+"-"+p.NGAY_VAO.slice(6,8) : TODAY,
               gioKham: p.NGAY_VAO ? p.NGAY_VAO.slice(8,10)+":"+p.NGAY_VAO.slice(10,12) : timeNowVN(),
               maLanKham: p.MA_LK || "",
+              patientReceiveID: p.PatientReceiveID ?? null,
             }));
+            if (p.PatientReceiveID) {
+              getLaboratoryResults({ patientReceiveID: p.PatientReceiveID }).then((labs) => {
+                if (!labs?.length) return;
+                const items = [...labs].sort((a, b) => (a.SortOrder ?? 0) - (b.SortOrder ?? 0)).map((item) => ({
+                  _key:        `lab_${item.Id ?? item.HisOrderId ?? Date.now()}_${Math.random()}`,
+                  _existingId: null,
+                  code:        item.MaChiSoBHYT ?? null,
+                  name:        item.TestName ?? null,
+                  unit:        item.Result_Unit ?? null,
+                  g1:          null,
+                  g2:          null,
+                  g3:          null,
+                  donViDo:     item.Result_Unit ?? null,
+                  giaTri:      item.Result_Value != null ? String(item.Result_Value) : null,
+                  moTa:        item.TestName ?? null,
+                  ketLuan:     item.Conclusion ?? null,
+                }));
+                setForm((prev) => ({ ...prev, clsDynamic: items }));
+              }).catch(() => {});
+            }
             setErrors({});
             const pid = p.Id ?? p.KSKCD_TiepNhanId ?? null;
             setTiepNhanId(pid);

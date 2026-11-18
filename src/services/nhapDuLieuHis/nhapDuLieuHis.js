@@ -6,6 +6,11 @@ export const getTiepNhanCCCD = async ({ soCCCD, maLK }) => {
   return (res.data ?? [])[0] ?? null;
 };
 
+export const getLaboratoryResults = async ({ patientReceiveID }) => {
+  const res = await axiosClient.get(`/get-laboratory-results?PatientReceiveID=${patientReceiveID}`);
+  return res.data ?? [];
+};
+
 export const getListTiepNhanTuHis = async ({ fromDate, toDate, tdLoaimauKskid, search = '', page = 1, pageSize = 20 } = {}) => {
   const params = new URLSearchParams();
   if (fromDate) params.set('FromDate', fromDate);

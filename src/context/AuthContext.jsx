@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from 'react'
+import users from '../data/users.json'
 
 const AuthContext = createContext(null)
 
@@ -20,26 +21,21 @@ export function AuthProvider({ children }) {
   const login = useCallback(async (username, password, remember) => {
     setLoading(true)
     try {
-      await new Promise(r => setTimeout(r, 800))
+      const matched = users.find(u => u.username === username && u.pass === password)
+      if (!matched) return { success: false, message: 'Tên đăng nhập hoặc mật khẩu không đúng.' }
 
-      const mockUser = {
-        id: 1,
-        username,
-        fullName: 'Nguyễn Hoàng Nghĩa',
-        role: 'admin',
-        email: 'admin@nhabehealth.vn',
-        phone: '0909 123 456',
-        avatar: null,
+      const loggedUser = {
+        username: matched.username,
+        tenDonVi: matched.ten_don_vi,
       }
-      const mockToken = 'mock_token_' + Date.now()
-
-      setUser(mockUser)
+      const token = 'token_' + Date.now()
+      setUser(loggedUser)
       if (remember) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(mockUser))
-        localStorage.setItem(TOKEN_KEY, mockToken)
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(loggedUser))
+        localStorage.setItem(TOKEN_KEY, token)
       } else {
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(mockUser))
-        sessionStorage.setItem(TOKEN_KEY, mockToken)
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(loggedUser))
+        sessionStorage.setItem(TOKEN_KEY, token)
       }
       return { success: true }
     } catch (err) {
